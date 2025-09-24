@@ -1,6 +1,10 @@
 <!doctype html><meta charset="utf-8">
 <script>
   const redir = localStorage.getItem('tp_redirect');
-  if (redir) location.replace(redir);
-  else       location.replace('https://script.google.com/macros/s/TU_DEPLOY_ID/exec'); // tu puerta
+  if (redir) {
+    location.replace(redir);             // ya hay sesión → entra directo
+  } else {
+    // sin sesión → abrir la puerta (Apps Script)
+    location.replace('https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec');
+  }
 </script>
