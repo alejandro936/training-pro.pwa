@@ -1,57 +1,76 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="apple-mobile-web-app-title" content="Training Pro">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Instalar Training Pro</title>
+
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0b0b0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3">
-<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png?v=3">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png?v=3">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png?v=3">
+<meta name="apple-mobile-web-app-title" content="Training Pro">
+
+<!-- Iconos iOS (en raíz del proyecto) -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5">
+<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png?v=5">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png?v=5">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png?v=5">
+
 <style>
-  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b0b;color:#fff;font-family:Inter,system-ui}
-  .card{max-width:560px;width:92%;padding:24px;border:1px solid #262626;border-radius:18px;background:rgba(255,255,255,.03);text-align:center}
-  h1{margin:0 0 8px;font-size:22px}
-  p{opacity:.9}
-  button{margin-top:10px;padding:12px 18px;border:0;border-radius:999px;background:#E6C06E;color:#000;font-weight:800;cursor:pointer}
-  a.btn{display:inline-block;margin-top:10px;padding:12px 18px;border-radius:999px;background:#E6C06E;color:#000;text-decoration:none;font-weight:800}
+  :root{--bg:#0b0b0b;--gold:#E6C06E;--stroke:#262626}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .card{max-width:560px;width:92%;padding:24px;border:1px solid var(--stroke);border-radius:18px;background:rgba(255,255,255,.03);text-align:center}
+  h1{margin:0 0 10px;font-size:22px}
+  p{opacity:.9;margin:0 0 10px}
+  button,.btn{display:inline-block;margin-top:12px;padding:12px 18px;border:0;border-radius:999px;background:var(--gold);color:#000;font-weight:800;cursor:pointer;text-decoration:none}
   .hint{opacity:.75;font-size:14px;margin-top:10px}
 </style>
 </head>
 <body>
   <div class="card">
     <h1>Instalar Training Pro</h1>
-    <p>Instala la app para abrirla desde el icono del móvil.</p>
+
+    <!-- Android: solo botón -->
     <div id="android" style="display:none">
+      <p>Instala la app para abrirla desde el icono del móvil.</p>
       <button id="btnInstall" disabled>Instalar en Android</button>
-      <div class="hint">Si no aparece el botón, abre con Chrome.</div>
+      <div class="hint">Si no aparece el botón: menú ⋮ → <b>Instalar app</b>.</div>
     </div>
+
+    <!-- iOS: un único paso -->
     <div id="ios" style="display:none">
-      <ol class="hint" style="text-align:left">
-        <li>Abre esta página en <strong>Safari</strong>.</li>
-        <li>Toca <strong>Compartir</strong> → <strong>Añadir a pantalla de inicio</strong>.</li>
-      </ol>
+      <p>En iPhone:</p>
+      <p class="hint"><b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
     </div>
+
     <a class="btn" href="/">Volver</a>
   </div>
 
 <script>
-  // Registra el SW
+  // Registrar SW (necesario para ser "instalable")
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/service-worker.js");
 
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  // Detección simple
+  const ua = navigator.userAgent;
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const isAndroid = /android/i.test(ua);
   document.getElementById(isIOS ? "ios" : "android").style.display = "block";
 
-  // Botón nativo Android
+  // Botón nativo Android (beforeinstallprompt)
   let deferredPrompt;
   const btn = document.getElementById('btnInstall');
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; if(btn) btn.disabled=false; });
-  if (btn) btn.addEventListener('click', async () => { if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; });
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btn) btn.disabled = false;
+  });
+  if (btn) btn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
 </script>
 </body>
 </html>
