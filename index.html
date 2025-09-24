@@ -6,38 +6,28 @@
   <title>Training Pro</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0b0b0b">
-  <!-- iOS PWA meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="apple-touch-icon" href="/icons/icon-512.png">
   <style>
-    body{margin:0;display:grid;place-items:center;min-height:100vh;background:#0b0b0b;color:#fff;
-         font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{text-align:center;max-width:640px;padding:24px}
-    .logo{display:inline-block;width:88px;height:88px;border-radius:24px;border:4px solid #E6C06E;
-           display:grid;place-items:center;margin-bottom:16px}
-    .logo span{font-weight:900;color:#E6C06E;font-size:28px;letter-spacing:1px}
-    .btn{display:inline-block;margin-top:12px;padding:12px 18px;border-radius:999px;background:#E6C06E;
-          color:#000;text-decoration:none;font-weight:800}
-    .hint{opacity:.85;font-size:14px;margin-top:8px}
+    html,body{height:100%;margin:0;background:#0b0b0b;}
   </style>
   <script>
     const TARGET_URL = "https://sites.google.com/coach-alexlopez.com/acceso-training-pro/inicio";
     (async () => {
-      if ("serviceWorker" in navigator) {
-        try { await navigator.serviceWorker.register("/service-worker.js"); } catch(e){}
-      }
-      // pequeño retardo para asegurar registro SW antes de salir
-      setTimeout(()=> location.replace(TARGET_URL), 350);
+      try {
+        if ("serviceWorker" in navigator) {
+          // registra SW (necesario para que sea instalable)
+          await Promise.race([
+            navigator.serviceWorker.register("/service-worker.js"),
+            new Promise(r => setTimeout(r, 150)) // tope de espera para que no haya “parpadeo”
+          ]);
+        }
+      } catch(e) {}
+      // salto inmediato sin UI
+      location.replace(TARGET_URL);
     })();
   </script>
 </head>
-<body>
-  <div class="wrap">
-    <div class="logo"><span>TP</span></div>
-    <h1>Abriendo Training Pro…</h1>
-    <p class="hint">Si no te redirige en un par de segundos, pulsa el botón.</p>
-    <p><a class="btn" href="https://sites.google.com/coach-alexlopez.com/acceso-training-pro/inicio">Entrar ahora</a></p>
-  </div>
-</body>
+<body></body>
 </html>
