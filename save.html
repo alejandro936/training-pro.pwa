@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8">
+<script>
+  const q = new URLSearchParams(location.search);
+  const tk = q.get('tk') || q.get('token');
+  const redir = q.get('redir') || q.get('redirect');
+  if (tk)   localStorage.setItem('tp_token_v1', tk);
+  if (redir)localStorage.setItem('tp_redirect', redir);
+  location.replace(redir || '/');
+</script>
