@@ -1,18 +1,19 @@
-const CACHE_NAME = 'tp-v9';
-const AVOID_CACHE = new Set(['/save.html','/go-lib.html','/debug.html']);
+const CACHE_NAME = 'entrenamiento-cache-v1';
+const urlsToCache = [
+  './index.html',
+  './icono-equipo-tacho-120.png',
+  './icono-equipo-tacho-128.png',
+  // Añade aquí tus otros archivos JS, CSS, imágenes...
+];
 
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  );
+});
 
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-
-  // Nunca interceptes navegaciones (HTML)
-  if (event.request.mode === 'navigate') return;
-
-  // Ni nuestras páginas de sesión/diagnóstico
-  if (AVOID_CACHE.has(url.pathname)) return;
-
-  // Tu estrategia mínima para estáticos (o lo que uses)
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
+  );
 });
