@@ -1,58 +1,42 @@
 <!doctype html>
+<html lang="es">
+<head>
 <meta charset="utf-8">
 <title>Entrando…</title>
-<script>
-function readCookie(name){
-  return document.cookie.split('; ')
-    .find(v => v.startsWith(name + '='))?.split('=')[1] || '';
-}
 
+<!-- iOS necesita estos <link> para el icono al instalar -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+
+<!-- (Opcional) Manifest: Android/Chrome sí lo usa aquí -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#000000">
+</head>
+<body></body>
+<script>
+function readCookie(n){return document.cookie.split('; ').find(v=>v.startsWith(n+'='))?.split('=')[1]||''}
 function fromIDB(keys, cb){
   try{
-    const req = indexedDB.open('tpdb', 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-    req.onsuccess = () => {
-      const db = req.result;
-      const tx = db.transaction('kv', 'readonly');
-      const kv = tx.objectStore('kv');
-      const out = {};
-      let pending = keys.length;
-      keys.forEach(k=>{
-        const r = kv.get(k);
-        r.onsuccess = () => { out[k] = r.result || ''; if(--pending===0) cb(out); };
-        r.onerror   = () => { out[k] = '';            if(--pending===0) cb(out); };
-      });
+    const r=indexedDB.open('tpdb',1);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore('kv');
+    r.onsuccess=()=>{
+      const db=r.result,tx=db.transaction('kv','readonly'),kv=tx.objectStore('kv');
+      const out={},N=keys.length;let left=N;
+      keys.forEach(k=>{const g=kv.get(k);g.onsuccess=()=>{out[k]=g.result||'';if(--left===0)cb(out)};g.onerror=()=>{out[k]='';if(--left===0)cb(out)};});
     };
-    req.onerror = () => cb({});
-  }catch(e){ cb({}); }
+    r.onerror=()=>cb({});
+  }catch(_){cb({});}
 }
-
-(function () {
-  // 1) Intento con IndexedDB
-  fromIDB(['tp_token_v1','tp_redirect'], idb => {
-    let tk    = idb.tp_token_v1 || '';
-    let redir = idb.tp_redirect || '';
-
-    // 2) Si no hay, pruebo cookie
-    if (!tk || !redir) {
-      tk    = tk    || decodeURIComponent(readCookie('tp_token_v1') || '');
-      redir = redir || decodeURIComponent(readCookie('tp_redirect') || '');
-    }
-    // 3) Si no hay, pruebo localStorage
-    if (!tk || !redir) {
-      try{
-        tk    = tk    || localStorage.getItem('tp_token_v1') || '';
-        redir = redir || localStorage.getItem('tp_redirect') || '';
-      }catch(e){}
-    }
-
-    // 4) Resultado
-    if (tk && redir) {
-      location.replace(redir);
-    } else {
-      // Puerta (Apps Script)
-      location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec');
-    }
+(function(){
+  fromIDB(['tp_token_v1','tp_redirect'], idb=>{
+    let tk=idb.tp_token_v1||'', redir=idb.tp_redirect||'';
+    if(!tk||!redir){ tk=tk||decodeURIComponent(readCookie('tp_token_v1')||''); redir=redir||decodeURIComponent(readCookie('tp_redirect')||''); }
+    if(!tk||!redir){ try{ tk=tk||localStorage.getItem('tp_token_v1')||''; redir=redir||localStorage.getItem('tp_redirect')||''; }catch(_){ } }
+    if(tk&&redir){ location.replace(redir); }
+    else{ location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec'); }
   });
 })();
 </script>
+
