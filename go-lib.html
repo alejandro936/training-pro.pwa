@@ -1,34 +1,58 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  // ⚠️ PON AQUÍ la URL FINAL de la biblioteca (la misma que usas en Apps Script: BIB_URL)
-  // Por ejemplo: const LIB_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
+  // ⚠️ PON AQUÍ la URL FINAL de la biblioteca:
   const LIB_URL = 'PON_AQUI_TU_BIB_URL';
-
+  // Puerta de entrada (Apps Script) si no hay sesión:
   const APPS_SCRIPT_ENTRADA = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
+  // ---- Cookie/LS helpers ----
   function getCookie(name){
     return document.cookie.split(';').map(s=>s.trim())
       .find(s=>s.startsWith(name+'='))?.split('=').slice(1).join('=') || '';
   }
-  function readLS(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+  function readLS(k){ try{ return localStorage.getItem(k) || ''; }catch(_){ return ''; } }
 
-  (function(){
-    const redirLS = readLS('tp_redirect');
-    const redirCK = decodeURIComponent(getCookie('tp_redirect') || '');
-    const tokenLS = readLS('tp_token_v1');
-    const tokenCK = decodeURIComponent(getCookie('tp_token_v1') || '');
+  // ---- IndexedDB helpers ----
+  function idbOpen(){
+    return new Promise((res, rej)=>{
+      const req = indexedDB.open('tp_db', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      req.onsuccess = () => res(req.result);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+  async function idbGet(key){
+    try{
+      const db = await idbOpen();
+      const val = await new Promise((res, rej)=>{
+        const tx = db.transaction('kv','readonly');
+        const rq = tx.objectStore('kv').get(key);
+        rq.onsuccess = () => res(rq.result || '');
+        rq.onerror   = () => res('');
+      });
+      db.close();
+      return val || '';
+    }catch(_){ return ''; }
+  }
 
-    // 1) Preferimos redir almacenada
-    let redir = redirLS || redirCK;
+  (async function(){
+    // 1) Intenta redirección guardada
+    let redir = readLS('tp_redirect') ||
+                decodeURIComponent(getCookie('tp_redirect') || '') ||
+                await idbGet('tp_redirect');
 
-    // 2) Si no hay redir, pero sí token → la reconstruimos
+    // 2) Si no hay redir pero sí token → reconstruye
     if (!redir) {
-      const tk = tokenLS || tokenCK;
+      const tk = readLS('tp_token_v1') ||
+                 decodeURIComponent(getCookie('tp_token_v1') || '') ||
+                 await idbGet('tp_token_v1');
+
       if (tk && LIB_URL && LIB_URL !== 'PON_AQUI_TU_BIB_URL') {
-        redir = `${LIB_URL}?tk=${encodeURIComponent(tk)}`;
+        redir = `${LIB_URL}${LIB_URL.includes('?') ? '&' : '?'}tk=${encodeURIComponent(tk)}`;
       }
     }
 
+    // 3) Navega
     if (redir) {
       location.replace(redir);     // sesión presente → entra directo
     } else {
