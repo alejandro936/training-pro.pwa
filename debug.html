@@ -1,13 +1,13 @@
 <!doctype html><meta charset="utf-8"><title>debug</title>
 <pre id="out"></pre>
+<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>localStorage.removeItem(k));document.cookie='tp_token_v1=;Max-Age=0;Path=/';document.cookie='tp_redirect=;Max-Age=0;Path=/';location.reload()">Borrar sesión</button>
 <script>
-  function getCookie(n){return document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(n+'='))?.split('=').slice(1).join('=')||''}
-  const data = {
+  const obj = {
     origin: location.origin,
-    ls_token: (localStorage.getItem('tp_token_v1')||''),
-    ls_redir: (localStorage.getItem('tp_redirect')||''),
-    ck_token: decodeURIComponent(getCookie('tp_token_v1')||''),
-    ck_redir: decodeURIComponent(getCookie('tp_redirect')||'')
+    ls_token: (localStorage.getItem('tp_token_v1')||'').slice(0,12)||'',
+    ls_redir: localStorage.getItem('tp_redirect')||'',
+    ck_token: decodeURIComponent((document.cookie.match(/(?:^|; )tp_token_v1=([^;]+)/)||[])[1]||'').slice(0,12),
+    ck_redir: decodeURIComponent((document.cookie.match(/(?:^|; )tp_redirect=([^;]+)/)||[])[1]||''),
   };
-  out.textContent = JSON.stringify(data, null, 2);
+  document.getElementById('out').textContent = JSON.stringify(obj,null,2);
 </script>
