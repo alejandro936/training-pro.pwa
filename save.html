@@ -1,21 +1,44 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  // Helpers
+  // ---- Helpers Cookie ----
   function setCookie(name, value, days){
-    const maxAge = days ? days*24*60*60 : 0; // segundos
-    // Importante: Secure + SameSite=Lax para PWA en HTTPS
+    const maxAge = days ? days*24*60*60 : 0; // seg
     document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax; Secure`;
   }
-  const q = new URLSearchParams(location.search);
+
+  // ---- Helpers IndexedDB (mínimos) ----
+  function idbOpen(){
+    return new Promise((res, rej)=>{
+      const req = indexedDB.open('tp_db', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      req.onsuccess = () => res(req.result);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+  async function idbSet(key, val){
+    try{
+      const db = await idbOpen();
+      await new Promise((res, rej)=>{
+        const tx = db.transaction('kv','readwrite');
+        tx.objectStore('kv').put(val, key);
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+      });
+      db.close();
+    }catch(_){}
+  }
+
+  // ---- Lee params y guarda ----
+  const q     = new URLSearchParams(location.search);
   const tk    = q.get('tk')     || q.get('token')    || '';
   const redir = q.get('redir')  || q.get('redirect') || '/';
 
-  try{ localStorage.setItem('tp_token_v1', tk); }catch(e){}
-  try{ localStorage.setItem('tp_redirect',  redir); }catch(e){}
-
-  // Guarda por 180 días
+  try{ localStorage.setItem('tp_token_v1', tk); }catch(_){}
+  try{ localStorage.setItem('tp_redirect',  redir); }catch(_){}
   if (tk)    setCookie('tp_token_v1', tk,    180);
   if (redir) setCookie('tp_redirect',  redir, 180);
+  idbSet('tp_token_v1', tk);
+  idbSet('tp_redirect',  redir);
 
+  // ---- Adelante ----
   location.replace(redir);
 </script>
