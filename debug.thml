@@ -1,5 +1,6 @@
 <!doctype html><meta charset="utf-8"><title>debug</title>
 <pre id="out"></pre>
+<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>localStorage.removeItem(k));document.cookie='tp_token_v1=;Max-Age=0;Path=/';document.cookie='tp_redirect=;Max-Age=0;Path=/';location.reload()">Borrar sesión</button>
 <script>
   function getCookie(n){return document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(n+'='))?.split('=').slice(1).join('=')||''}
   const data = {
