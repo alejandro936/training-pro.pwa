@@ -1,62 +1,16 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  // ⚠️ PON AQUÍ la URL FINAL de la biblioteca:
-  const LIB_URL = 'https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec';
-  // Puerta de entrada (Apps Script) si no hay sesión:
-  const APPS_SCRIPT_ENTRADA = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+  // 👇 PON AQUÍ la URL canónica de la PUERTA (Apps Script) que pide el email:
+  const PUERTA_URL = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
-  // ---- Cookie/LS helpers ----
-  function getCookie(name){
-    return document.cookie.split(';').map(s=>s.trim())
-      .find(s=>s.startsWith(name+'='))?.split('=').slice(1).join('=') || '';
+  // Intenta leer sesión (localStorage y cookie)
+  const LS = window.localStorage;
+  const token = LS.getItem('tp_token_v1') || (document.cookie.match(/(?:^|; )tp_token_v1=([^;]+)/)||[])[1];
+  const redir = LS.getItem('tp_redirect') || decodeURIComponent((document.cookie.match(/(?:^|; )tp_redirect=([^;]+)/)||[])[1]||'');
+
+  if (token && redir) {
+    location.replace(redir);            // ya hay sesión → entra directo
+  } else {
+    location.replace(PUERTA_URL);       // sin sesión → a la Puerta
   }
-  function readLS(k){ try{ return localStorage.getItem(k) || ''; }catch(_){ return ''; } }
-
-  // ---- IndexedDB helpers ----
-  function idbOpen(){
-    return new Promise((res, rej)=>{
-      const req = indexedDB.open('tp_db', 1);
-      req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-      req.onsuccess = () => res(req.result);
-      req.onerror   = () => rej(req.error);
-    });
-  }
-  async function idbGet(key){
-    try{
-      const db = await idbOpen();
-      const val = await new Promise((res, rej)=>{
-        const tx = db.transaction('kv','readonly');
-        const rq = tx.objectStore('kv').get(key);
-        rq.onsuccess = () => res(rq.result || '');
-        rq.onerror   = () => res('');
-      });
-      db.close();
-      return val || '';
-    }catch(_){ return ''; }
-  }
-
-  (async function(){
-    // 1) Intenta redirección guardada
-    let redir = readLS('tp_redirect') ||
-                decodeURIComponent(getCookie('tp_redirect') || '') ||
-                await idbGet('tp_redirect');
-
-    // 2) Si no hay redir pero sí token → reconstruye
-    if (!redir) {
-      const tk = readLS('tp_token_v1') ||
-                 decodeURIComponent(getCookie('tp_token_v1') || '') ||
-                 await idbGet('tp_token_v1');
-
-      if (tk && LIB_URL && LIB_URL !== 'PON_AQUI_TU_BIB_URL') {
-        redir = `${LIB_URL}${LIB_URL.includes('?') ? '&' : '?'}tk=${encodeURIComponent(tk)}`;
-      }
-    }
-
-    // 3) Navega
-    if (redir) {
-      location.replace(redir);     // sesión presente → entra directo
-    } else {
-      location.replace(APPS_SCRIPT_ENTRADA); // sin sesión → pedir email
-    }
-  })();
 </script>
