@@ -1,13 +1,18 @@
-<!doctype html><meta charset="utf-8"><title>debug</title>
+<!doctype html>
+<meta charset="utf-8">
+<title>debug</title>
 <pre id="out"></pre>
-<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>localStorage.removeItem(k));document.cookie='tp_token_v1=;Max-Age=0;Path=/';document.cookie='tp_redirect=;Max-Age=0;Path=/';location.reload()">Borrar sesión</button>
+<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});document.cookie='tp_token_v1=; Max-Age=0; Path=/';document.cookie='tp_redirect=; Max-Age=0; Path=/';location.reload()">
+  Limpiar y recargar
+</button>
 <script>
-  const obj = {
+  const out = document.getElementById('out');
+  const dump = {
     origin: location.origin,
-    ls_token: (localStorage.getItem('tp_token_v1')||'').slice(0,12)||'',
-    ls_redir: localStorage.getItem('tp_redirect')||'',
-    ck_token: decodeURIComponent((document.cookie.match(/(?:^|; )tp_token_v1=([^;]+)/)||[])[1]||'').slice(0,12),
-    ck_redir: decodeURIComponent((document.cookie.match(/(?:^|; )tp_redirect=([^;]+)/)||[])[1]||''),
+    ls_token: (()=>{try{return localStorage.getItem('tp_token_v1')||''}catch(e){return ''}})(),
+    ls_redir:  (()=>{try{return localStorage.getItem('tp_redirect')||''}catch(e){return ''}})(),
+    ck_token: (document.cookie.split('; ').find(v=>v.startsWith('tp_token_v1='))||'').split('=')[1]||'',
+    ck_redir: (document.cookie.split('; ').find(v=>v.startsWith('tp_redirect='))||'').split('=')[1]||'',
   };
-  document.getElementById('out').textContent = JSON.stringify(obj,null,2);
+  out.textContent = JSON.stringify(dump, null, 2);
 </script>
