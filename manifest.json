@@ -1,7 +1,7 @@
 {
   "name": "Training Pro",
   "short_name": "Training Pro",
-  "start_url": "/go-lib.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
