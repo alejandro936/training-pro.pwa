@@ -1,80 +1,97 @@
 <!doctype html>
 <html lang="es">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Abriendo biblioteca…</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-<style>
-  body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto;display:grid;place-items:center;height:100vh}
-  .card{background:#0c0c0c;border:1px solid #1c1c1c;border-radius:16px;padding:22px;max-width:680px}
-  a.btn{display:inline-block;margin-top:12px;padding:10px 16px;border-radius:12px;border:1px solid #e6c06e;text-decoration:none;
-        background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff}
-  .small{opacity:.7;font-size:13px}
-</style>
-<div class="card">
-  <h3>Comprobando acceso…</h3>
-  <div id="out" class="small">Cargando…</div>
-  <a id="door" class="btn" style="display:none" href="#">Ir a la puerta</a>
-  <a class="btn" href="/debug.html">Ver diagnóstico</a>
-</div>
+<head>
+  <meta charset="utf-8">
+  <title>Entrando…</title>
+
+  <!-- Iconos para instalación en iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+
+  <!-- Manifest para Android/Chrome -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#000000">
+</head>
+<body></body>
+
 <script>
-const DOOR_URL = "https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec";
-
-function getCookie(name){
-  return (document.cookie.split('; ').find(c=>c.startsWith(name+'='))||'').split('=').slice(1).join('=') || '';
-}
-
-function idbGet(dbName, store, key){
-  return new Promise((resolve,reject)=>{
-    const req = indexedDB.open(dbName,1);
-    req.onupgradeneeded = ()=> req.result.createObjectStore(store);
-    req.onerror = ()=> resolve('');
-    req.onsuccess = ()=>{
-      const tx = req.result.transaction(store,'readonly');
-      const g = tx.objectStore(store).get(key);
-      g.onsuccess = ()=> resolve(g.result||'');
-      g.onerror = ()=> resolve('');
-    };
-  });
-}
-
-(async () => {
-  const out = document.getElementById('out');
-  const door = document.getElementById('door');
-
-  // 1) Cookie
-  let tk = getCookie('tp_token_v1');
-  let rd = getCookie('tp_redirect');
-
-  // 2) IndexedDB si cookie vacía
-  if(!tk || !rd){
-    tk = tk || await idbGet('tpdb','kv','tp_token_v1');
-    rd = rd || await idbGet('tpdb','kv','tp_redirect');
+  // Función para leer cookies
+  function readCookie(name) {
+    const cookie = document.cookie.split('; ').find(c => c.startsWith(name + '='));
+    return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
   }
 
-  // 3) LocalStorage como último recurso
-  if(!tk || !rd){
-    try{
-      tk = tk || localStorage.getItem('tp_token_v1') || '';
-      rd = rd || localStorage.getItem('tp_redirect') || '';
-    }catch(_){}
+  // Función para leer desde IndexedDB
+  function readFromIDB(keys, callback) {
+    try {
+      const request = indexedDB.open('tpdb', 1);
+      request.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('kv', 'readonly');
+        const store = tx.objectStore('kv');
+        const result = {};
+        let remaining = keys.length;
+
+        keys.forEach(key => {
+          const getReq = store.get(key);
+          getReq.onsuccess = () => {
+            result[key] = getReq.result || '';
+            if (--remaining === 0) callback(result);
+          };
+          getReq.onerror = () => {
+            result[key] = '';
+            if (--remaining === 0) callback(result);
+          };
+        });
+      };
+      request.onerror = () => callback({});
+    } catch (err) {
+      console.warn('IndexedDB error:', err);
+      callback({});
+    }
   }
 
-  if(tk && rd){
-    out.textContent = 'Acceso encontrado. Entrando…';
-    location.replace(rd);
-    return;
-  }
-  out.textContent = 'No hay sesión guardada en este dispositivo.';
-  door.style.display = 'inline-block';
-  door.href = DOOR_URL;
-})();
+  // Lógica principal
+  (function () {
+    const keys = ['tp_token_v1', 'tp_redirect'];
+
+    // Paso 1: Intentar desde localStorage
+    let token = localStorage.getItem('tp_token_v1') || '';
+    let redirect = localStorage.getItem('tp_redirect') || '';
+
+    // Paso 2: Si no hay datos, intentar desde cookies
+    if (!token || !redirect) {
+      token = token || readCookie('tp_token_v1');
+      redirect = redirect || readCookie('tp_redirect');
+    }
+
+    // Paso 3: Si aún no hay datos, intentar desde IndexedDB
+    if (!token || !redirect) {
+      readFromIDB(keys, data => {
+        token = token || data.tp_token_v1 || '';
+        redirect = redirect || data.tp_redirect || '';
+
+        console.log('🔐 Token:', token);
+        console.log('➡️ Redirección:', redirect);
+
+        if (token && redirect) {
+          location.replace(redirect);
+        } else {
+          location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec');
+        }
+      });
+    } else {
+      console.log('🔐 Token:', token);
+      console.log('➡️ Redirección:', redirect);
+
+      if (token && redirect) {
+        location.replace(redirect);
+      } else {
+        location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec');
+      }
+    }
+  })();
 </script>
-</html>
