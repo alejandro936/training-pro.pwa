@@ -1,16 +1,30 @@
-<!doctype html><meta charset="utf-8">
+<!doctype html>
+<meta charset="utf-8">
+<title>Entrando…</title>
 <script>
-  // 👇 PON AQUÍ la URL canónica de la PUERTA (Apps Script) que pide el email:
-  const PUERTA_URL = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+function readCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find(v => v.startsWith(name + '='))?.split('=')[1] || '';
+}
+(function () {
+  // 1) Intento con cookie (más fiable en iOS PWA)
+  let tk    = decodeURIComponent(readCookie('tp_token_v1') || '');
+  let redir = decodeURIComponent(readCookie('tp_redirect') || '');
 
-  // Intenta leer sesión (localStorage y cookie)
-  const LS = window.localStorage;
-  const token = LS.getItem('tp_token_v1') || (document.cookie.match(/(?:^|; )tp_token_v1=([^;]+)/)||[])[1];
-  const redir = LS.getItem('tp_redirect') || decodeURIComponent((document.cookie.match(/(?:^|; )tp_redirect=([^;]+)/)||[])[1]||'');
-
-  if (token && redir) {
-    location.replace(redir);            // ya hay sesión → entra directo
-  } else {
-    location.replace(PUERTA_URL);       // sin sesión → a la Puerta
+  // 2) Si no hay en cookie, pruebo localStorage (por si el navegador lo conserva)
+  if (!tk || !redir) {
+    try {
+      tk    = localStorage.getItem('tp_token_v1') || tk;
+      redir = localStorage.getItem('tp_redirect') || redir;
+    } catch (e) {}
   }
+
+  // 3) Si tengo sesión => salto directo; si no => puerta de entrada (Apps Script)
+  if (tk && redir) {
+    location.replace(redir);
+  } else {
+    location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec');
+  }
+})();
 </script>
