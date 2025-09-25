@@ -1,11 +1,13 @@
 <!doctype html><meta charset="utf-8"><title>debug</title>
 <pre id="out"></pre>
-<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>localStorage.removeItem(k));location.reload()">Borrar sesión</button>
 <script>
-  out.textContent = JSON.stringify({
+  function getCookie(n){return document.cookie.split(';').map(s=>s.trim()).find(s=>s.startsWith(n+'='))?.split('=').slice(1).join('=')||''}
+  const data = {
     origin: location.origin,
-    tp_token_v1: localStorage.getItem('tp_token_v1'),
-    tp_redirect: localStorage.getItem('tp_redirect'),
-    tp_email: localStorage.getItem('tp_email')
-  }, null, 2);
+    ls_token: (localStorage.getItem('tp_token_v1')||''),
+    ls_redir: (localStorage.getItem('tp_redirect')||''),
+    ck_token: decodeURIComponent(getCookie('tp_token_v1')||''),
+    ck_redir: decodeURIComponent(getCookie('tp_redirect')||'')
+  };
+  out.textContent = JSON.stringify(data, null, 2);
 </script>
