@@ -1,10 +1,24 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  const redir = localStorage.getItem('tp_redirect');
-  if (redir) {
-    location.replace(redir);             // ya hay sesión → entra directo
-  } else {
-    // sin sesión → abrir la puerta (Apps Script)
-    location.replace('https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec');
+  // helpers cookie
+  function getCookie(name){
+    return document.cookie.split(';').map(s=>s.trim())
+      .find(s=>s.startsWith(name+'='))?.split('=').slice(1).join('=') || '';
   }
+  function read(key){
+    try{ return localStorage.getItem(key) || ''; }catch(e){ return ''; }
+  }
+
+  (function(){
+    const redirLS = read('tp_redirect');
+    const redirCK = decodeURIComponent(getCookie('tp_redirect')||'');
+    const redir   = redirLS || redirCK;
+
+    if (redir) {
+      location.replace(redir);                // sesión presente → entra directo
+    } else {
+      // sin sesión → abrir la puerta (Apps Script)
+      location.replace('https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec');
+    }
+  })();
 </script>
