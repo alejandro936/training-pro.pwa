@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guardando acceso…</title>
+<style>
+  body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto;display:grid;place-items:center;height:100vh}
+  .card{background:#0c0c0c;border:1px solid #222;border-radius:16px;padding:22px;max-width:520px}
+  .btn{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;
+       background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff;cursor:pointer}
+  .muted{opacity:.8;font-size:13px}
+</style>
+<div class="card">
+  <h2>Acceso verificado</h2>
+  <p class="muted">Pulsa continuar para guardar la sesión en este dispositivo.</p>
+  <button id="go" class="btn">Continuar a la biblioteca</button>
+  <div id="err" class="muted" style="margin-top:8px"></div>
+</div>
+<script>
+(function () {
+  const qs    = new URLSearchParams(location.search);
+  const tk    = qs.get('tk')    || '';
+  const redir = qs.get('redir') || '/';
+  const show  = s => (document.getElementById('err').textContent = s || '');
+
+  async function writeIDB(key, value){
+    try{
+      const open = indexedDB.open('tpdb',1);
+      open.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      const db = await new Promise((res,rej)=>{ open.onsuccess=()=>res(open.result); open.onerror=()=>rej(open.error); });
+      await new Promise((res)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(value,key); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
+      db.close();
+    }catch(_){}
+  }
+
+  async function storeAndGo(){
+    show('');
+    // cookie (30 días)
+    try{
+      const max=60*60*24*30;
+      document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+      document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+    }catch(_){}
+    // localStorage
+    try{
+      localStorage.setItem('tp_token_v1', tk);
+      localStorage.setItem('tp_redirect', redir);
+    }catch(_){}
+    // IndexedDB
+    await Promise.race([
+      (async()=>{ await writeIDB('tp_token_v1', tk); await writeIDB('tp_redirect', redir); })(),
+      new Promise(r=>setTimeout(r,200))
+    ]);
+    try{ navigator.vibrate && navigator.vibrate(8); }catch(_){}
+    location.replace(redir);
+  }
+
+  if (!tk || !redir) show('Faltan parámetros (tk/redir). Vuelve e inténtalo de nuevo.');
+  document.getElementById('go').addEventListener('click', storeAndGo);
+})();
+</script>
