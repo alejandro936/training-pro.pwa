@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Entrando…</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#000000">
+</head>
+<body></body>
+<script>
+function readCookie(n){return document.cookie.split('; ').find(v=>v.startsWith(n+'='))?.split('=')[1]||''}
+function idbGet(k){return new Promise(res=>{try{const r=indexedDB.open('tpdb',1);r.onupgradeneeded=e=>e.target.result.createObjectStore('kv');r.onsuccess=()=>{try{const db=r.result,tx=db.transaction('kv','readonly'),kv=tx.objectStore('kv');const g=kv.get(k);g.onsuccess=()=>{res(g.result||'');db.close()};g.onerror=()=>{res('');db.close()}}catch(_){res('')}};r.onerror=()=>res('')}catch(_){res('')}})}
+(async function(){
+  let tk    = await idbGet('tp_token_v1');
+  let redir = await idbGet('tp_redirect');
+  if(!tk||!redir){ tk=tk||decodeURIComponent(readCookie('tp_token_v1')||''); redir=redir||decodeURIComponent(readCookie('tp_redirect')||''); }
+  if(!tk||!redir){ try{ tk=tk||localStorage.getItem('tp_token_v1')||''; redir=redir||localStorage.getItem('tp_redirect')||''; }catch(_){} }
+  if(tk && redir){ location.replace(redir); }
+  else{ location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec'); }
+})();
+</script>
