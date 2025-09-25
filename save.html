@@ -1,43 +1,78 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Guardando…</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guardando acceso…</title>
+<style>
+  body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto;display:grid;place-items:center;height:100vh}
+  .card{background:#0c0c0c;border:1px solid #222;border-radius:16px;padding:22px;max-width:520px}
+  .btn{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;
+       background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff;cursor:pointer}
+  .muted{opacity:.8;font-size:13px}
+</style>
+<div class="card">
+  <h2>Acceso verificado</h2>
+  <p class="muted">Tu sesión se ha guardado en este dispositivo.</p>
+  <button id="go" class="btn">Continuar a la biblioteca</button>
+  <div id="err" class="muted" style="margin-top:8px"></div>
+</div>
+
 <script>
 (function () {
-  const qs = new URLSearchParams(location.search);
+  const qs    = new URLSearchParams(location.search);
   const tk    = qs.get('tk')    || '';
   const redir = qs.get('redir') || '/';
 
+  const $err = s => (document.getElementById('err').textContent = s || '');
+
   // 1) IndexedDB (persistente en iOS)
-  try {
-    const req = indexedDB.open('tpdb', 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-    req.onsuccess = () => {
-      const db = req.result;
-      const tx = db.transaction('kv', 'readwrite');
-      const kv = tx.objectStore('kv');
-      kv.put(tk, 'tp_token_v1');
-      kv.put(redir, 'tp_redirect');
-      tx.oncomplete = go;
-      tx.onerror = go; // aunque falle, seguimos con cookie/LS
-    };
-    req.onerror = go;
-  } catch(e) {
-    go();
+  function writeIDB(done){
+    try {
+      const req = indexedDB.open('tpdb', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+      req.onsuccess = () => {
+        try{
+          const db = req.result;
+          const tx = db.transaction('kv', 'readwrite');
+          const kv = tx.objectStore('kv');
+          kv.put(tk,    'tp_token_v1');
+          kv.put(redir, 'tp_redirect');
+          tx.oncomplete = () => done(true);
+          tx.onerror    = () => done(false);
+        }catch(e){ done(false); }
+      };
+      req.onerror = () => done(false);
+    } catch(e){ done(false); }
   }
 
   // 2) Cookie (30 días)
-  try {
-    const max = 60*60*24*30;
-    document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-  } catch(e){}
+  function writeCookie(){
+    try{
+      const max = 60*60*24*30;
+      document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+      document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+    }catch(e){}
+  }
 
-  // 3) localStorage (por si el navegador lo respeta)
-  try {
-    localStorage.setItem('tp_token_v1', tk);
-    localStorage.setItem('tp_redirect', redir);
-  } catch(e){}
+  // 3) localStorage
+  function writeLS(){
+    try{
+      localStorage.setItem('tp_token_v1', tk);
+      localStorage.setItem('tp_redirect', redir);
+    }catch(e){}
+  }
 
-  function go(){ location.replace(redir || '/'); }
+  // Guardamos en los tres
+  writeIDB(()=>{});
+  writeCookie();
+  writeLS();
+
+  // Requiere gesto del usuario (evita “bounce tracking” en iOS)
+  document.getElementById('go').addEventListener('click', () => {
+    try{ navigator.vibrate && navigator.vibrate(10); }catch(_){}
+    location.replace(redir);
+  });
+
+  // Info de diagnóstico si algo llega vacío
+  if (!tk || !redir) $err('Aviso: parámetros vacíos (tk/redir). Si ves esto, vuelve atrás e intenta de nuevo.');
 })();
 </script>
