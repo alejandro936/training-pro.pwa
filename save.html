@@ -1,22 +1,18 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  // helpers cookie
   function setCookie(name, value, days){
-    const maxAge = days ? days*24*60*60 : 0; // en segundos
+    const maxAge = days ? days*24*60*60 : 0;
     document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
   }
-  function getParam(k){ return new URLSearchParams(location.search).get(k); }
+  const q = new URLSearchParams(location.search);
+  const tk    = q.get('tk')     || q.get('token') || '';
+  const redir = q.get('redir')  || q.get('redirect') || '/';
 
-  (function(){
-    const tk    = getParam('tk')     || getParam('token');
-    const redir = getParam('redir')  || getParam('redirect') || '/';
+  try{ localStorage.setItem('tp_token_v1', tk); }catch(e){}
+  try{ localStorage.setItem('tp_redirect',  redir); }catch(e){}
 
-    try{ localStorage.setItem('tp_token_v1', tk || ''); }catch(e){}
-    try{ localStorage.setItem('tp_redirect',  redir);   }catch(e){}
+  if (tk)    setCookie('tp_token_v1', tk, 30);
+  if (redir) setCookie('tp_redirect',  redir, 30);
 
-    if (tk)   setCookie('tp_token_v1', tk,   30);
-    if (redir)setCookie('tp_redirect',  redir,30);
-
-    location.replace(redir);
-  })();
+  location.replace(redir);
 </script>
