@@ -7,20 +7,37 @@
   const tk    = qs.get('tk')    || '';
   const redir = qs.get('redir') || '/';
 
-  // Guardar en localStorage (por si iOS lo respeta)
+  // 1) IndexedDB (persistente en iOS)
+  try {
+    const req = indexedDB.open('tpdb', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('kv', 'readwrite');
+      const kv = tx.objectStore('kv');
+      kv.put(tk, 'tp_token_v1');
+      kv.put(redir, 'tp_redirect');
+      tx.oncomplete = go;
+      tx.onerror = go; // aunque falle, seguimos con cookie/LS
+    };
+    req.onerror = go;
+  } catch(e) {
+    go();
+  }
+
+  // 2) Cookie (30 días)
+  try {
+    const max = 60*60*24*30;
+    document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+  } catch(e){}
+
+  // 3) localStorage (por si el navegador lo respeta)
   try {
     localStorage.setItem('tp_token_v1', tk);
     localStorage.setItem('tp_redirect', redir);
-  } catch (e) {}
+  } catch(e){}
 
-  // Guardar también en cookie (30 días) para cuando iOS “olvide” el localStorage
-  try {
-    const max = 60 * 60 * 24 * 30;
-    document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-  } catch (e) {}
-
-  // Ir a la biblioteca
-  location.replace(redir);
+  function go(){ location.replace(redir || '/'); }
 })();
 </script>
