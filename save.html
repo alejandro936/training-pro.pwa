@@ -11,7 +11,7 @@
 </style>
 <div class="card">
   <h2>Acceso verificado</h2>
-  <p class="muted">Tu sesión se ha guardado en este dispositivo.</p>
+  <p class="muted">Tu sesión se guardará en este dispositivo.</p>
   <button id="go" class="btn">Continuar a la biblioteca</button>
   <div id="err" class="muted" style="margin-top:8px"></div>
 </div>
@@ -21,58 +21,55 @@
   const qs    = new URLSearchParams(location.search);
   const tk    = qs.get('tk')    || '';
   const redir = qs.get('redir') || '/';
+  const show  = s => (document.getElementById('err').textContent = s || '');
 
-  const $err = s => (document.getElementById('err').textContent = s || '');
+  if (!tk || !redir) show('Aviso: faltan parámetros (tk/redir). Vuelve atrás e inténtalo de nuevo.');
 
-  // 1) IndexedDB (persistente en iOS)
-  function writeIDB(done){
-    try {
-      const req = indexedDB.open('tpdb', 1);
-      req.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-      req.onsuccess = () => {
-        try{
-          const db = req.result;
-          const tx = db.transaction('kv', 'readwrite');
-          const kv = tx.objectStore('kv');
-          kv.put(tk,    'tp_token_v1');
-          kv.put(redir, 'tp_redirect');
-          tx.oncomplete = () => done(true);
-          tx.onerror    = () => done(false);
-        }catch(e){ done(false); }
-      };
-      req.onerror = () => done(false);
-    } catch(e){ done(false); }
+  function writeIDB(){
+    return new Promise(res=>{
+      try{
+        const r = indexedDB.open('tpdb',1);
+        r.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+        r.onsuccess = () => {
+          try{
+            const db = r.result;
+            const tx = db.transaction('kv','readwrite');
+            const kv = tx.objectStore('kv');
+            kv.put(tk,    'tp_token_v1');
+            kv.put(redir, 'tp_redirect');
+            tx.oncomplete = ()=>res(true);
+            tx.onerror    = ()=>res(false);
+          }catch(_){ res(false); }
+        };
+        r.onerror = ()=>res(false);
+      }catch(_){ res(false); }
+    });
   }
 
-  // 2) Cookie (30 días)
   function writeCookie(){
     try{
-      const max = 60*60*24*30;
+      const max=60*60*24*30;
       document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
       document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-    }catch(e){}
+    }catch(_){}
   }
 
-  // 3) localStorage
   function writeLS(){
     try{
       localStorage.setItem('tp_token_v1', tk);
       localStorage.setItem('tp_redirect', redir);
-    }catch(e){}
+    }catch(_){}
   }
 
-  // Guardamos en los tres
-  writeIDB(()=>{});
-  writeCookie();
-  writeLS();
-
-  // Requiere gesto del usuario (evita “bounce tracking” en iOS)
-  document.getElementById('go').addEventListener('click', () => {
+  async function go(){
+    show('');
+    writeCookie();
+    writeLS();
+    await Promise.race([writeIDB(), new Promise(r=>setTimeout(r,150))]); // no bloquear si IDB tarda
     try{ navigator.vibrate && navigator.vibrate(10); }catch(_){}
     location.replace(redir);
-  });
+  }
 
-  // Info de diagnóstico si algo llega vacío
-  if (!tk || !redir) $err('Aviso: parámetros vacíos (tk/redir). Si ves esto, vuelve atrás e intenta de nuevo.');
+  document.getElementById('go').addEventListener('click', go);
 })();
 </script>
