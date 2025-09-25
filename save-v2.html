@@ -1,60 +1,72 @@
 <!doctype html>
+<html lang="es">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Guardando acceso…</title>
 <style>
   body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto;display:grid;place-items:center;height:100vh}
-  .card{background:#0c0c0c;border:1px solid #222;border-radius:16px;padding:22px;max-width:520px}
-  .btn{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;
-       background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff;cursor:pointer}
-  .muted{opacity:.8;font-size:13px}
+  .card{background:#0c0c0c;border:1px solid #1c1c1c;border-radius:16px;padding:22px;max-width:680px}
+  button{margin-top:12px;padding:10px 16px;border-radius:12px;border:1px solid #e6c06e;background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff;cursor:pointer}
+  .small{opacity:.7;font-size:13px}
 </style>
 <div class="card">
-  <h2>Acceso verificado</h2>
-  <p class="muted">Pulsa continuar para guardar la sesión en este dispositivo.</p>
-  <button id="go" class="btn">Continuar a la biblioteca</button>
-  <div id="err" class="muted" style="margin-top:8px"></div>
+  <h3>Guardando tu sesión en este dispositivo…</h3>
+  <div id="out" class="small">Preparando…</div>
+  <button id="go" style="display:none">Continuar a la biblioteca</button>
 </div>
 <script>
-(function () {
-  const qs    = new URLSearchParams(location.search);
-  const tk    = qs.get('tk')    || '';
-  const redir = qs.get('redir') || '/';
-  const show  = s => (document.getElementById('err').textContent = s || '');
+const qs   = new URLSearchParams(location.search);
+const tk   = qs.get('tk') || '';
+const redir = qs.get('redir') || '/';
+const out  = document.getElementById('out');
+const btn  = document.getElementById('go');
 
-  async function writeIDB(key, value){
-    try{
-      const open = indexedDB.open('tpdb',1);
-      open.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-      const db = await new Promise((res,rej)=>{ open.onsuccess=()=>res(open.result); open.onerror=()=>rej(open.error); });
-      await new Promise((res)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(value,key); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
-      db.close();
-    }catch(_){}
+function log(x){ out.innerHTML = String(x).replace(/</g,'&lt;'); }
+
+// cookie util
+function setCookie(name, value, days){
+  const max = ';max-age=' + (days*86400);
+  document.cookie = name + '=' + encodeURIComponent(value) + ';path=/' + max + ';samesite=lax';
+}
+
+// IndexedDB util mínima
+function idbPut(dbName, store, key, value){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(dbName,1);
+    req.onupgradeneeded = ()=> req.result.createObjectStore(store);
+    req.onerror = ()=> reject(req.error);
+    req.onsuccess = ()=>{
+      const tx = req.result.transaction(store,'readwrite');
+      tx.objectStore(store).put(value, key);
+      tx.oncomplete = ()=> resolve();
+      tx.onerror = ()=> reject(tx.error);
+    };
+  });
+}
+
+(async () => {
+  if(!tk){
+    log('Falta token (?tk)'); return;
   }
+  try {
+    // 1) LocalStorage
+    localStorage.setItem('tp_token_v1', tk);
+    localStorage.setItem('tp_redirect', redir);
 
-  async function storeAndGo(){
-    show('');
-    // cookie (30 días)
-    try{
-      const max=60*60*24*30;
-      document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-      document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-    }catch(_){}
-    // localStorage
-    try{
-      localStorage.setItem('tp_token_v1', tk);
-      localStorage.setItem('tp_redirect', redir);
-    }catch(_){}
-    // IndexedDB
-    await Promise.race([
-      (async()=>{ await writeIDB('tp_token_v1', tk); await writeIDB('tp_redirect', redir); })(),
-      new Promise(r=>setTimeout(r,200))
-    ]);
-    try{ navigator.vibrate && navigator.vibrate(8); }catch(_){}
-    location.replace(redir);
+    // 2) Cookie (fallback iOS)
+    setCookie('tp_token_v1', tk, 365);
+    setCookie('tp_redirect', redir, 365);
+
+    // 3) IndexedDB (otra capa por si LS/cookies fallan)
+    await idbPut('tpdb','kv','tp_token_v1', tk);
+    await idbPut('tpdb','kv','tp_redirect', redir);
+
+    log('Sesión guardada. Pulsa el botón para continuar.');
+    btn.style.display = 'inline-block';
+    btn.onclick = ()=> location.replace(redir);
+  } catch(e){
+    log('No se pudo guardar: ' + e);
   }
-
-  if (!tk || !redir) show('Faltan parámetros (tk/redir). Vuelve e inténtalo de nuevo.');
-  document.getElementById('go').addEventListener('click', storeAndGo);
 })();
 </script>
+</html>
