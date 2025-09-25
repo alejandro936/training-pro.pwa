@@ -1,23 +1,26 @@
-<!doctype html><meta charset="utf-8">
+<!doctype html>
+<meta charset="utf-8">
+<title>Guardando…</title>
 <script>
-  // Lee ?tk= y ?redir=
+(function () {
   const qs = new URLSearchParams(location.search);
-  const tk = qs.get('tk') || '';
-  const rd = qs.get('redir') || '';
+  const tk    = qs.get('tk')    || '';
+  const redir = qs.get('redir') || '/';
 
-  // Guarda en localStorage (si está disponible)
+  // Guardar en localStorage (por si iOS lo respeta)
   try {
     localStorage.setItem('tp_token_v1', tk);
-    localStorage.setItem('tp_redirect', rd);
-  } catch (_) {}
+    localStorage.setItem('tp_redirect', redir);
+  } catch (e) {}
 
-  // Guarda también en cookie (fallback iOS)
-  const maxAge = 60*60*24*365; // 1 año
-  const domain = location.hostname.endsWith('.coach-alexlopez.com') ? '.coach-alexlopez.com' : location.hostname;
-  document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Path=/; Max-Age=${maxAge}; SameSite=Lax; Secure; Domain=${domain}`;
-  document.cookie = `tp_redirect=${encodeURIComponent(rd)}; Path=/; Max-Age=${maxAge}; SameSite=Lax; Secure; Domain=${domain}`;
+  // Guardar también en cookie (30 días) para cuando iOS “olvide” el localStorage
+  try {
+    const max = 60 * 60 * 24 * 30;
+    document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
+  } catch (e) {}
 
-  // Salta a la biblioteca
-  if (rd) location.replace(rd);
-  else document.body.innerHTML = 'Guardado. Falta redir.';
+  // Ir a la biblioteca
+  location.replace(redir);
+})();
 </script>
