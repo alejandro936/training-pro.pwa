@@ -1,87 +1,37 @@
 <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Verificando sesión…</title>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
-      display: grid;
-      place-items: center;
-      height: 100vh;
-      text-align: center;
-    }
-    .loading {
-      font-size: 1.2em;
-      opacity: 0.8;
-    }
-  </style>
-</head>
-<body>
-  <div class="loading">Verificando sesión…</div>
+<meta charset="utf-8">
+<script>
+(async function () {
+  const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
-  <script>
-    const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+  function ckGet(name) {
+    const v = ('; ' + document.cookie).split('; ' + name + '=');
+    return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+  }
 
-    function ckGet(name) {
-      const v = ('; ' + document.cookie).split('; ' + name + '=');
-      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
-    }
+  let tk = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
+  let redir = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
 
-    function getSessionFromIndexedDB() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open('tp_session', 1);
-        req.onerror = () => reject();
-        req.onsuccess = (e) => {
-          const db = e.target.result;
-          const tx = db.transaction('auth', 'readonly');
-          const store = tx.objectStore('auth');
-          const getReq = store.get('session');
-          getReq.onsuccess = () => resolve(getReq.result || {});
-          getReq.onerror = () => reject();
-        };
-      });
-    }
+  if (tk && redir && redir !== '/') {
+    location.replace(redir);
+    return;
+  }
 
-    async function main() {
-      let tk = localStorage.getItem('tp_token_v1') || localStorage.getItem('ls_token') || ckGet('tp_token_v1') || '';
-      let redir = localStorage.getItem('tp_redirect') || localStorage.getItem('ls_redir') || ckGet('tp_redirect') || '';
-
-      if (tk && redir && redir !== '/') {
-        location.replace(redir);
+  // Leer desde CacheStorage
+  try {
+    const cache = await caches.open('tp-session');
+    const res = await cache.match('/session');
+    if (res) {
+      const data = await res.json();
+      if (data.token && data.redirect && data.redirect !== '/') {
+        location.replace(data.redirect);
         return;
       }
-
-      let redirected = false;
-
-      // Fallback: redirigir a DOOR si no hay respuesta en 2 segundos
-      const fallback = setTimeout(() => {
-        if (!redirected) {
-          redirected = true;
-          location.replace(DOOR);
-        }
-      }, 2000);
-
-      try {
-        const session = await getSessionFromIndexedDB();
-        if (!redirected && session.token && session.redirect && session.redirect !== '/') {
-          redirected = true;
-          clearTimeout(fallback);
-          location.replace(session.redirect);
-        }
-      } catch {
-        if (!redirected) {
-          redirected = true;
-          clearTimeout(fallback);
-          location.replace(DOOR);
-        }
-      }
     }
+  } catch (e) {
+    console.warn('❌ Error leyendo sesión desde CacheStorage:', e);
+  }
 
-    main();
-  </script>
-</body>
-</html>
+  location.replace(DOOR);
+})();
+</script>
