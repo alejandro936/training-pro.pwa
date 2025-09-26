@@ -1,0 +1,8 @@
+<!doctype html>
+<meta charset="utf-8">
+<script>
+  ['tp_access','tp_email','tp_token_v1','tp_redirect'].forEach(k=>{
+    try{ localStorage.removeItem(k) }catch(_){}
+  });
+  location.replace('/');
+</script>
