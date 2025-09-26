@@ -1,19 +1,31 @@
 <!doctype html>
 <meta charset="utf-8">
 <script>
-(function () {
-  const p     = new URLSearchParams(location.search);
-  const tk    = p.get('tk')    || '';
+(async function () {
+  const p = new URLSearchParams(location.search);
+  const tk = p.get('tk') || '';
   const redir = p.get('redir') || '/';
 
+  // Guardar en IndexedDB
+  const dbRequest = indexedDB.open('tp_session', 1);
+  dbRequest.onupgradeneeded = function (e) {
+    const db = e.target.result;
+    db.createObjectStore('auth', { keyPath: 'id' });
+  };
+  dbRequest.onsuccess = function (e) {
+    const db = e.target.result;
+    const tx = db.transaction('auth', 'readwrite');
+    const store = tx.objectStore('auth');
+    store.put({ id: 'session', token: tk, redirect: redir });
+  };
+
+  // Guardar también en localStorage y cookies como fallback
   try {
-    // Guardar en localStorage
     localStorage.setItem('tp_token_v1', tk);
     localStorage.setItem('tp_redirect', redir);
     localStorage.setItem('ls_token', tk);
     localStorage.setItem('ls_redir', redir);
 
-    // Cookies con compatibilidad iOS PWA
     document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
     document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
   } catch(e) {
