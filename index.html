@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
   <title>Training Pro</title>
 
   <!-- PWA -->
@@ -21,7 +22,10 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 
+  <!-- SEO y accesibilidad -->
+  <meta name="description" content="Accede a Training Pro, tu biblioteca y clases de programación personalizadas.">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
     :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
     *{box-sizing:border-box} html,body{height:100%}
@@ -38,7 +42,7 @@
 </head>
 <body>
   <div class="hero" role="banner" aria-label="Acceso Training Pro">
-    <h1 class="title">BIENVENIDO/A</h1>
+    <h1 class="title" aria-level="1">BIENVENIDO/A</h1>
     <p class="subtitle">Si ya tienes acceso a Training Pro<br>puedes acceder a</p>
     <div class="actions" role="group" aria-label="Accesos">
       <a class="btn btn-gold" href="/go-lib.html">BIBLIOTECA</a>
@@ -46,14 +50,38 @@
     </div>
   </div>
 
- <script>
+  <!-- Verificación de sesión activa -->
+  <script>
+  (function () {
+    const ckGet = (name) => {
+      const v = ('; ' + document.cookie).split('; ' + name + '=');
+      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+    };
+
+    const tk = localStorage.getItem('tp_token_v1')
+           || localStorage.getItem('ls_token')
+           || ckGet('tp_token_v1')
+           || '';
+
+    const redir = localStorage.getItem('tp_redirect')
+                || localStorage.getItem('ls_redir')
+                || ckGet('tp_redirect')
+                || '';
+
+    if (tk && redir && redir !== '/') {
+      location.replace(redir);
+    }
+  })();
+  </script>
+
+  <!-- Registro del Service Worker -->
+  <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js?v=6')
       .then(reg => console.log('✅ Service Worker registrado con éxito:', reg))
       .catch(err => console.error('❌ Error al registrar el Service Worker:', err));
   }
-</script>
-
+  </script>
 </body>
 </html>
 
