@@ -1,24 +1,18 @@
-<!doctype html>
-<html lang="es">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Entrando…</title>
-
+<!doctype html><meta charset="utf-8">
 <script>
-  (function () {
-    try {
-      // Si ya guardamos la sesión (save.html) → entra directo a la biblioteca
-      const redir = localStorage.getItem('tp_redirect');
-      if (redir && /^https?:\/\//.test(redir)) {
-        location.replace(redir);
-        return;
-      }
-    } catch (_) {}
+  const DOOR = 'https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec';
 
-    // Sin sesión → abre la puerta (Apps Script)
-    location.replace('https://script.google.com/macros/s/AKfycbzQmsWA0CdVjdKzXHTSJeNhWFfvou-ffyL_cWQ73piWaakxZ8fv7Z9KPXdvDNae9xEY2A/exec');
+  (function () {
+    const tk    = localStorage.getItem('tp_token_v1') || '';
+    const redir = localStorage.getItem('tp_redirect') || '';
+
+    const hasSession = tk && redir && redir !== '/';
+    if (hasSession) {
+      location.replace(redir);
+    } else {
+      // limpia basura anterior
+      try { localStorage.removeItem('tp_token_v1'); localStorage.removeItem('tp_redirect'); } catch(e){}
+      location.replace(DOOR);
+    }
   })();
 </script>
-
-<noscript>Activa JavaScript para continuar.</noscript>
-</html>
