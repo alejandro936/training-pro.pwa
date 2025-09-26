@@ -1,75 +1,43 @@
 <!doctype html>
+<html lang="es">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guardando acceso…</title>
-<style>
-  body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto;display:grid;place-items:center;height:100vh}
-  .card{background:#0c0c0c;border:1px solid #222;border-radius:16px;padding:22px;max-width:520px}
-  .btn{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;
-       background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));color:#fff;cursor:pointer}
-  .muted{opacity:.8;font-size:13px}
-</style>
-<div class="card">
-  <h2>Acceso verificado</h2>
-  <p class="muted">Tu sesión se guardará en este dispositivo.</p>
-  <button id="go" class="btn">Continuar a la biblioteca</button>
-  <div id="err" class="muted" style="margin-top:8px"></div>
-</div>
+<title>Guardando…</title>
 
 <script>
 (function () {
-  const qs    = new URLSearchParams(location.search);
-  const tk    = qs.get('tk')    || '';
-  const redir = qs.get('redir') || '/';
-  const show  = s => (document.getElementById('err').textContent = s || '');
+  const q = new URLSearchParams(location.search);
+  const tkRaw   = q.get('tk')    || '';
+  let   redir   = q.get('redir') || '/';
 
-  if (!tk || !redir) show('Aviso: faltan parámetros (tk/redir). Vuelve atrás e inténtalo de nuevo.');
-
-  function writeIDB(){
-    return new Promise(res=>{
-      try{
-        const r = indexedDB.open('tpdb',1);
-        r.onupgradeneeded = e => e.target.result.createObjectStore('kv');
-        r.onsuccess = () => {
-          try{
-            const db = r.result;
-            const tx = db.transaction('kv','readwrite');
-            const kv = tx.objectStore('kv');
-            kv.put(tk,    'tp_token_v1');
-            kv.put(redir, 'tp_redirect');
-            tx.oncomplete = ()=>res(true);
-            tx.onerror    = ()=>res(false);
-          }catch(_){ res(false); }
-        };
-        r.onerror = ()=>res(false);
-      }catch(_){ res(false); }
-    });
+  // Normaliza y fuerza mismo origen (seguridad)
+  try {
+    const u = new URL(redir, location.origin);
+    if (u.origin !== location.origin) redir = '/';
+    redir = u.href;
+  } catch (_) {
+    redir = '/';
   }
 
-  function writeCookie(){
-    try{
-      const max=60*60*24*30;
-      document.cookie = `tp_token_v1=${encodeURIComponent(tk)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-      document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${max}; Path=/; SameSite=Lax; Secure`;
-    }catch(_){}
-  }
+  // 1) Persistencia principal
+  try {
+    localStorage.setItem('tp_token_v1', tkRaw);
+    localStorage.setItem('tp_redirect', redir);
+    // Si pasas email en la query, también puedes guardarlo:
+    // localStorage.setItem('tp_email', q.get('email') || '');
+  } catch (_) {}
 
-  function writeLS(){
-    try{
-      localStorage.setItem('tp_token_v1', tk);
-      localStorage.setItem('tp_redirect', redir);
-    }catch(_){}
-  }
+  // 2) Fallback en cookies (iOS a veces no mantiene localStorage entre contextos)
+  try {
+    const maxAge = 60 * 60 * 24 * 90; // 90 días
+    document.cookie = `tp_token_v1=${encodeURIComponent(tkRaw)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  } catch (_) {}
 
-  async function go(){
-    show('');
-    writeCookie();
-    writeLS();
-    await Promise.race([writeIDB(), new Promise(r=>setTimeout(r,150))]); // no bloquear si IDB tarda
-    try{ navigator.vibrate && navigator.vibrate(10); }catch(_){}
-    location.replace(redir);
-  }
-
-  document.getElementById('go').addEventListener('click', go);
+  // 3) Redirige
+  location.replace(redir);
 })();
 </script>
+
+<noscript>Activa JavaScript para continuar.</noscript>
+</html>
