@@ -19,12 +19,19 @@
   <div id="output"><pre>Cargando…</pre></div>
 
   <script>
-    (async function () {
-      const p = new URLSearchParams(location.search);
-      const tk    = p.get('tk')    || '';
-      const redir = p.get('redir') || '/';
-      const email = p.get('email') || '';
+    function extractParams() {
+      const fromSearch = new URLSearchParams(location.search);
+      const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
 
+      const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
+      const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
+      const email = fromSearch.get('email') || fromReferrer.get('email') || '';
+
+      return { tk, redir, email };
+    }
+
+    (async function () {
+      const { tk, redir, email } = extractParams();
       const out = [];
 
       out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
