@@ -70,7 +70,8 @@
           const url = `${SAVE_PAGE}?tk=${encodeURIComponent(data.token)}&redir=${encodeURIComponent(data.redirect)}&email=${encodeURIComponent(email)}`;
           location.replace(url);
         } else {
-          document.getElementById('status').textContent = 'Correo no reconocido. ¿Estás registrado?';
+          // Primera vez o sesión no encontrada → ir al login
+  location.replace('https://tusitio.com/login.html?email=' + encodeURIComponent(email));
         }
       } catch (err) {
         document.getElementById('status').textContent = 'Error de conexión. Intenta de nuevo.';
