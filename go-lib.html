@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Verificando sesión…</title>
+  <title>Training Pro</title>
   <style>
     body {
       margin: 0;
@@ -14,6 +14,27 @@
       height: 100vh;
       text-align: center;
     }
+    form {
+      display: grid;
+      gap: 10px;
+      width: 90%;
+      max-width: 300px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+    }
+    input {
+      background: #222;
+      color: #fff;
+    }
+    button {
+      background: #0f0;
+      color: #000;
+      font-weight: bold;
+    }
     .loading {
       font-size: 1.2em;
       opacity: 0.8;
@@ -21,52 +42,41 @@
   </style>
 </head>
 <body>
-  <div class="loading">Verificando sesión…</div>
+  <div id="content">
+    <form id="loginForm">
+      <input type="email" name="email" id="email" placeholder="Tu correo" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <div id="status" class="loading"></div>
+  </div>
 
   <script>
-    const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
     const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
+    const SAVE_PAGE = '/save.html';
 
-    function ckGet(name) {
-      const v = ('; ' + document.cookie).split('; ' + name + '=');
-      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
-    }
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      if (!email) return;
 
-    async function main() {
-      let tk = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
-      let redir = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
-      let email = localStorage.getItem('tp_email') || ckGet('tp_email') || '';
-
-      if (tk && redir && redir !== '/') {
-        location.replace(redir);
-        return;
-      }
-
-      if (!email) {
-        location.replace(DOOR);
-        return;
-      }
+      document.getElementById('status').textContent = 'Verificando sesión…';
 
       try {
         const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
         const data = await res.json();
-        if (data.valid && data.redirect && data.redirect !== '/') {
-          // Guardar sesión localmente
-          localStorage.setItem('tp_token_v1', data.token);
-          localStorage.setItem('tp_redirect', data.redirect);
-          document.cookie = 'tp_token_v1=' + encodeURIComponent(data.token) + '; path=/; max-age=31536000; SameSite=None; Secure';
-          document.cookie = 'tp_redirect=' + encodeURIComponent(data.redirect) + '; path=/; max-age=31536000; SameSite=None; Secure';
-          location.replace(data.redirect);
-        } else {
-          location.replace(DOOR);
-        }
-      } catch (e) {
-        console.error('❌ Error al validar sesión remota:', e);
-        location.replace(DOOR);
-      }
-    }
 
-    main();
+        if (data.valid && data.token && data.redirect) {
+          // Redirigir a save.html con los datos
+          const url = `${SAVE_PAGE}?tk=${encodeURIComponent(data.token)}&redir=${encodeURIComponent(data.redirect)}&email=${encodeURIComponent(email)}`;
+          location.replace(url);
+        } else {
+          document.getElementById('status').textContent = 'Correo no reconocido. ¿Estás registrado?';
+        }
+      } catch (err) {
+        document.getElementById('status').textContent = 'Error de conexión. Intenta de nuevo.';
+      }
+    });
   </script>
 </body>
 </html>
+
