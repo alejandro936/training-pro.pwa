@@ -1,37 +1,72 @@
 <!doctype html>
-<meta charset="utf-8">
-<script>
-(async function () {
-  const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Verificando sesión…</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .loading {
+      font-size: 1.2em;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading">Verificando sesión…</div>
 
-  function ckGet(name) {
-    const v = ('; ' + document.cookie).split('; ' + name + '=');
-    return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
-  }
+  <script>
+    const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+    const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
 
-  let tk = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
-  let redir = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
+    function ckGet(name) {
+      const v = ('; ' + document.cookie).split('; ' + name + '=');
+      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+    }
 
-  if (tk && redir && redir !== '/') {
-    location.replace(redir);
-    return;
-  }
+    async function main() {
+      let tk = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
+      let redir = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
+      let email = localStorage.getItem('tp_email') || ckGet('tp_email') || '';
 
-  // Leer desde CacheStorage
-  try {
-    const cache = await caches.open('tp-session');
-    const res = await cache.match('/session');
-    if (res) {
-      const data = await res.json();
-      if (data.token && data.redirect && data.redirect !== '/') {
-        location.replace(data.redirect);
+      if (tk && redir && redir !== '/') {
+        location.replace(redir);
         return;
       }
-    }
-  } catch (e) {
-    console.warn('❌ Error leyendo sesión desde CacheStorage:', e);
-  }
 
-  location.replace(DOOR);
-})();
-</script>
+      if (!email) {
+        location.replace(DOOR);
+        return;
+      }
+
+      try {
+        const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
+        const data = await res.json();
+        if (data.valid && data.redirect && data.redirect !== '/') {
+          // Guardar sesión localmente
+          localStorage.setItem('tp_token_v1', data.token);
+          localStorage.setItem('tp_redirect', data.redirect);
+          document.cookie = 'tp_token_v1=' + encodeURIComponent(data.token) + '; path=/; max-age=31536000; SameSite=None; Secure';
+          document.cookie = 'tp_redirect=' + encodeURIComponent(data.redirect) + '; path=/; max-age=31536000; SameSite=None; Secure';
+          location.replace(data.redirect);
+        } else {
+          location.replace(DOOR);
+        }
+      } catch (e) {
+        console.error('❌ Error al validar sesión remota:', e);
+        location.replace(DOOR);
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
