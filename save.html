@@ -1,4 +1,5 @@
-<!doctype html><meta charset="utf-8">
+<!doctype html>
+<meta charset="utf-8">
 <script>
 (function () {
   const p     = new URLSearchParams(location.search);
@@ -6,18 +7,18 @@
   const redir = p.get('redir') || '/';
 
   try {
-    // Nombres oficiales
+    // Guardar en localStorage
     localStorage.setItem('tp_token_v1', tk);
     localStorage.setItem('tp_redirect', redir);
-
-    // Compatibilidad con los que te aparecen en debug
     localStorage.setItem('ls_token', tk);
     localStorage.setItem('ls_redir', redir);
 
-    // Fallback cookies (iOS)
-    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk)    + '; path=/; max-age=31536000; SameSite=Lax';
-    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=Lax';
-  } catch(e) {}
+    // Cookies con compatibilidad iOS PWA
+    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
+    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
+  } catch(e) {
+    console.error('Error al guardar sesión:', e);
+  }
 
   location.replace(redir);
 })();
