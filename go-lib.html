@@ -1,31 +1,34 @@
-<!doctype html><meta charset="utf-8">
+<!doctype html>
+<meta charset="utf-8">
 <script>
 (function () {
-  // Puerta (Apps Script)
   const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
-  function ckGet(name){
+  function ckGet(name) {
     const v = ('; ' + document.cookie).split('; ' + name + '=');
     return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
   }
 
-  // Lee con prioridad tp_*, pero acepta ls_* y cookies
-  const tk =  localStorage.getItem('tp_token_v1')
-          || localStorage.getItem('ls_token')
-          || ckGet('tp_token_v1')
-          || '';
+  const tk = localStorage.getItem('tp_token_v1')
+         || localStorage.getItem('ls_token')
+         || ckGet('tp_token_v1')
+         || '';
 
-  const redir =  localStorage.getItem('tp_redirect')
-               || localStorage.getItem('ls_redir')
-               || ckGet('tp_redirect')
-               || '';
+  const redir = localStorage.getItem('tp_redirect')
+              || localStorage.getItem('ls_redir')
+              || ckGet('tp_redirect')
+              || '';
+
+  console.log('Sesión detectada:', { tk, redir });
 
   if (tk && redir && redir !== '/') {
     location.replace(redir);
   } else {
     try {
       ['tp_token_v1','tp_redirect','ls_token','ls_redir'].forEach(k => localStorage.removeItem(k));
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Error limpiando localStorage:', e);
+    }
     location.replace(DOOR);
   }
 })();
