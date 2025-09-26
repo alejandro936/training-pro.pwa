@@ -1,20 +1,24 @@
 <!doctype html><meta charset="utf-8">
 <script>
-  (function () {
-    const p = new URLSearchParams(location.search);
-    const tk    = p.get('tk') || '';
-    const redir = p.get('redir') || '';
+(function () {
+  const p     = new URLSearchParams(location.search);
+  const tk    = p.get('tk')    || '';
+  const redir = p.get('redir') || '/';
 
-    const ok = tk && redir && redir !== '/';
-    if (ok) {
-      try {
-        localStorage.setItem('tp_token_v1', tk);
-        localStorage.setItem('tp_redirect', redir);
-      } catch(e) {}
-      location.replace(redir);
-    } else {
-      // si alguien entra a /save.html sin params, no ensuciar
-      location.replace('/go-lib.html');
-    }
-  })();
+  try {
+    // Nombres oficiales
+    localStorage.setItem('tp_token_v1', tk);
+    localStorage.setItem('tp_redirect', redir);
+
+    // Compatibilidad con los que te aparecen en debug
+    localStorage.setItem('ls_token', tk);
+    localStorage.setItem('ls_redir', redir);
+
+    // Fallback cookies (iOS)
+    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk)    + '; path=/; max-age=31536000; SameSite=Lax';
+    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=Lax';
+  } catch(e) {}
+
+  location.replace(redir);
+})();
 </script>
