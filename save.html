@@ -1,50 +1,75 @@
 <!doctype html>
-<meta charset="utf-8">
-<script>
-(async function () {
-  const p = new URLSearchParams(location.search);
-  const tk    = p.get('tk')    || '';
-  const redir = p.get('redir') || '/';
-  const email = p.get('email') || '';
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Guardando sesión…</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { font-size: 1.5em; margin-bottom: 10px; }
+    pre { background: #111; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>💾 Guardando sesión</h1>
+  <div id="output"><pre>Cargando…</pre></div>
 
-  // Guardar en CacheStorage
-  try {
-    const cache = await caches.open('tp-session');
-    const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-    await cache.put('/session', response);
-    console.log('✅ Sesión guardada en CacheStorage');
-  } catch (e) {
-    console.error('❌ Error guardando en CacheStorage:', e);
-  }
+  <script>
+    (async function () {
+      const p = new URLSearchParams(location.search);
+      const tk    = p.get('tk')    || '';
+      const redir = p.get('redir') || '/';
+      const email = p.get('email') || '';
 
-  // Guardar en localStorage y cookies
-  try {
-    localStorage.setItem('tp_token_v1', tk);
-    localStorage.setItem('tp_redirect', redir);
-    localStorage.setItem('tp_email', email);
-    localStorage.setItem('ls_token', tk);
-    localStorage.setItem('ls_redir', redir);
+      const out = [];
 
-    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
-  } catch(e) {
-    console.error('❌ Error guardando en localStorage/cookies:', e);
-  }
+      out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
+      out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
+      out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
 
-  // Guardar en servidor Apps Script
-  try {
-    await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
-      + encodeURIComponent(email)
-      + '&token=' + encodeURIComponent(tk)
-      + '&redirect=' + encodeURIComponent(redir));
-    console.log('✅ Sesión enviada al servidor');
-  } catch (e) {
-    console.error('❌ Error enviando sesión al servidor:', e);
-  }
+      // Guardar en localStorage y cookies
+      try {
+        localStorage.setItem('tp_token_v1', tk);
+        localStorage.setItem('tp_redirect', redir);
+        localStorage.setItem('tp_email', email);
+        document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        out.push('✅ Guardado en localStorage y cookies');
+      } catch (e) {
+        out.push('❌ Error guardando en localStorage/cookies');
+      }
 
-  location.replace(redir);
-})();
-</script>
+      // Guardar en CacheStorage
+      try {
+        const cache = await caches.open('tp-session');
+        const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await cache.put('/session', response);
+        out.push('✅ Guardado en CacheStorage');
+      } catch (e) {
+        out.push('❌ Error guardando en CacheStorage');
+      }
+
+      // Guardar en servidor
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
+          + encodeURIComponent(email)
+          + '&token=' + encodeURIComponent(tk)
+          + '&redirect=' + encodeURIComponent(redir));
+        out.push('✅ Enviado al servidor');
+      } catch (e) {
+        out.push('❌ Error enviando al servidor');
+      }
+
+      document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+      setTimeout(() => location.replace(redir), 3000);
+    })();
+  </script>
+</body>
+</html>
