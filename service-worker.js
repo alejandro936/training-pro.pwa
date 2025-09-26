@@ -1,7 +1,5 @@
-// service-worker.js
-const CACHE = 'tp-v8'; // súbelo cuando cambies algo del SW
+const CACHE = 'tp-v8';
 
-// Activos estáticos que sí quieres en caché (no HTML de sesión)
 const ASSETS = [
   '/', '/index.html',
   '/manifest.json',
@@ -12,7 +10,6 @@ const ASSETS = [
   '/apple-touch-icon-180.png'
 ];
 
-// Rutas que NUNCA debe interceptar (puertas/sesión/diagnóstico)
 const NO_INTERCEPT = new Set([
   '/go-lib.html', '/go-lib-v2.html',
   '/save.html', '/save-v2.html',
@@ -39,14 +36,14 @@ self.addEventListener('fetch', (e) => {
 
   const url = new URL(req.url);
 
-  // No interceptar nada de sesión ni HTML sensibles
+  // No interceptar rutas sensibles ni HTML
   if (url.origin === location.origin) {
     if (NO_INTERCEPT.has(url.pathname) || url.pathname.endsWith('.html')) {
-      return; // deja pasar a la red directamente
+      return;
     }
   }
 
-  // Estáticos: cache-first con actualización
+  // Cache-first con actualización
   e.respondWith(
     caches.match(req).then(hit =>
       hit || fetch(req).then(res => {
