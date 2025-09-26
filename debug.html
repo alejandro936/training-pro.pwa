@@ -1,19 +1,111 @@
 <!doctype html>
-<meta charset="utf-8">
-<title>debug</title>
-<pre id="out"></pre>
-<button onclick="['tp_token_v1','tp_redirect','tp_email'].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});document.cookie='tp_token_v1=; Max-Age=0; Path=/';document.cookie='tp_redirect=; Max-Age=0; Path=/';location.reload()">
-  Limpiar y recargar
-</button>
-<script>
-  const out = document.getElementById('out');
-  const dump = {
-    origin: location.origin,
-    ls_token: (()=>{try{return localStorage.getItem('tp_token_v1')||''}catch(e){return ''}})(),
-    ls_redir:  (()=>{try{return localStorage.getItem('tp_redirect')||''}catch(e){return ''}})(),
-    ck_token: (document.cookie.split('; ').find(v=>v.startsWith('tp_token_v1='))||'').split('=')[1]||'',
-    ck_redir: (document.cookie.split('; ').find(v=>v.startsWith('tp_redirect='))||'').split('=')[1]||'',
-  };
-  out.textContent = JSON.stringify(dump, null, 2);
-</script>
- 
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Diagnóstico de sesión</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { font-size: 1.5em; margin-bottom: 10px; }
+    pre { background: #111; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    .ok { color: #0f0; }
+    .fail { color: #f33; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Diagnóstico de sesión</h1>
+  <div id="output"><pre>Cargando…</pre></div>
+
+  <script>
+    const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
+
+    async function runDiagnostics() {
+      const out = [];
+      const email = localStorage.getItem('tp_email');
+      const token = localStorage.getItem('tp_token_v1');
+      const redir = localStorage.getItem('tp_redirect');
+
+      out.push(`📧 Email en localStorage: ${email ? email : '[NO GUARDADO]'}`);
+      out.push(`🔑 Token en localStorage: ${token ? token : '[NO GUARDADO]'}`);
+      out.push(`➡️ Redirección en localStorage: ${redir ? redir : '[NO GUARDADO]'}`);
+
+      // Cookies
+      const cookies = document.cookie;
+      out.push(`🍪 Cookies: ${cookies || '[VACÍAS]'}`);
+
+      // CacheStorage
+      try {
+        const cache = await caches.open('tp-session');
+        const res = await cache.match('/session');
+        if (res) {
+          const data = await res.json();
+          out.push(`📦 CacheStorage: token=${data.token}, redirect=${data.redirect}`);
+        } else {
+          out.push(`📦 CacheStorage: [NO ENCONTRADO]`);
+        }
+      } catch (e) {
+        out.push(`📦 CacheStorage: ❌ Error`);
+      }
+
+      // IndexedDB
+      try {
+        const req = indexedDB.open('tp_session', 1);
+        req.onsuccess = function (e) {
+          const db = e.target.result;
+          const tx = db.transaction('auth', 'readonly');
+          const store = tx.objectStore('auth');
+          const getReq = store.get('session');
+          getReq.onsuccess = function () {
+            const result = getReq.result;
+            if (result) {
+              out.push(`🗃️ IndexedDB: token=${result.token}, redirect=${result.redirect}`);
+            } else {
+              out.push(`🗃️ IndexedDB: [NO ENCONTRADO]`);
+            }
+            checkServer(email, out);
+          };
+          getReq.onerror = function () {
+            out.push(`🗃️ IndexedDB: ❌ Error`);
+            checkServer(email, out);
+          };
+        };
+        req.onerror = function () {
+          out.push(`🗃️ IndexedDB: ❌ Error al abrir`);
+          checkServer(email, out);
+        };
+      } catch (e) {
+        out.push(`🗃️ IndexedDB: ❌ Error general`);
+        checkServer(email, out);
+      }
+    }
+
+    async function checkServer(email, out) {
+      if (!email) {
+        out.push(`🌐 Validación remota: [NO SE PUEDE CONSULTAR SIN EMAIL]`);
+        document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
+        const data = await res.json();
+        if (data.valid) {
+          out.push(`🌐 Validación remota: ✅ token=${data.token}, redirect=${data.redirect}`);
+        } else {
+          out.push(`🌐 Validación remota: ❌ Sesión no encontrada`);
+        }
+      } catch (e) {
+        out.push(`🌐 Validación remota: ❌ Error de red`);
+      }
+
+      document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+    }
+
+    runDiagnostics();
+  </script>
+</body>
+</html>
