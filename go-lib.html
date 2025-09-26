@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <script>
-(async function () {
+(function () {
   const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
   function ckGet(name) {
@@ -24,6 +24,7 @@
     const tx = db.transaction('auth', 'readonly');
     const store = tx.objectStore('auth');
     const req = store.get('session');
+
     req.onsuccess = function () {
       const result = req.result;
       if (result && result.token && result.redirect && result.redirect !== '/') {
@@ -32,10 +33,12 @@
         location.replace(DOOR);
       }
     };
+
     req.onerror = function () {
       location.replace(DOOR);
     };
   };
+
   dbRequest.onerror = function () {
     location.replace(DOOR);
   };
