@@ -9,38 +9,42 @@
     return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
   }
 
-  let tk = localStorage.getItem('tp_token_v1') || localStorage.getItem('ls_token') || ckGet('tp_token_v1') || '';
-  let redir = localStorage.getItem('tp_redirect') || localStorage.getItem('ls_redir') || ckGet('tp_redirect') || '';
-
-  if (tk && redir && redir !== '/') {
-    location.replace(redir);
-    return;
+  function getSessionFromIndexedDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('tp_session', 1);
+      req.onerror = () => reject();
+      req.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('auth', 'readonly');
+        const store = tx.objectStore('auth');
+        const getReq = store.get('session');
+        getReq.onsuccess = () => resolve(getReq.result || {});
+        getReq.onerror = () => reject();
+      };
+    });
   }
 
-  // Si no hay sesión, intenta leer desde IndexedDB
-  const dbRequest = indexedDB.open('tp_session', 1);
-  dbRequest.onsuccess = function (e) {
-    const db = e.target.result;
-    const tx = db.transaction('auth', 'readonly');
-    const store = tx.objectStore('auth');
-    const req = store.get('session');
+  async function main() {
+    let tk = localStorage.getItem('tp_token_v1') || localStorage.getItem('ls_token') || ckGet('tp_token_v1') || '';
+    let redir = localStorage.getItem('tp_redirect') || localStorage.getItem('ls_redir') || ckGet('tp_redirect') || '';
 
-    req.onsuccess = function () {
-      const result = req.result;
-      if (result && result.token && result.redirect && result.redirect !== '/') {
-        location.replace(result.redirect);
+    if (tk && redir && redir !== '/') {
+      location.replace(redir);
+      return;
+    }
+
+    try {
+      const session = await getSessionFromIndexedDB();
+      if (session.token && session.redirect && session.redirect !== '/') {
+        location.replace(session.redirect);
       } else {
         location.replace(DOOR);
       }
-    };
-
-    req.onerror = function () {
+    } catch {
       location.replace(DOOR);
-    };
-  };
+    }
+  }
 
-  dbRequest.onerror = function () {
-    location.replace(DOOR);
-  };
+  main();
 })();
 </script>
