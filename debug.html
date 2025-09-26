@@ -11,7 +11,7 @@
       padding: 20px;
     }
     h1 { font-size: 1.5em; margin-bottom: 10px; }
-    pre { background: #111; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    pre { background: #111; padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; }
     .ok { color: #0f0; }
     .fail { color: #f33; }
   </style>
@@ -25,17 +25,17 @@
 
     async function runDiagnostics() {
       const out = [];
+
+      // LocalStorage
       const email = localStorage.getItem('tp_email');
       const token = localStorage.getItem('tp_token_v1');
       const redir = localStorage.getItem('tp_redirect');
-
-      out.push(`📧 Email en localStorage: ${email ? email : '[NO GUARDADO]'}`);
-      out.push(`🔑 Token en localStorage: ${token ? token : '[NO GUARDADO]'}`);
-      out.push(`➡️ Redirección en localStorage: ${redir ? redir : '[NO GUARDADO]'}`);
+      out.push(`📧 Email en localStorage: ${email || '[NO GUARDADO]'}`);
+      out.push(`🔑 Token en localStorage: ${token || '[NO GUARDADO]'}`);
+      out.push(`➡️ Redirección en localStorage: ${redir || '[NO GUARDADO]'}`);
 
       // Cookies
-      const cookies = document.cookie;
-      out.push(`🍪 Cookies: ${cookies || '[VACÍAS]'}`);
+      out.push(`🍪 Cookies: ${document.cookie || '[VACÍAS]'}`);
 
       // CacheStorage
       try {
@@ -53,27 +53,32 @@
 
       // IndexedDB
       try {
-        const req = indexedDB.open('tp_session', 1);
-        req.onsuccess = function (e) {
-          const db = e.target.result;
-          const tx = db.transaction('auth', 'readonly');
-          const store = tx.objectStore('auth');
-          const getReq = store.get('session');
-          getReq.onsuccess = function () {
-            const result = getReq.result;
-            if (result) {
-              out.push(`🗃️ IndexedDB: token=${result.token}, redirect=${result.redirect}`);
-            } else {
-              out.push(`🗃️ IndexedDB: [NO ENCONTRADO]`);
-            }
+        const dbReq = indexedDB.open('tp_session', 1);
+        dbReq.onsuccess = function (e) {
+          try {
+            const db = e.target.result;
+            const tx = db.transaction('auth', 'readonly');
+            const store = tx.objectStore('auth');
+            const getReq = store.get('session');
+            getReq.onsuccess = function () {
+              const result = getReq.result;
+              if (result) {
+                out.push(`🗃️ IndexedDB: token=${result.token}, redirect=${result.redirect}`);
+              } else {
+                out.push(`🗃️ IndexedDB: [NO ENCONTRADO]`);
+              }
+              checkServer(email, out);
+            };
+            getReq.onerror = function () {
+              out.push(`🗃️ IndexedDB: ❌ Error al leer`);
+              checkServer(email, out);
+            };
+          } catch (err) {
+            out.push(`🗃️ IndexedDB: ❌ Error interno`);
             checkServer(email, out);
-          };
-          getReq.onerror = function () {
-            out.push(`🗃️ IndexedDB: ❌ Error`);
-            checkServer(email, out);
-          };
+          }
         };
-        req.onerror = function () {
+        dbReq.onerror = function () {
           out.push(`🗃️ IndexedDB: ❌ Error al abrir`);
           checkServer(email, out);
         };
