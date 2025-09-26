@@ -34,23 +34,14 @@
     function getSessionFromIndexedDB() {
       return new Promise((resolve, reject) => {
         const req = indexedDB.open('tp_session', 1);
-        req.onerror = () => {
-          console.error('❌ Error al abrir IndexedDB');
-          reject();
-        };
+        req.onerror = () => reject();
         req.onsuccess = (e) => {
           const db = e.target.result;
           const tx = db.transaction('auth', 'readonly');
           const store = tx.objectStore('auth');
           const getReq = store.get('session');
-          getReq.onsuccess = () => {
-            console.log('✅ Sesión desde IndexedDB:', getReq.result);
-            resolve(getReq.result || {});
-          };
-          getReq.onerror = () => {
-            console.error('❌ Error al leer sesión en IndexedDB');
-            reject();
-          };
+          getReq.onsuccess = () => resolve(getReq.result || {});
+          getReq.onerror = () => reject();
         };
       });
     }
@@ -59,26 +50,34 @@
       let tk = localStorage.getItem('tp_token_v1') || localStorage.getItem('ls_token') || ckGet('tp_token_v1') || '';
       let redir = localStorage.getItem('tp_redirect') || localStorage.getItem('ls_redir') || ckGet('tp_redirect') || '';
 
-      console.log('🔍 Sesión local:', { tk, redir });
-
       if (tk && redir && redir !== '/') {
-        console.log('➡️ Redirigiendo desde localStorage/cookies');
         location.replace(redir);
         return;
       }
 
-      try {
-        const session = await getSessionFromIndexedDB();
-        if (session.token && session.redirect && session.redirect !== '/') {
-          console.log('➡️ Redirigiendo desde IndexedDB');
-          location.replace(session.redirect);
-        } else {
-          console.warn('⚠️ Sesión no encontrada, redirigiendo a puerta');
+      let redirected = false;
+
+      // Fallback: redirigir a DOOR si no hay respuesta en 2 segundos
+      const fallback = setTimeout(() => {
+        if (!redirected) {
+          redirected = true;
           location.replace(DOOR);
         }
+      }, 2000);
+
+      try {
+        const session = await getSessionFromIndexedDB();
+        if (!redirected && session.token && session.redirect && session.redirect !== '/') {
+          redirected = true;
+          clearTimeout(fallback);
+          location.replace(session.redirect);
+        }
       } catch {
-        console.warn('⚠️ Error en sesión, redirigiendo a puerta');
-        location.replace(DOOR);
+        if (!redirected) {
+          redirected = true;
+          clearTimeout(fallback);
+          location.replace(DOOR);
+        }
       }
     }
 
