@@ -3,8 +3,9 @@
 <script>
 (async function () {
   const p = new URLSearchParams(location.search);
-  const tk = p.get('tk') || '';
+  const tk    = p.get('tk')    || '';
   const redir = p.get('redir') || '/';
+  const email = p.get('email') || '';
 
   // Guardar en CacheStorage
   try {
@@ -18,13 +19,31 @@
     console.error('❌ Error guardando en CacheStorage:', e);
   }
 
-  // Guardar también en localStorage y cookies como respaldo
+  // Guardar en localStorage y cookies
   try {
     localStorage.setItem('tp_token_v1', tk);
     localStorage.setItem('tp_redirect', redir);
+    localStorage.setItem('tp_email', email);
+    localStorage.setItem('ls_token', tk);
+    localStorage.setItem('ls_redir', redir);
+
     document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
     document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
-  } catch(e) {}
+    document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
+  } catch(e) {
+    console.error('❌ Error guardando en localStorage/cookies:', e);
+  }
+
+  // Guardar en servidor Apps Script
+  try {
+    await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
+      + encodeURIComponent(email)
+      + '&token=' + encodeURIComponent(tk)
+      + '&redirect=' + encodeURIComponent(redir));
+    console.log('✅ Sesión enviada al servidor');
+  } catch (e) {
+    console.error('❌ Error enviando sesión al servidor:', e);
+  }
 
   location.replace(redir);
 })();
