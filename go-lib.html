@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <script>
-(function () {
+(async function () {
   const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
 
   function ckGet(name) {
@@ -9,27 +9,35 @@
     return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
   }
 
-  const tk = localStorage.getItem('tp_token_v1')
-         || localStorage.getItem('ls_token')
-         || ckGet('tp_token_v1')
-         || '';
-
-  const redir = localStorage.getItem('tp_redirect')
-              || localStorage.getItem('ls_redir')
-              || ckGet('tp_redirect')
-              || '';
-
-  console.log('Sesión detectada:', { tk, redir });
+  let tk = localStorage.getItem('tp_token_v1') || localStorage.getItem('ls_token') || ckGet('tp_token_v1') || '';
+  let redir = localStorage.getItem('tp_redirect') || localStorage.getItem('ls_redir') || ckGet('tp_redirect') || '';
 
   if (tk && redir && redir !== '/') {
     location.replace(redir);
-  } else {
-    try {
-      ['tp_token_v1','tp_redirect','ls_token','ls_redir'].forEach(k => localStorage.removeItem(k));
-    } catch(e) {
-      console.warn('Error limpiando localStorage:', e);
-    }
-    location.replace(DOOR);
+    return;
   }
+
+  // Si no hay sesión, intenta leer desde IndexedDB
+  const dbRequest = indexedDB.open('tp_session', 1);
+  dbRequest.onsuccess = function (e) {
+    const db = e.target.result;
+    const tx = db.transaction('auth', 'readonly');
+    const store = tx.objectStore('auth');
+    const req = store.get('session');
+    req.onsuccess = function () {
+      const result = req.result;
+      if (result && result.token && result.redirect && result.redirect !== '/') {
+        location.replace(result.redirect);
+      } else {
+        location.replace(DOOR);
+      }
+    };
+    req.onerror = function () {
+      location.replace(DOOR);
+    };
+  };
+  dbRequest.onerror = function () {
+    location.replace(DOOR);
+  };
 })();
 </script>
