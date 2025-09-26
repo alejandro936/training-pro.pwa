@@ -1,43 +1,20 @@
-<!doctype html>
-<html lang="es">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guardando…</title>
-
+<!doctype html><meta charset="utf-8">
 <script>
-(function () {
-  const q = new URLSearchParams(location.search);
-  const tkRaw   = q.get('tk')    || '';
-  let   redir   = q.get('redir') || '/';
+  (function () {
+    const p = new URLSearchParams(location.search);
+    const tk    = p.get('tk') || '';
+    const redir = p.get('redir') || '';
 
-  // Normaliza y fuerza mismo origen (seguridad)
-  try {
-    const u = new URL(redir, location.origin);
-    if (u.origin !== location.origin) redir = '/';
-    redir = u.href;
-  } catch (_) {
-    redir = '/';
-  }
-
-  // 1) Persistencia principal
-  try {
-    localStorage.setItem('tp_token_v1', tkRaw);
-    localStorage.setItem('tp_redirect', redir);
-    // Si pasas email en la query, también puedes guardarlo:
-    // localStorage.setItem('tp_email', q.get('email') || '');
-  } catch (_) {}
-
-  // 2) Fallback en cookies (iOS a veces no mantiene localStorage entre contextos)
-  try {
-    const maxAge = 60 * 60 * 24 * 90; // 90 días
-    document.cookie = `tp_token_v1=${encodeURIComponent(tkRaw)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
-    document.cookie = `tp_redirect=${encodeURIComponent(redir)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
-  } catch (_) {}
-
-  // 3) Redirige
-  location.replace(redir);
-})();
+    const ok = tk && redir && redir !== '/';
+    if (ok) {
+      try {
+        localStorage.setItem('tp_token_v1', tk);
+        localStorage.setItem('tp_redirect', redir);
+      } catch(e) {}
+      location.replace(redir);
+    } else {
+      // si alguien entra a /save.html sin params, no ensuciar
+      location.replace('/go-lib.html');
+    }
+  })();
 </script>
-
-<noscript>Activa JavaScript para continuar.</noscript>
-</html>
