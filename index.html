@@ -1,46 +1,86 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Training Pro</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<style>
-  html,body{height:100%;margin:0;background:#000;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px;text-align:center}
-  h1{font-size:48px;letter-spacing:.04em;margin:0 0 12px;font-weight:800}
-  p{opacity:.85;margin:0 0 24px}
-  .btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-  .btn{display:inline-block;padding:14px 22px;border-radius:12px;border:2px solid #e6c06e;text-decoration:none;color:#000;background:#e6c06e;font-weight:800}
-  .btn.ghost{background:transparent;color:#fff;border-color:#fff}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>Training Pro</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Training Pro">
+
+  <!-- ICONOS iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+  <!-- Favicon genérico -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+  <!-- SEO y accesibilidad -->
+  <meta name="description" content="Accede a Training Pro, tu biblioteca y clases de programación personalizadas.">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:#000;color:#fff;font-family:"Libre Baskerville",serif;display:grid;place-items:center;padding:24px}
+    .hero{text-align:center;max-width:820px;width:100%}
+    .title{font-weight:700;letter-spacing:.6px;font-size:clamp(26px,4.2vw,44px);margin:0 0 10px}
+    .subtitle{font-size:clamp(14px,1.7vw,18px);opacity:.95;margin:0 0 22px;line-height:1.4}
+    .actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border-radius:var(--radius);text-decoration:none;font-weight:700}
+    .btn-gold{background:linear-gradient(180deg,#f0d9a1 0%,var(--gold) 45%,#d3ab5c 100%);color:#000;border:1px solid #d8b46a;box-shadow:0 10px 22px rgba(0,0,0,.25)}
+    .btn-outline{color:#fff;border:2px solid #fff;background:transparent}
+    .twoline{display:block;line-height:1.1}
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div>
-      <h1>BIENVENIDO/A</h1>
-      <p>Si ya tienes acceso a Training Pro puedes acceder a</p>
-      <div class="btns">
-        <a class="btn" href="go-lib.html">BIBLIOTECA</a>
-        <a class="btn ghost" href="https://tu-url-de-la-clase.com">CLASE DE PROGRAMACIÓN</a>
-      </div>
+  <div class="hero" role="banner" aria-label="Acceso Training Pro">
+    <h1 class="title" aria-level="1">BIENVENIDO/A</h1>
+    <p class="subtitle">Si ya tienes acceso a Training Pro<br>puedes acceder a</p>
+    <div class="actions" role="group" aria-label="Accesos">
+      <a class="btn btn-gold" href="/go-lib.html">BIBLIOTECA</a>
+      <a class="btn btn-outline" href="HREF_CLASE"><span class="twoline">CLASE&nbsp;DE<br>PROGRAMACIÓN</span></a>
     </div>
   </div>
 
-<script>
-/* ====== auto-salto si ya hay sesión ====== */
-(function maybeAutoRedirect(){
-  const red = localStorage.getItem('tp_redirect') || '';
-  const tk  = localStorage.getItem('tp_token_v1') || '';
-  if (tk && red && red !== '/') {
-    // Si el redirect es relativo, resuélvelo contra la ubicación actual
-    try {
-      const target = /^https?:\/\//i.test(red) ? red : new URL(red, location.href).toString();
-      location.replace(target);
-    } catch(_) { /* ignora */ }
+  <!-- Verificación de sesión activa -->
+  <script>
+  (function () {
+    const ckGet = (name) => {
+      const v = ('; ' + document.cookie).split('; ' + name + '=');
+      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+    };
+
+    const tk = localStorage.getItem('tp_token_v1')
+           || localStorage.getItem('ls_token')
+           || ckGet('tp_token_v1')
+           || '';
+
+    const redir = localStorage.getItem('tp_redirect')
+                || localStorage.getItem('ls_redir')
+                || ckGet('tp_redirect')
+                || '';
+
+    if (tk && redir && redir !== '/') {
+      location.replace(redir);
+    }
+  })();
+  </script>
+
+  <!-- Registro del Service Worker -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js?v=6')
+      .then(reg => console.log('✅ Service Worker registrado con éxito:', reg))
+      .catch(err => console.error('❌ Error al registrar el Service Worker:', err));
   }
-})();
-</script>
+  </script>
 </body>
 </html>
