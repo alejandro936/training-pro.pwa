@@ -23,56 +23,57 @@
   </div>
 
 <script>
-/** ================== CONFIG ================== **/
-// Esta página debe recibir por querystring (o inyectado por tu lógica) los datos:
-// ?email=...&token=...&redirect=/tu/interfaz
-// Si los pasas por POST, adapta esta lectura.
-const params = new URLSearchParams(location.search);
+/* ================== BASE & URL HELPERS ================== */
+const BASE = new URL('.', location.href);
+const url  = (rel) => new URL(rel, BASE).toString();
+const SESSION_URL = url('session');
+const HOME_URL    = url('index.html');
+
+/* ====== Parámetros recibidos ====== */
+// Espera ?email=...&token=...&redirect=...
+const params   = new URLSearchParams(location.search);
 const email    = params.get('email')    || '';
 const tk       = params.get('token')    || '';
-const redirect = params.get('redirect') || '/';
+const redirect = params.get('redirect') || '';
 
-/** ====== Util cookies ====== **/
+function toAbsMaybe(p){
+  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
+}
+
+/* ====== Cookies ====== */
 function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
   document.cookie = name + '=' + encodeURIComponent(value)
-    + '; path=/; max-age=' + maxAgeSec
+    + '; path=' + BASE.pathname
+    + '; max-age=' + maxAgeSec
     + '; expires=' + exp
     + '; SameSite=Lax; Secure';
 }
 
 (async function saveAndGo(){
   try{
-    // 1) Persistir en localStorage
     if (email)    localStorage.setItem('tp_email', email);
     if (tk)       localStorage.setItem('tp_token_v1', tk);
     if (redirect) localStorage.setItem('tp_redirect', redirect);
 
-    // 2) Cookies (1 año)
     const ONE_YEAR = 60*60*24*365;
     if (email)    setCookie('tp_email', email, ONE_YEAR);
     if (tk)       setCookie('tp_token_v1', tk, ONE_YEAR);
     if (redirect) setCookie('tp_redirect', redirect, ONE_YEAR);
 
-    // 3) Backup en CacheStorage (/session) para iOS
     if ('caches' in self) {
       const cache = await caches.open('tp-session');
-      const payload = { token: tk || null, redirect: redirect || '/', email: email || null };
-      await cache.put('/session', new Response(JSON.stringify(payload), {
+      const payload = { token: tk || null, redirect: redirect || '', email: email || null };
+      await cache.put(SESSION_URL, new Response(JSON.stringify(payload), {
         headers:{'Content-Type':'application/json'}
       }));
     }
 
-    // 4) Redirigir a la interfaz
-    if (redirect && redirect !== '/') {
-      location.replace(redirect);
-    } else {
-      // Fallback: si no hay redirect válido, ir al home
-      location.replace('/');
-    }
+    const target = redirect ? toAbsMaybe(redirect) : HOME_URL;
+    location.replace(target);
   }catch(e){
-    // Ante cualquier error, vuelve al home
-    location.replace('/');
+    console.warn('saveAndGo error', e);
+    location.replace(HOME_URL);
   }
 })();
 </script>
