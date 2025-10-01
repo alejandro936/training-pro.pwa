@@ -2,17 +2,28 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Acceso a Biblioteca</title>
 <style>
-  body{margin:0;background:#000;color:#fff;font:16px/1.5 system-ui,Segoe UI,Roboto}
-  .wrap{max-width:820px;margin:0 auto;padding:28px}
-  .card{background:#0c0c0c;border:1px solid #1c1c1c;border-radius:18px;padding:22px}
-  h1{margin:0 0 12px}
-  input{width:100%;padding:12px;border-radius:12px;border:1px solid #2a2a2a;background:#101010;color:#fff}
-  button{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;background:#E6C06E;color:#000;font-weight:800;cursor:pointer}
-  .msg{margin-top:12px}
-  .muted{color:#bdbdbd;font-size:13px}
+  :root{ --bg:#000; --panel:#0c0c0c; --line:#1c1c1c; --fg:#fff; --gold:#E6C06E; --muted:#bdbdbd; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,Segoe UI,Roboto; -webkit-text-size-adjust:100%;}
+  .wrap{max-width:720px;margin:0 auto;padding:28px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px; box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  h1{margin:0 0 10px;font-weight:800;font-size:22px}
+  p{color:var(--muted);margin:6px 0 12px}
+  .row{display:flex; gap:10px; align-items:center}
+  input{
+    flex:1 1 auto; min-width:0; display:block; width:100%;
+    padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a;
+    background:#101010; color:#fff; font-size:16px; /* >=16px evita zoom iOS */
+  }
+  button{
+    flex:0 0 auto; padding:10px 14px; border-radius:12px; border:1px solid var(--gold);
+    background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05)); color:#fff; cursor:pointer; font-weight:700; font-size:14px
+  }
+  .msg{margin-top:10px; min-height:18px}
+  .muted{color:var(--muted);font-size:13px}
   .hide{display:none}
 </style>
 </head>
@@ -20,9 +31,14 @@
   <div class="wrap">
     <div class="card" id="form">
       <h1>Accede a tu biblioteca</h1>
-      <p class="muted">Introduce tu email de compra para validar el acceso.</p>
-      <input id="email" type="email" placeholder="tu@email.com" autofocus />
-      <button id="btn">Entrar</button>
+      <p>Introduce tu email de compra para validar el acceso.</p>
+
+      <!-- input más corto y contenido centrado en la tarjeta -->
+      <div class="row">
+        <input id="email" type="email" placeholder="tu@email.com" autocomplete="email" inputmode="email">
+        <button id="btn">Entrar</button>
+      </div>
+
       <div class="msg" id="msg"></div>
       <p class="muted" id="loading" style="display:none">Validando…</p>
     </div>
@@ -34,29 +50,21 @@
   </div>
 
 <script>
-/* ========= helpers ========= */
 const $ = (s)=>document.querySelector(s);
 const BASE = new URL('.', location.href);
 const url  = (rel) => new URL(rel, BASE).toString();
 const SESSION_URL = url('session');
 
 function getCookie(name){
-  const v = ('; '+document.cookie).split('; '+name+'=');
-  return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
+  const v=('; '+document.cookie).split('; '+name+'='); return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
 }
 function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now()+maxAgeSec*1000).toUTCString();
-  document.cookie = name + '=' + encodeURIComponent(value)
-    + '; Path=' + BASE.pathname
-    + '; Max-Age=' + maxAgeSec
-    + '; Expires=' + exp
-    + '; SameSite=Lax; Secure';
+  document.cookie = name+'='+encodeURIComponent(value)+'; Path=/; Max-Age='+maxAgeSec+'; Expires='+exp+'; SameSite=Lax; Secure';
 }
 function showForm(){ $('#checking').classList.add('hide'); $('#form').classList.remove('hide'); }
 function showChecking(){ $('#form').classList.add('hide'); $('#checking').classList.remove('hide'); }
-function toAbsMaybe(p){ try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; } }
 
-/* Intenta restaurar desde CacheStorage (iOS) */
 async function restoreFromCache(){
   try{
     if(!('caches' in self)) return null;
@@ -64,77 +72,50 @@ async function restoreFromCache(){
     const res = await cache.match(SESSION_URL);
     if(!res) return null;
     const { token, redirect, email } = await res.json();
-    if (!(token && redirect)) return null;
-
-    // repoblar
+    if(!(token && redirect)) return null;
+    const Y = 60*60*24*365;
     localStorage.setItem('tp_token_v1', token);
     localStorage.setItem('tp_redirect', redirect);
     if (email) localStorage.setItem('tp_email', email);
-    const ONE_YEAR = 60*60*24*365;
-    setCookie('tp_token_v1', token, ONE_YEAR);
-    setCookie('tp_redirect', redirect, ONE_YEAR);
-    if (email) setCookie('tp_email', email, ONE_YEAR);
-
-    return { token, redirect, email: email || '' };
+    setCookie('tp_token_v1', token, Y);
+    setCookie('tp_redirect', redirect, Y);
+    if (email) setCookie('tp_email', email, Y);
+    return { token, redirect, email: email||'' };
   }catch{ return null; }
 }
 
-/* ========= auto-skip si hay sesión ========= */
 (async function init(){
   const force = new URLSearchParams(location.search).has('force');
-  // Prefill rápido del email si lo tenemos
   const savedEmail = localStorage.getItem('tp_email') || getCookie('tp_email') || '';
   if (savedEmail) $('#email').value = savedEmail;
 
   if (force) { showForm(); return; }
-
   showChecking();
-
-  let tk    = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
+  let tk = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
   let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
-
   if (!(tk && redir)) {
-    const restored = await restoreFromCache();
-    if (restored) { tk = restored.token; redir = restored.redirect; }
+    const r = await restoreFromCache();
+    if (r) { tk = r.token; redir = r.redirect; }
   }
-
-  if (tk && redir && redir !== '/') {
-    // ya hay sesión → entrar directo
-    location.replace(toAbsMaybe(redir));
-  } else {
-    // no hay sesión → mostrar formulario
-    showForm();
-  }
+  if (tk && redir && redir !== '/') location.replace(redir);
+  else showForm();
 })();
 
-/* ========= validación por email ========= */
 $('#btn').addEventListener('click', async ()=>{
   const email = ($('#email').value||'').trim().toLowerCase();
   if(!email){ $('#msg').textContent='Escribe tu email'; return; }
-
   $('#loading').style.display='block'; $('#msg').textContent='';
-
-  try {
+  try{
     const r = await fetch('/api/validate-token', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ email })
     });
     const data = await r.json();
     if (!r.ok || !data.ok) throw new Error(data.error || 'No autorizado');
-
-    // Salto a save.html donde se guardará definitivamente la sesión
-    const params = new URLSearchParams({
-      tk: data.token,
-      redir: data.redirect,
-      email
-    });
-    location.replace('/save.html?' + params.toString());
-  } catch (e) {
-    $('#msg').textContent = String(e.message || e);
-  } finally {
-    $('#loading').style.display='none';
-  }
+    const p = new URLSearchParams({ tk:data.token, redir:data.redirect, email });
+    location.replace('/save.html?'+p.toString());
+  }catch(e){ $('#msg').textContent=String(e.message||e); }
+  finally{ $('#loading').style.display='none'; }
 });
 </script>
 </body>
