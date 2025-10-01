@@ -1,85 +1,82 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Training Pro — Guardando…</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<style>
-  body{margin:0;background:#0b0d12;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
-  .card{max-width:640px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
-  h1{font-weight:800;font-size:24px;margin:0 0 10px}
-  p{opacity:.8;line-height:1.6;margin:0}
-</style>
+  <meta charset="utf-8">
+  <title>Guardando sesión…</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { font-size: 1.5em; margin-bottom: 10px; }
+    pre { background: #111; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Guardando acceso…</h1>
-      <p>Configurando tu sesión segura.</p>
-    </div>
-  </div>
+  <h1>💾 Guardando sesión</h1>
+  <div id="output"><pre>Cargando…</pre></div>
 
-<script>
-/* ================== BASE & URL HELPERS ================== */
-const BASE = new URL('.', location.href);
-const url  = (rel) => new URL(rel, BASE).toString();
-const SESSION_URL = url('session');
-const HOME_URL    = url('index.html');
+  <script>
+    function extractParams() {
+      const fromSearch = new URLSearchParams(location.search);
+      const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
 
-/* ====== Lee parámetros de GAS y alias ====== */
-// GAS te llama como: save.html?tk=...&redir=... (email opcional)
-// También aceptamos: ?token=...&redirect=...&email=...
-const qp      = new URLSearchParams(location.search);
-const email   = qp.get('email') || '';                    // opcional
-const token   = qp.get('tk') || qp.get('token') || '';    // obligatorio
-const redirect= qp.get('redir') || qp.get('redirect') || ''; // obligatorio
+      const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
+      const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
+      const email = fromSearch.get('email') || fromReferrer.get('email') || '';
 
-function setCookie(name, value, maxAgeSec){
-  const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
-  document.cookie = name + '=' + encodeURIComponent(value)
-    + '; path=' + BASE.pathname
-    + '; max-age=' + maxAgeSec
-    + '; expires=' + exp
-    + '; SameSite=Lax; Secure';
-}
-
-function toAbsMaybe(p){
-  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
-}
-
-(async function saveAndGo(){
-  try{
-    // 1) Persistencia principal
-    if (email)    localStorage.setItem('tp_email', email);
-    if (token)    localStorage.setItem('tp_token_v1', token);
-    if (redirect) localStorage.setItem('tp_redirect', redirect);
-
-    // 2) Cookies (1 año)
-    const ONE_YEAR = 60*60*24*365;
-    if (email)    setCookie('tp_email', email, ONE_YEAR);
-    if (token)    setCookie('tp_token_v1', token, ONE_YEAR);
-    if (redirect) setCookie('tp_redirect', redirect, ONE_YEAR);
-
-    // 3) Backup para iOS en CacheStorage (/session)
-    if ('caches' in self) {
-      const cache = await caches.open('tp-session');
-      const payload = { token: token || null, redirect: redirect || '', email: email || null };
-      await cache.put(SESSION_URL, new Response(JSON.stringify(payload), {
-        headers:{'Content-Type':'application/json'}
-      }));
+      return { tk, redir, email };
     }
 
-    // 4) Salto al destino (tu GAS ya manda redir con la URL completa o relativa)
-    const target = redirect ? toAbsMaybe(redirect) : HOME_URL;
-    location.replace(target);
-  }catch(e){
-    console.warn('saveAndGo error', e);
-    location.replace(HOME_URL);
-  }
-})();
-</script>
+    (async function () {
+      const { tk, redir, email } = extractParams();
+      const out = [];
+
+      out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
+      out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
+      out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
+
+      // Guardar en localStorage y cookies
+      try {
+        localStorage.setItem('tp_token_v1', tk);
+        localStorage.setItem('tp_redirect', redir);
+        localStorage.setItem('tp_email', email);
+        document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        out.push('✅ Guardado en localStorage y cookies');
+      } catch (e) {
+        out.push('❌ Error guardando en localStorage/cookies');
+      }
+
+      // Guardar en CacheStorage
+      try {
+        const cache = await caches.open('tp-session');
+        const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await cache.put('/session', response);
+        out.push('✅ Guardado en CacheStorage');
+      } catch (e) {
+        out.push('❌ Error guardando en CacheStorage');
+      }
+
+      // Guardar en servidor
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
+          + encodeURIComponent(email)
+          + '&token=' + encodeURIComponent(tk)
+          + '&redirect=' + encodeURIComponent(redir));
+        out.push('✅ Enviado al servidor');
+      } catch (e) {
+        out.push('❌ Error enviando al servidor');
+      }
+
+      document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+      setTimeout(() => location.replace(redir), 3000);
+    })();
+  </script>
 </body>
 </html>
