@@ -270,23 +270,40 @@ function formatIndicaciones3(text){
 }
 
 /* ---- Vídeo: YouTube + Drive con thumbnail lite ---- */
-function driveId(url){
-  var m =
-    /\/file\/d\/([^/]+)\//.exec(url) ||
-    /\/d\/([^/]+)\//.exec(url) ||
-    /[?&]id=([^&]+)/.exec(url) ||
-    /\/preview\?id=([^&]+)/.exec(url) ||
-    /\/uc\?export=download&id=([^&]+)/.exec(url);
-  return m && m[1] ? m[1] : '';
-}
-function drivePreviewUrl(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
-function driveThumbUrl(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
+<script>
+/* ...deja el resto igual... */
 
+/* —— DRIVE helpers robustos —— */
+function driveIdFromAny(url){
+  try{
+    // Limpia #fragment y normaliza
+    var clean = String(url).split('#')[0];
+    // Quita utm/usp/resourcekey/etc.
+    clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=([^&#]+)/gi,'');
+    // Patrones con ID
+    var m =
+      /\/file\/d\/([^/]+)\//.exec(clean) ||
+      /\/d\/([^/]+)\//.exec(clean) ||
+      /[?&]id=([^&]+)/.exec(clean) ||
+      /\/preview\?id=([^&]+)/.exec(clean) ||
+      /\/uc\?export=download&id=([^&]+)/.exec(clean);
+    return m && m[1] ? m[1] : '';
+  }catch(_){ return ''; }
+}
+function drivePreviewUrlFromId(id){
+  return 'https://drive.google.com/file/d/'+id+'/preview';
+}
+function driveThumbUrlFromId(id){
+  // Miniatura oficial de Drive
+  return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280';
+}
+
+/* —— EMBED genérico (YouTube + Drive + fallback) —— */
 function embedVideo(url){
   if(!url) return '';
 
-  // YouTube
-  var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/)([\w-]{6,})/i);
+  // 1) YouTube (watch?v=, youtu.be/, shorts, etc.)
+  var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
   if(yt){
     var id = yt[1];
     var thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
@@ -300,11 +317,11 @@ function embedVideo(url){
       '</div>';
   }
 
-  // Google Drive (ahora también thumbnail + click para cargar iframe)
-  var gid = driveId(url);
+  // 2) Google Drive (diversos formatos)
+  var gid = driveIdFromAny(url);
   if(gid){
-    var thumb = driveThumbUrl(gid);
-    var pv    = drivePreviewUrl(gid);
+    var thumb = driveThumbUrlFromId(gid);
+    var pv    = drivePreviewUrlFromId(gid);
     return ''+
       '<div class="video">'+
         '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
@@ -315,7 +332,7 @@ function embedVideo(url){
       '</div>';
   }
 
-  // Fallback: video nativo + link
+  // 3) Fallback: reproducir como <video> (puede fallar por CORS)
   return ''+
     '<div class="video"><video controls src="'+url+'"></video></div>'+
     '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
@@ -324,13 +341,23 @@ function embedVideo(url){
 function ytPlay(el){
   var id = el.getAttribute('data-yt');
   if(!id) return;
-  el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>';
+  el.outerHTML =
+    '<div class="video">'+
+      '<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'+
+    '</div>';
 }
 function drivePlay(el){
   var src = el.getAttribute('data-drive');
   if(!src) return;
-  el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>';
+  el.outerHTML =
+    '<div class="video">'+
+      '<iframe src="'+src+'" allow="autoplay; fullscreen"></iframe>'+
+    '</div>';
 }
+
+/* ...deja el resto igual... */
+</script>
+
 
 /* ---- Render ---- */
 function card(x){
