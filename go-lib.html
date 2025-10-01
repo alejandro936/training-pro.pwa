@@ -1,72 +1,183 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Verificando sesión…</title>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
-      display: grid;
-      place-items: center;
-      height: 100vh;
-      text-align: center;
-    }
-    .loading {
-      font-size: 1.2em;
-      opacity: 0.8;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Verificando sesión…</title>
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: sans-serif;
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  text-align: center;
+}
+.loading {
+  font-size: 1.2em;
+  opacity: 0.8;
+}
+</style>
 </head>
 <body>
-  <div class="loading">Verificando sesión…</div>
+<div class="loading">Verificando sesión…</div>
 
-  <script>
-    const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
-    const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
+<!-- IndexedDB helper (idb-helper) -->
+<script>
+/* idb-helper minimal con fallback a localStorage y reporte de errores */
+(function (w) {
+  const DB_NAME = 'tp-db';
+  const STORE = 'session';
+  let _dbPromise = null;
 
-    function ckGet(name) {
-      const v = ('; ' + document.cookie).split('; ' + name + '=');
-      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+  function openDB() {
+    if (_dbPromise) return _dbPromise;
+    _dbPromise = new Promise((resolve, reject) => {
+      try {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE)) {
+            db.createObjectStore(STORE, { keyPath: 'k' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      } catch (err) {
+        reject(err);
+      }
+    });
+    return _dbPromise;
+  }
+
+  async function idbPut(k, v) {
+    try {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put({ k, v });
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch (err) {
+      // Fallback a localStorage si IndexedDB no disponible
+      try {
+        localStorage.setItem(k, JSON.stringify(v));
+        return true;
+      } catch (e) {
+        throw err;
+      }
+    }
+  }
+
+  async function idbGet(k) {
+    try {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const r = tx.objectStore(STORE).get(k);
+        r.onsuccess = () => res(r.result ? r.result.v : null);
+        r.onerror = () => rej(r.error);
+      });
+    } catch (err) {
+      // Fallback a localStorage
+      try {
+        const v = localStorage.getItem(k);
+        return v ? JSON.parse(v) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+
+  w.idbHelper = { idbPut, idbGet };
+})(window);
+</script>
+
+<script>
+const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
+const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
+
+function ckGet(name) {
+  const v = ('; ' + document.cookie).split('; ' + name + '=');
+  return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+}
+
+(async function main() {
+  try {
+    // Intentar leer desde IndexedDB primero
+    const tkIdb = await idbHelper.idbGet('tp_token_v1');
+    const redirIdb = await idbHelper.idbGet('tp_redirect');
+    const emailIdb = await idbHelper.idbGet('tp_email');
+
+    // Fallback a localStorage / cookies si IndexedDB no tiene datos
+    let tk = tkIdb || localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
+    let redir = redirIdb || localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
+    let email = emailIdb || localStorage.getItem('tp_email') || ckGet('tp_email') || '';
+
+    // Si ya tenemos token y redirect localmente y redirect no es raíz, redirigir rápido
+    if (tk && redir && redir !== '/') {
+      location.replace(redir);
+      return;
     }
 
-    async function main() {
-      let tk = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
-      let redir = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
-      let email = localStorage.getItem('tp_email') || ckGet('tp_email') || '';
+    // Si no hay email conocido, forzar al DOOR para pedir login
+    if (!email) {
+      location.replace(DOOR);
+      return;
+    }
 
-      if (tk && redir && redir !== '/') {
+    // Intentar validar remotamente usando email
+    try {
+      const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
+      const data = await res.json();
+      if (data && data.valid && data.redirect && data.redirect !== '/') {
+        // Guardar la versión canonical en IndexedDB y copias
+        await idbHelper.idbPut('tp_token_v1', data.token);
+        await idbHelper.idbPut('tp_redirect', data.redirect);
+        await idbHelper.idbPut('tp_email', email);
+
+        localStorage.setItem('tp_token_v1', data.token);
+        localStorage.setItem('tp_redirect', data.redirect);
+        document.cookie = 'tp_token_v1=' + encodeURIComponent(data.token) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_redirect=' + encodeURIComponent(data.redirect) + '; path=/; max-age=31536000; SameSite=None; Secure';
+
+        location.replace(data.redirect);
+        return;
+      } else {
+        // No válida: pedir login
+        location.replace(DOOR);
+        return;
+      }
+    } catch (e) {
+      console.error('❌ Error al validar sesión remota:', e);
+      // En caso de fallo de validación remota, si existe token/redirect local permite continuar
+      if (tk && redir) {
         location.replace(redir);
         return;
       }
-
-      if (!email) {
-        location.replace(DOOR);
-        return;
-      }
-
-      try {
-        const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
-        const data = await res.json();
-        if (data.valid && data.redirect && data.redirect !== '/') {
-          // Guardar sesión localmente
-          localStorage.setItem('tp_token_v1', data.token);
-          localStorage.setItem('tp_redirect', data.redirect);
-          document.cookie = 'tp_token_v1=' + encodeURIComponent(data.token) + '; path=/; max-age=31536000; SameSite=None; Secure';
-          document.cookie = 'tp_redirect=' + encodeURIComponent(data.redirect) + '; path=/; max-age=31536000; SameSite=None; Secure';
-          location.replace(data.redirect);
-        } else {
-          location.replace(DOOR);
-        }
-      } catch (e) {
-        console.error('❌ Error al validar sesión remota:', e);
-        location.replace(DOOR);
-      }
+      // Si no hay alternativa, pedir login
+      location.replace(DOOR);
     }
-
-    main();
-  </script>
+  } catch (err) {
+    console.error('Error en verificación de sesión:', err);
+    // Fallback comportamental: si hay cookie/localStorage usamos eso, si no vamos al DOOR
+    const tkFallback = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
+    const redirFallback = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
+    const emailFallback = localStorage.getItem('tp_email') || ckGet('tp_email') || '';
+    if (tkFallback && redirFallback) {
+      location.replace(redirFallback);
+      return;
+    }
+    if (!emailFallback) {
+      location.replace(DOOR);
+      return;
+    }
+    // último recurso: abrir DOOR
+    location.replace(DOOR);
+  }
+})();
+</script>
 </body>
 </html>
