@@ -237,12 +237,34 @@ function formatIndicaciones(text){
 function formatIndicaciones3(text){
   if(!text) return '';
   var raw = String(text).trim();
-  raw = raw.replace(/\r/g,'\n').replace(/[•\u2022\u2023\u25E6]/g,'\n').replace(/[;·]/g,'\n').replace(/\s*[-–—]\s+/g,'\n');
+
+  // Normaliza separadores
+  raw = raw
+    .replace(/\r/g,'\n')
+    .replace(/[•\u2022\u2023\u25E6]/g,'\n')
+    .replace(/[;·]/g,'\n')
+    .replace(/\s*[-–—]\s+/g,'\n');
+
+  // Salto antes de numeraciones "1." o "1)"
   raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2');
+
+  // Salto tras fin de frase
   raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
-  var parts = raw split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
-  var merged=[],i;
-  for(i=0;i<parts.length;i++){ var cur=parts[i]; if(/^\d+[.)]$/.test(cur)&&i+1<parts.length){ merged.push(cur+' '+parts[i+1]); i++; } else { merged.push(cur); } }
+
+  // 👇 Aquí estaba el fallo: .split (con punto)
+  var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+
+  // Une líneas que quedaron como "1." / "1)"
+  var merged = [], i;
+  for(i=0;i<parts.length;i++){
+    var cur = parts[i];
+    if(/^\d+[.)]$/.test(cur) && i+1<parts.length){
+      merged.push(cur + ' ' + parts[i+1]); i++;
+    } else {
+      merged.push(cur);
+    }
+  }
+
   function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
