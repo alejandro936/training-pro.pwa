@@ -1,175 +1,140 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Verificando sesión…</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Training Pro — Accediendo…</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
-body{margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center}
-.loading{font-size:1.2em;opacity:.9}
-.debug{position:fixed;left:8px;bottom:8px;background:#111;color:#fff;padding:8px 10px;border-radius:8px;font-size:12px;max-width:90%}
+  body{margin:0;background:#0b0d12;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
+  .card{max-width:640px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
+  h1{font-weight:800;font-size:24px;margin:0 0 10px}
+  p{opacity:.8;line-height:1.6;margin:0}
 </style>
 </head>
 <body>
-<div class="loading">Verificando sesión…</div>
-<div id="dbg" class="debug" aria-hidden="true" style="display:none">debug</div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Validando acceso…</h1>
+      <p>Un momento, por favor.</p>
+    </div>
+  </div>
 
 <script>
-/* idb-helper con fallback a localStorage y logs visibles */
-(function (w) {
-  const DB_NAME = 'tp-db';
-  const STORE = 'session';
-  let _dbPromise = null;
+/** ================== CONFIG ================== **/
+const DOOR = '/door.html'; // puerta de email
+const VALIDATION_ENDPOINT = '/api/validate-token'; // tu endpoint que valida token->redirect
 
-  function openDB() {
-    if (_dbPromise) return _dbPromise;
-    _dbPromise = new Promise((resolve, reject) => {
-      try {
-        const req = indexedDB.open(DB_NAME, 1);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(STORE)) {
-            db.createObjectStore(STORE, { keyPath: 'k' });
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      } catch (err) {
-        reject(err);
-      }
+/** ====== Util cookies ====== **/
+function setCookie(name, value, maxAgeSec){
+  const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
+  document.cookie = name + '=' + encodeURIComponent(value)
+    + '; path=/; max-age=' + maxAgeSec
+    + '; expires=' + exp
+    + '; SameSite=Lax; Secure';
+}
+function getCookie(name){
+  const v = ('; '+document.cookie).split('; '+name+'=');
+  return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
+}
+
+/** ====== Rescate desde CacheStorage (iOS) ====== **/
+async function restoreFromCache(){
+  try{
+    if(!('caches' in self)) return false;
+    const cache = await caches.open('tp-session');
+    const res = await cache.match('/session');
+    if(!res) return false;
+    const { token, redirect, email } = await res.json();
+    if(!(token && redirect && email)) return false;
+
+    localStorage.setItem('tp_token_v1', token);
+    localStorage.setItem('tp_redirect', redirect);
+    localStorage.setItem('tp_email', email);
+
+    const ONE_YEAR = 60*60*24*365;
+    setCookie('tp_token_v1', token, ONE_YEAR);
+    setCookie('tp_redirect', redirect, ONE_YEAR);
+    setCookie('tp_email', email, ONE_YEAR);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function main(){
+  // 1) Intentar rescate si está vacío
+  let tk    = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
+  let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
+  let email = localStorage.getItem('tp_email')    || getCookie('tp_email')    || '';
+
+  if (!(tk && redir && email)) {
+    const restored = await restoreFromCache();
+    if (restored) {
+      tk    = localStorage.getItem('tp_token_v1') || '';
+      redir = localStorage.getItem('tp_redirect') || '';
+      email = localStorage.getItem('tp_email')    || '';
+    }
+  }
+
+  // 2) Si ya tenemos redirect válido, entrar
+  if (tk && redir && redir !== '/') {
+    location.replace(redir);
+    return;
+  }
+
+  // 3) Sin email → volver a puerta
+  if (!email) {
+    location.replace(DOOR);
+    return;
+  }
+
+  // 4) Validar contra servidor
+  try{
+    const r = await fetch(VALIDATION_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ token: tk, email })
     });
-    return _dbPromise;
-  }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json(); // { ok:boolean, redirect:string, token?:string }
 
-  async function idbPut(k, v) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ k, v });
-        tx.oncomplete = () => res(true);
-        tx.onerror = () => rej(tx.error);
-      });
-    } catch (err) {
-      try {
-        localStorage.setItem(k, JSON.stringify(v));
-        return true;
-      } catch (e) {
-        throw err;
+    if (data && data.ok && data.redirect) {
+      const token = data.token || tk || '';
+      const redirect = data.redirect;
+
+      // persistir en localStorage
+      localStorage.setItem('tp_redirect', redirect);
+      if (token) localStorage.setItem('tp_token_v1', token);
+
+      // cookies (1 año)
+      const ONE_YEAR = 60*60*24*365;
+      if (token) setCookie('tp_token_v1', token, ONE_YEAR);
+      setCookie('tp_redirect', redirect, ONE_YEAR);
+
+      // CacheStorage /session como backup
+      if ('caches' in self) {
+        const cache = await caches.open('tp-session');
+        await cache.put('/session', new Response(JSON.stringify({
+          token: token || null,
+          redirect,
+          email
+        }), { headers:{'Content-Type':'application/json'} }));
       }
+
+      location.replace(redirect);
+      return;
     }
+  }catch(e){
+    // silencioso; cae al fallback
   }
 
-  async function idbGet(k) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readonly');
-        const r = tx.objectStore(STORE).get(k);
-        r.onsuccess = () => res(r.result ? r.result.v : null);
-        r.onerror = () => rej(tx.error);
-      });
-    } catch (err) {
-      try {
-        const v = localStorage.getItem(k);
-        return v ? JSON.parse(v) : null;
-      } catch (e) {
-        return null;
-      }
-    }
-  }
-
-  w.idbHelper = { idbPut, idbGet };
-})(window);
-</script>
-
-<script>
-const DOOR = 'https://script.google.com/macros/s/AKfycby2m0GoCweLlCLbnQVPwFRC3wPOpK3Zd7Qj6dZ55_N2urmatJmTl_6yaXUgWkkPvcY/exec';
-const VALIDATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
-const DBG = document.getElementById('dbg');
-
-function dbgShow(msg) { DBG.style.display = 'block'; DBG.textContent = msg; }
-
-function ckGet(name) {
-  const v = ('; ' + document.cookie).split('; ' + name + '=');
-  return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
+  // 5) Fallo de validación → puerta
+  location.replace(DOOR);
 }
 
-async function validateRemoteByEmail(email) {
-  try {
-    const res = await fetch(VALIDATION_ENDPOINT + '?email=' + encodeURIComponent(email));
-    if (!res.ok) throw new Error('validation-not-ok:' + res.status);
-    return await res.json();
-  } catch (e) {
-    console.error('Remote validation error', e);
-    return null;
-  }
-}
-
-(async function main() {
-  try {
-    const tkIdb = await idbHelper.idbGet('tp_token_v1');
-    const redirIdb = await idbHelper.idbGet('tp_redirect');
-    const emailIdb = await idbHelper.idbGet('tp_email');
-
-    const tkLocal = localStorage.getItem('tp_token_v1') || '';
-    const redirLocal = localStorage.getItem('tp_redirect') || '';
-    const emailLocal = localStorage.getItem('tp_email') || '';
-
-    let tk = tkIdb || tkLocal || ckGet('tp_token_v1') || '';
-    let redir = redirIdb || redirLocal || ckGet('tp_redirect') || '';
-    let email = emailIdb || emailLocal || ckGet('tp_email') || '';
-
-    dbgShow('idb:' + Boolean(tkIdb) + ' email:' + (email ? email : '[none]'));
-
-    if (tk && redir && redir !== '/') {
-      location.replace(redir);
-      return;
-    }
-
-    if (!email) {
-      location.replace(DOOR);
-      return;
-    }
-
-    const remote = await validateRemoteByEmail(email);
-    if (remote && remote.valid && remote.redirect && remote.redirect !== '/') {
-      await idbHelper.idbPut('tp_token_v1', remote.token);
-      await idbHelper.idbPut('tp_redirect', remote.redirect);
-      await idbHelper.idbPut('tp_email', email);
-
-      localStorage.setItem('tp_token_v1', remote.token);
-      localStorage.setItem('tp_redirect', remote.redirect);
-      document.cookie = 'tp_token_v1=' + encodeURIComponent(remote.token) + '; path=/; max-age=31536000; SameSite=None; Secure';
-      document.cookie = 'tp_redirect=' + encodeURIComponent(remote.redirect) + '; path=/; max-age=31536000; SameSite=None; Secure';
-
-      location.replace(remote.redirect);
-      return;
-    }
-
-    // Si validación remota falla y hay token/redirect locales, permitir avance
-    if (tk && redir) {
-      location.replace(redir);
-      return;
-    }
-
-    location.replace(DOOR);
-  } catch (err) {
-    console.error('Verification error', err);
-    const tkFallback = localStorage.getItem('tp_token_v1') || ckGet('tp_token_v1') || '';
-    const redirFallback = localStorage.getItem('tp_redirect') || ckGet('tp_redirect') || '';
-    const emailFallback = localStorage.getItem('tp_email') || ckGet('tp_email') || '';
-    if (tkFallback && redirFallback) {
-      location.replace(redirFallback);
-      return;
-    }
-    if (!emailFallback) {
-      location.replace(DOOR);
-      return;
-    }
-    location.replace(DOOR);
-  }
-})();
+main();
 </script>
 </body>
 </html>
