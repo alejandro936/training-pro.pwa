@@ -3,93 +3,43 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Training Pro — Inicio</title>
+<title>Training Pro</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-  body{margin:0;background:#0b0d12;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
-  .card{max-width:640px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
-  h1{font-weight:800;font-size:28px;margin:0 0 12px}
-  p{opacity:.8;line-height:1.6;margin:0}
+  html,body{height:100%;margin:0;background:#000;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px;text-align:center}
+  h1{font-size:48px;letter-spacing:.04em;margin:0 0 12px;font-weight:800}
+  p{opacity:.85;margin:0 0 24px}
+  .btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:14px 22px;border-radius:12px;border:2px solid #e6c06e;text-decoration:none;color:#000;background:#e6c06e;font-weight:800}
+  .btn.ghost{background:transparent;color:#fff;border-color:#fff}
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>Training Pro</h1>
-      <p>Cargando…</p>
+    <div>
+      <h1>BIENVENIDO/A</h1>
+      <p>Si ya tienes acceso a Training Pro puedes acceder a</p>
+      <div class="btns">
+        <a class="btn" href="go-lib.html">BIBLIOTECA</a>
+        <a class="btn ghost" href="https://tu-url-de-la-clase.com">CLASE DE PROGRAMACIÓN</a>
+      </div>
     </div>
   </div>
 
 <script>
-/* ================== BASE & URL HELPERS ================== */
-const BASE = new URL('.', location.href); // p.ej. https://dominio.com/app/
-const url  = (rel) => new URL(rel, BASE).toString();
-const DOOR_URL    = 'https://script.google.com/macros/s/AKfycbzY-hHSoht2SImFVkJSjDPtIGBX3nDhVPjeg6KYPL5ch7dtwDtxxSHBNWMyd9bQbJWegw/exec';
-const SESSION_URL = url('session'); // clave del backup en CacheStorage
-
-/* ================== STORAGE ================== */
-if (navigator.storage && navigator.storage.persist) {
-  navigator.storage.persist().catch(()=>{});
-}
-
-/* ====== Cookies ====== */
-function setCookie(name, value, maxAgeSec){
-  const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
-  document.cookie = name + '=' + encodeURIComponent(value)
-    + '; path=' + BASE.pathname
-    + '; max-age=' + maxAgeSec
-    + '; expires=' + exp
-    + '; SameSite=Lax; Secure';
-}
-function getCookie(name){
-  const v = ('; '+document.cookie).split('; '+name+'=');
-  return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
-}
-
-/* ====== Rescate desde CacheStorage (iOS) ====== */
-async function restoreFromCache(){
-  try{
-    if(!('caches' in self)) return false;
-    const cache = await caches.open('tp-session');
-    const res = await cache.match(SESSION_URL);
-    if(!res) return false;
-    const { token, redirect, email } = await res.json();
-    if(!(token && redirect)) return false;
-
-    localStorage.setItem('tp_token_v1', token);
-    localStorage.setItem('tp_redirect', redirect);
-    if (email) localStorage.setItem('tp_email', email);
-
-    const ONE_YEAR = 60*60*24*365;
-    setCookie('tp_token_v1', token, ONE_YEAR);
-    setCookie('tp_redirect', redirect, ONE_YEAR);
-    if (email) setCookie('tp_email', email, ONE_YEAR);
-    return true;
-  }catch(e){
-    console.warn('restoreFromCache error', e);
-    return false;
-  }
-}
-
-function toAbsMaybe(p){
-  // Si redirect viene relativo ("interfaz/index.html"), lo resolvemos contra BASE
-  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
-}
-
-(async function boot(){
-  await restoreFromCache();
-
-  const tk   = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
-  const red  = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
-  const mail = localStorage.getItem('tp_email')    || getCookie('tp_email')    || '';
-
+/* ====== auto-salto si ya hay sesión ====== */
+(function maybeAutoRedirect(){
+  const red = localStorage.getItem('tp_redirect') || '';
+  const tk  = localStorage.getItem('tp_token_v1') || '';
   if (tk && red && red !== '/') {
-    location.replace(toAbsMaybe(red));
-    return;
+    // Si el redirect es relativo, resuélvelo contra la ubicación actual
+    try {
+      const target = /^https?:\/\//i.test(red) ? red : new URL(red, location.href).toString();
+      location.replace(target);
+    } catch(_) { /* ignora */ }
   }
-  location.replace(DOOR_URL);
 })();
 </script>
 </body>
