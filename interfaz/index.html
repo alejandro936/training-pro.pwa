@@ -15,8 +15,8 @@
     --bg:#0b0b0b; --panel:#121212; --line:#272727; --fg:#f7f7f7; --accent:#E6C06E; --chip:#e0e0e0;
     --title-font:"Sora","Space Grotesk",Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     --content-max: 860px;
-    --side-pad: 26px;
-    --gap-top: 28px;
+    --side-pad: 28px;
+    --gap-top: 30px;
     --gap-cards: 22px;
     --card-pad-x: 14px; --card-pad-y: 14px; --radius: 12px;
   }
@@ -24,14 +24,14 @@
   *{ box-sizing:border-box }
   html,body{
     margin:0; color:var(--fg); background:var(--bg);
-    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;  /* no bajar de 16 en iOS */
+    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial; /* >=16 para evitar auto-zoom */
     height:100%; min-height:-webkit-fill-available; overflow-x:hidden;
     -webkit-touch-callout:none; -webkit-text-size-adjust:100%; touch-action:manipulation;
   }
 
   .wrap{
     max-width:1200px; margin:0 auto;
-    padding:max(22px, env(safe-area-inset-top))
+    padding:max(24px, env(safe-area-inset-top))
             max(var(--side-pad), env(safe-area-inset-right))
             max(44px, env(safe-area-inset-bottom))
             max(var(--side-pad), env(safe-area-inset-left));
@@ -47,8 +47,8 @@
     margin:0 auto;
     max-width:var(--content-max);
     font-family:var(--title-font);
-    font-weight:800; letter-spacing:-0.01em; line-height:1.04;
-    font-size:clamp(26px, 6.2vw, 36px); /* ↑ */
+    font-weight:800; letter-spacing:-0.01em; line-height:1.02;
+    font-size:clamp(28px, 7.2vw, 42px); /* ↑ */
   }
 
   /* ===== BARRA (input más grande, botones más pequeños) ===== */
@@ -61,7 +61,7 @@
     flex:1 1 auto; min-width:0;
     background:#121212; color:var(--fg);
     border:1px solid #1d1d1d; border-radius:10px;
-    padding:12px 14px;              /* input más alto/ancho */
+    padding:13px 16px;              /* input más alto/ancho */
     font-size:16px;
     transition:box-shadow .18s ease,border-color .18s ease;
   }
@@ -70,8 +70,8 @@
     flex:0 0 auto;
     background:#121212; color:var(--fg);
     border:1px solid var(--line); border-radius:9px;
-    padding:7px 10px;               /* ↓ botones */
-    font-size:14px; line-height:1;
+    padding:6px 9px;                /* ↓ aún más pequeños */
+    font-size:13px; line-height:1;
   }
   .toolbar .primary{
     background:linear-gradient(180deg,rgba(230,192,110,.16),rgba(230,192,110,.05));
@@ -145,7 +145,7 @@
   .panel .topbar{ display:flex; justify-content:flex-end; align-items:center; margin-bottom:4px; }
   .panel .x{
     border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff;
-    border-radius:8px; padding:4px 8px; cursor:pointer; font-size:12px; /* ↓ más pequeño */
+    border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px; /* aún más pequeño */
   }
   .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
   .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
@@ -240,29 +240,25 @@ function formatIndicaciones3(text){
   raw = raw.replace(/\r/g,'\n').replace(/[•\u2022\u2023\u25E6]/g,'\n').replace(/[;·]/g,'\n').replace(/\s*[-–—]\s+/g,'\n');
   raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2');
   raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
-  var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+  var parts = raw split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
   var merged=[],i;
   for(i=0;i<parts.length;i++){ var cur=parts[i]; if(/^\d+[.)]$/.test(cur)&&i+1<parts.length){ merged.push(cur+' '+parts[i+1]); i++; } else { merged.push(cur); } }
   function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
 
-/* ---- Vídeo: YouTube + Drive robusto ---- */
-function drivePreviewUrl(url){
-  // ID por varias rutas/patrones
+/* ---- Vídeo: YouTube + Drive con thumbnail lite ---- */
+function driveId(url){
   var m =
     /\/file\/d\/([^/]+)\//.exec(url) ||
     /\/d\/([^/]+)\//.exec(url) ||
     /[?&]id=([^&]+)/.exec(url) ||
     /\/preview\?id=([^&]+)/.exec(url) ||
     /\/uc\?export=download&id=([^&]+)/.exec(url);
-  if (m && m[1]) return 'https://drive.google.com/file/d/'+m[1]+'/preview';
-  // Reemplazar /view por /preview si existe
-  if (/\/view(\?[^#]*)?$/.test(url)) return url.replace(/\/view(\?[^#]*)?$/,'/preview');
-  // Ya es preview
-  if (/\/preview(\?[^#]*)?$/.test(url)) return url;
-  return '';
+  return m && m[1] ? m[1] : '';
 }
+function drivePreviewUrl(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
+function driveThumbUrl(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
 
 function embedVideo(url){
   if(!url) return '';
@@ -282,12 +278,19 @@ function embedVideo(url){
       '</div>';
   }
 
-  // Google Drive
-  var pv = drivePreviewUrl(url);
-  if (pv){
+  // Google Drive (ahora también thumbnail + click para cargar iframe)
+  var gid = driveId(url);
+  if(gid){
+    var thumb = driveThumbUrl(gid);
+    var pv    = drivePreviewUrl(gid);
     return ''+
-      '<div class="video"><iframe src="'+pv+'" allow="autoplay; fullscreen"></iframe></div>'+
-      '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
+      '<div class="video">'+
+        '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
+          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
+          '<div class="play"></div>'+
+        '</div>'+
+        '<div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div>'+
+      '</div>';
   }
 
   // Fallback: video nativo + link
@@ -301,15 +304,21 @@ function ytPlay(el){
   if(!id) return;
   el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>';
 }
+function drivePlay(el){
+  var src = el.getAttribute('data-drive');
+  if(!src) return;
+  el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>';
+}
 
 /* ---- Render ---- */
 function card(x){
-  var nombre = escapeHtml(x.ejercicio || x.nombre || '');
-  var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
+  var esc = escapeHtml;
+  var nombre = esc(x.ejercicio || x.nombre || '');
+  var cat = x.categoria ? '<span class="chip">'+esc(x.categoria)+'</span>' : '';
   var indRaw  = (x.indicaciones || x.descripcion || '');
   var indHtml = formatIndicaciones3(indRaw);
   var musc = x.musculo || x["músculo"] || x.musculo_objetivo || x.musculoObjetivo || '';
-  var muscHtml = musc ? ('<div class="section"><div>'+escapeHtml(musc)+'</div></div>') : '';
+  var muscHtml = musc ? ('<div class="section"><div>'+esc(musc)+'</div></div>') : '';
   var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
 
   return (
