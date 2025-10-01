@@ -1,87 +1,88 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-store" />
-  <title>Training Pro</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Training Pro">
-
-  <!-- ICONOS iOS -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
-  <!-- Favicon genérico -->
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-
-  <!-- SEO y accesibilidad -->
-  <meta name="description" content="Accede a Training Pro, tu biblioteca y clases de programación personalizadas.">
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:#000;color:#fff;font-family:"Libre Baskerville",serif;display:grid;place-items:center;padding:24px}
-    .hero{text-align:center;max-width:820px;width:100%}
-    .title{font-weight:700;letter-spacing:.6px;font-size:clamp(26px,4.2vw,44px);margin:0 0 10px}
-    .subtitle{font-size:clamp(14px,1.7vw,18px);opacity:.95;margin:0 0 22px;line-height:1.4}
-    .actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border-radius:var(--radius);text-decoration:none;font-weight:700}
-    .btn-gold{background:linear-gradient(180deg,#f0d9a1 0%,var(--gold) 45%,#d3ab5c 100%);color:#000;border:1px solid #d8b46a;box-shadow:0 10px 22px rgba(0,0,0,.25)}
-    .btn-outline{color:#fff;border:2px solid #fff;background:transparent}
-    .twoline{display:block;line-height:1.1}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Training Pro — Inicio</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  body{margin:0;background:#0b0d12;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
+  .card{max-width:640px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
+  h1{font-weight:800;font-size:28px;margin:0 0 12px}
+  p{opacity:.8;line-height:1.6;margin:0}
+</style>
 </head>
 <body>
-  <div class="hero" role="banner" aria-label="Acceso Training Pro">
-    <h1 class="title" aria-level="1">BIENVENIDO/A</h1>
-    <p class="subtitle">Si ya tienes acceso a Training Pro<br>puedes acceder a</p>
-    <div class="actions" role="group" aria-label="Accesos">
-      <a class="btn btn-gold" href="/go-lib.html">BIBLIOTECA</a>
-      <a class="btn btn-outline" href="HREF_CLASE"><span class="twoline">CLASE&nbsp;DE<br>PROGRAMACIÓN</span></a>
+  <div class="wrap">
+    <div class="card">
+      <h1>Training Pro</h1>
+      <p>Cargando…</p>
     </div>
   </div>
 
-  <!-- Verificación de sesión activa -->
-  <script>
-  (function () {
-    const ckGet = (name) => {
-      const v = ('; ' + document.cookie).split('; ' + name + '=');
-      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
-    };
+<script>
+/** ================== CONFIG ================== **/
+const DOOR = '/door.html'; // Página donde pides/verificas el email
+// Si quieres, pide persistencia de almacenamiento (no afecta si no está soportado)
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(()=>{});
+}
 
-    const tk = localStorage.getItem('tp_token_v1')
-           || localStorage.getItem('ls_token')
-           || ckGet('tp_token_v1')
-           || '';
+/** ====== Utilidades cookies ====== **/
+function setCookie(name, value, maxAgeSec){
+  const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
+  document.cookie = name + '=' + encodeURIComponent(value)
+    + '; path=/; max-age=' + maxAgeSec
+    + '; expires=' + exp
+    + '; SameSite=Lax; Secure';
+}
+function getCookie(name){
+  const v = ('; '+document.cookie).split('; '+name+'=');
+  return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
+}
 
-    const redir = localStorage.getItem('tp_redirect')
-                || localStorage.getItem('ls_redir')
-                || ckGet('tp_redirect')
-                || '';
+/** ====== Rescate desde CacheStorage (iOS) ====== **/
+async function restoreFromCache(){
+  try{
+    if(!('caches' in self)) return false;
+    const cache = await caches.open('tp-session');
+    const res = await cache.match('/session');
+    if(!res) return false;
+    const { token, redirect, email } = await res.json();
+    if(!(token && redirect)) return false;
 
-    if (tk && redir && redir !== '/') {
-      location.replace(redir);
-    }
-  })();
-  </script>
+    // Repoblar localStorage
+    localStorage.setItem('tp_token_v1', token);
+    localStorage.setItem('tp_redirect', redirect);
+    if (email) localStorage.setItem('tp_email', email);
 
-  <!-- Registro del Service Worker -->
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js?v=6')
-      .then(reg => console.log('✅ Service Worker registrado con éxito:', reg))
-      .catch(err => console.error('❌ Error al registrar el Service Worker:', err));
+    // Repoblar cookies (1 año)
+    const ONE_YEAR = 60*60*24*365;
+    setCookie('tp_token_v1', token, ONE_YEAR);
+    setCookie('tp_redirect', redirect, ONE_YEAR);
+    if (email) setCookie('tp_email', email, ONE_YEAR);
+    return true;
+  }catch(e){ return false; }
+}
+
+(async function boot(){
+  // Intento de rescate ANTES de leer localStorage/cookies
+  await restoreFromCache();
+
+  const tk   = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
+  const red  = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
+  const mail = localStorage.getItem('tp_email')    || getCookie('tp_email')    || '';
+
+  if (tk && red && red !== '/') {
+    location.replace(red);  // Ir directo a la interfaz autorizada
+    return;
   }
-  </script>
+  // Si no hay token o redirect válido, ir a la puerta
+  location.replace(DOOR);
+})();
+</script>
 </body>
 </html>
 
