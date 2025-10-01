@@ -1,177 +1,79 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Guardando sesión…</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Training Pro — Guardando…</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
-body{font-family:sans-serif;background:#000;color:#fff;padding:20px}
-h1{font-size:1.5em;margin-bottom:10px}
-pre{background:#111;padding:10px;border-radius:6px;white-space:pre-wrap}
+  body{margin:0;background:#0b0d12;color:#fff;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
+  .card{max-width:640px;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
+  h1{font-weight:800;font-size:24px;margin:0 0 10px}
+  p{opacity:.8;line-height:1.6;margin:0}
 </style>
 </head>
 <body>
-<h1>💾 Guardando sesión</h1>
-<div id="output"><pre>Cargando…</pre></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Guardando acceso…</h1>
+      <p>Configurando tu sesión segura.</p>
+    </div>
+  </div>
 
 <script>
-/* idb-helper con fallback a localStorage y logs visibles */
-(function (w) {
-  const DB_NAME = 'tp-db';
-  const STORE = 'session';
-  let _dbPromise = null;
+/** ================== CONFIG ================== **/
+// Esta página debe recibir por querystring (o inyectado por tu lógica) los datos:
+// ?email=...&token=...&redirect=/tu/interfaz
+// Si los pasas por POST, adapta esta lectura.
+const params = new URLSearchParams(location.search);
+const email    = params.get('email')    || '';
+const tk       = params.get('token')    || '';
+const redirect = params.get('redirect') || '/';
 
-  function openDB() {
-    if (_dbPromise) return _dbPromise;
-    _dbPromise = new Promise((resolve, reject) => {
-      try {
-        const req = indexedDB.open(DB_NAME, 1);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(STORE)) {
-            db.createObjectStore(STORE, { keyPath: 'k' });
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      } catch (err) {
-        reject(err);
-      }
-    });
-    return _dbPromise;
-  }
-
-  async function idbPut(k, v) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ k, v });
-        tx.oncomplete = () => res(true);
-        tx.onerror = () => rej(tx.error);
-      });
-    } catch (err) {
-      try {
-        localStorage.setItem(k, JSON.stringify(v));
-        return true;
-      } catch (e) {
-        throw err;
-      }
-    }
-  }
-
-  async function idbGet(k) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readonly');
-        const r = tx.objectStore(STORE).get(k);
-        r.onsuccess = () => res(r.result ? r.result.v : null);
-        r.onerror = () => rej(r.error);
-      });
-    } catch (err) {
-      try {
-        const v = localStorage.getItem(k);
-        return v ? JSON.parse(v) : null;
-      } catch (e) {
-        return null;
-      }
-    }
-  }
-
-  w.idbHelper = { idbPut, idbGet };
-})(window);
-</script>
-
-<script>
-function extractParams() {
-  const fromSearch = new URLSearchParams(location.search);
-  const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
-  const tk = fromSearch.get('tk') || fromReferrer.get('tk') || '';
-  const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
-  const email = fromSearch.get('email') || fromReferrer.get('email') || '';
-  return { tk, redir, email };
+/** ====== Util cookies ====== **/
+function setCookie(name, value, maxAgeSec){
+  const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
+  document.cookie = name + '=' + encodeURIComponent(value)
+    + '; path=/; max-age=' + maxAgeSec
+    + '; expires=' + exp
+    + '; SameSite=Lax; Secure';
 }
 
-function show(lines) {
-  document.getElementById('output').innerHTML = '<pre>' + lines.join('\n') + '</pre>';
-}
+(async function saveAndGo(){
+  try{
+    // 1) Persistir en localStorage
+    if (email)    localStorage.setItem('tp_email', email);
+    if (tk)       localStorage.setItem('tp_token_v1', tk);
+    if (redirect) localStorage.setItem('tp_redirect', redirect);
 
-async function persistServer(email, token, redirect) {
-  const SERVER_SAVE = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
-  try {
-    const res = await fetch(SERVER_SAVE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, token, redirect })
-    });
-    if (!res.ok) throw new Error('server-response-not-ok:' + res.status);
-    return await res.json();
-  } catch (e) {
-    console.error('Server persist error', e);
-    return null;
-  }
-}
+    // 2) Cookies (1 año)
+    const ONE_YEAR = 60*60*24*365;
+    if (email)    setCookie('tp_email', email, ONE_YEAR);
+    if (tk)       setCookie('tp_token_v1', tk, ONE_YEAR);
+    if (redirect) setCookie('tp_redirect', redirect, ONE_YEAR);
 
-(async function () {
-  const { tk, redir, email } = extractParams();
-  const out = [];
-  out.push('📧 Email recibido: ' + (email || '[NO ENVIADO]'));
-  out.push('🔑 Token recibido: ' + (tk || '[NO ENVIADO]'));
-  out.push('➡️ Redirección recibida: ' + (redir || '[NO ENVIADO]'));
-
-  try {
-    await idbHelper.idbPut('tp_token_v1', tk);
-    await idbHelper.idbPut('tp_redirect', redir);
-    await idbHelper.idbPut('tp_email', email);
-    out.push('✅ Guardado en IndexedDB');
-  } catch (e) {
-    out.push('❌ Error guardando en IndexedDB');
-    console.error('IndexedDB save error', e);
-  }
-
-  try {
-    localStorage.setItem('tp_token_v1', tk);
-    localStorage.setItem('tp_redirect', redir);
-    localStorage.setItem('tp_email', email);
-    out.push('✅ Guardado en localStorage (copia)');
-  } catch (e) {
-    out.push('❌ Error guardando en localStorage');
-  }
-
-  try {
-    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    out.push('✅ Cookie escrita (copia)');
-  } catch (e) {
-    out.push('❌ Error escribiendo cookie');
-  }
-
-  try {
-    const cache = await caches.open('tp-session');
-    const response = new Response(JSON.stringify({ token: tk, redirect: redir }), { headers: { 'Content-Type': 'application/json' } });
-    await cache.put('/session', response);
-    out.push('✅ Guardado en CacheStorage (copia)');
-  } catch (e) {
-    out.push('❌ Error guardando en CacheStorage');
-  }
-
-  const serverRes = await persistServer(email, tk, redir);
-  if (serverRes && serverRes.ok) {
-    out.push('✅ Persistido en servidor');
-    if (serverRes.redirect) {
-      await idbHelper.idbPut('tp_redirect', serverRes.redirect);
+    // 3) Backup en CacheStorage (/session) para iOS
+    if ('caches' in self) {
+      const cache = await caches.open('tp-session');
+      const payload = { token: tk || null, redirect: redirect || '/', email: email || null };
+      await cache.put('/session', new Response(JSON.stringify(payload), {
+        headers:{'Content-Type':'application/json'}
+      }));
     }
-  } else {
-    out.push('❌ No se pudo persistir en servidor');
+
+    // 4) Redirigir a la interfaz
+    if (redirect && redirect !== '/') {
+      location.replace(redirect);
+    } else {
+      // Fallback: si no hay redirect válido, ir al home
+      location.replace('/');
+    }
+  }catch(e){
+    // Ante cualquier error, vuelve al home
+    location.replace('/');
   }
-
-  show(out);
-
-  setTimeout(() => {
-    try { location.replace(redir || '/'); } catch (e) {}
-  }, 1500);
 })();
 </script>
 </body>
