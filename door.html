@@ -13,11 +13,12 @@
   button{margin-top:14px;padding:10px 16px;border-radius:12px;border:1px solid #E6C06E;background:#E6C06E;color:#000;font-weight:800;cursor:pointer}
   .msg{margin-top:12px}
   .muted{color:#bdbdbd;font-size:13px}
+  .hide{display:none}
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
+    <div class="card" id="form">
       <h1>Accede a tu biblioteca</h1>
       <p class="muted">Introduce tu email de compra para validar el acceso.</p>
       <input id="email" type="email" placeholder="tu@email.com" autofocus />
@@ -25,17 +26,96 @@
       <div class="msg" id="msg"></div>
       <p class="muted" id="loading" style="display:none">Validando…</p>
     </div>
+
+    <div class="card hide" id="checking">
+      <h1>Comprobando sesión…</h1>
+      <p class="muted">Un momento, por favor.</p>
+    </div>
   </div>
 
 <script>
+/* ========= helpers ========= */
 const $ = (s)=>document.querySelector(s);
+const BASE = new URL('.', location.href);
+const url  = (rel) => new URL(rel, BASE).toString();
+const SESSION_URL = url('session');
+
+function getCookie(name){
+  const v = ('; '+document.cookie).split('; '+name+'=');
+  return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
+}
+function setCookie(name, value, maxAgeSec){
+  const exp = new Date(Date.now()+maxAgeSec*1000).toUTCString();
+  document.cookie = name + '=' + encodeURIComponent(value)
+    + '; Path=' + BASE.pathname
+    + '; Max-Age=' + maxAgeSec
+    + '; Expires=' + exp
+    + '; SameSite=Lax; Secure';
+}
+function showForm(){ $('#checking').classList.add('hide'); $('#form').classList.remove('hide'); }
+function showChecking(){ $('#form').classList.add('hide'); $('#checking').classList.remove('hide'); }
+function toAbsMaybe(p){ try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; } }
+
+/* Intenta restaurar desde CacheStorage (iOS) */
+async function restoreFromCache(){
+  try{
+    if(!('caches' in self)) return null;
+    const cache = await caches.open('tp-session');
+    const res = await cache.match(SESSION_URL);
+    if(!res) return null;
+    const { token, redirect, email } = await res.json();
+    if (!(token && redirect)) return null;
+
+    // repoblar
+    localStorage.setItem('tp_token_v1', token);
+    localStorage.setItem('tp_redirect', redirect);
+    if (email) localStorage.setItem('tp_email', email);
+    const ONE_YEAR = 60*60*24*365;
+    setCookie('tp_token_v1', token, ONE_YEAR);
+    setCookie('tp_redirect', redirect, ONE_YEAR);
+    if (email) setCookie('tp_email', email, ONE_YEAR);
+
+    return { token, redirect, email: email || '' };
+  }catch{ return null; }
+}
+
+/* ========= auto-skip si hay sesión ========= */
+(async function init(){
+  const force = new URLSearchParams(location.search).has('force');
+  // Prefill rápido del email si lo tenemos
+  const savedEmail = localStorage.getItem('tp_email') || getCookie('tp_email') || '';
+  if (savedEmail) $('#email').value = savedEmail;
+
+  if (force) { showForm(); return; }
+
+  showChecking();
+
+  let tk    = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
+  let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
+
+  if (!(tk && redir)) {
+    const restored = await restoreFromCache();
+    if (restored) { tk = restored.token; redir = restored.redirect; }
+  }
+
+  if (tk && redir && redir !== '/') {
+    // ya hay sesión → entrar directo
+    location.replace(toAbsMaybe(redir));
+  } else {
+    // no hay sesión → mostrar formulario
+    showForm();
+  }
+})();
+
+/* ========= validación por email ========= */
 $('#btn').addEventListener('click', async ()=>{
   const email = ($('#email').value||'').trim().toLowerCase();
   if(!email){ $('#msg').textContent='Escribe tu email'; return; }
 
   $('#loading').style.display='block'; $('#msg').textContent='';
+
   try {
-    const r = await fetch('api/validate-token', {
+    const r = await fetch('/api/validate-token', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ email })
@@ -43,13 +123,13 @@ $('#btn').addEventListener('click', async ()=>{
     const data = await r.json();
     if (!r.ok || !data.ok) throw new Error(data.error || 'No autorizado');
 
-    // Salta a save.html en tu MISMO dominio (aquí se guarda la sesión)
+    // Salto a save.html donde se guardará definitivamente la sesión
     const params = new URLSearchParams({
       tk: data.token,
       redir: data.redirect,
       email
     });
-    location.replace('save.html?' + params.toString());
+    location.replace('/save.html?' + params.toString());
   } catch (e) {
     $('#msg').textContent = String(e.message || e);
   } finally {
