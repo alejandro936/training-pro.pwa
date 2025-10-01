@@ -11,41 +11,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
-  /* ======= ESCALA MÁS COMPACTA + MÁS AIRE ======= */
   :root{
     --bg:#0b0b0b; --panel:#121212; --line:#272727; --fg:#f7f7f7; --accent:#E6C06E; --chip:#e0e0e0;
     --title-font:"Sora","Space Grotesk",Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-
-    /* Layout */
     --content-max: 860px;
-    --side-pad: 26px;         /* margen laterales ↑ */
-    --gap-top: 28px;          /* espacio título↔barra ↑ */
-    --gap-cards: 22px;        /* espacio entre tarjetas ↑ */
-    --card-pad-x: 14px;       /* padding tarjeta */
-    --card-pad-y: 14px;
-    --radius: 12px;
-  }
-
-  @font-face{
-    font-family:"The Seasons";
-    src:url("/fonts/TheSeasons-Regular.woff2") format("woff2"),
-        url("/fonts/TheSeasons-Regular.woff") format("woff");
-    font-weight:400;font-style:normal;font-display:swap
-  }
-  @font-face{
-    font-family:"The Seasons";
-    src:url("/fonts/TheSeasons-Bold.woff2") format("woff2"),
-        url("/fonts/TheSeasons-Bold.woff") format("woff");
-    font-weight:700;font-style:normal;font-display:swap
+    --side-pad: 26px;
+    --gap-top: 28px;
+    --gap-cards: 22px;
+    --card-pad-x: 14px; --card-pad-y: 14px; --radius: 12px;
   }
 
   *{ box-sizing:border-box }
   html,body{
     margin:0; color:var(--fg); background:var(--bg);
-    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;  /* NO bajar de 16 en iOS */
+    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;  /* no bajar de 16 en iOS */
     height:100%; min-height:-webkit-fill-available; overflow-x:hidden;
-    -webkit-touch-callout:none; -webkit-text-size-adjust:100%;
-    touch-action:manipulation;
+    -webkit-touch-callout:none; -webkit-text-size-adjust:100%; touch-action:manipulation;
   }
 
   .wrap{
@@ -60,36 +41,39 @@
 
   .top-spacer{ height:54px; }
 
-  /* ===== TÍTULO ===== */
+  /* ===== TÍTULO (más grande) ===== */
   header{ margin:0 0 var(--gap-top); }
   h1{
     margin:0 auto;
     max-width:var(--content-max);
     font-family:var(--title-font);
-    font-weight:800;
-    letter-spacing:-0.01em;
-    line-height:1.06;
-    font-size:clamp(22px, 5.2vw, 30px);   /* más pequeño */
+    font-weight:800; letter-spacing:-0.01em; line-height:1.04;
+    font-size:clamp(26px, 6.2vw, 36px); /* ↑ */
   }
 
-  /* ===== BARRA ===== */
+  /* ===== BARRA (input más grande, botones más pequeños) ===== */
   .toolbar{
-    display:flex; gap:12px;
+    display:flex; gap:10px;
     margin:0 auto calc(var(--gap-top) + 10px);
     max-width:var(--content-max); width:100%;
   }
-  input,button{
+  .toolbar input{
+    flex:1 1 auto; min-width:0;
     background:#121212; color:var(--fg);
-    border:1px solid var(--line); border-radius:10px;
-    padding:9px 11px;                 /* compacto */
-    font-size:16px;                   /* evita auto-zoom iOS */
-  }
-  input{
-    min-width:0; flex:1; border-color:#1d1d1d;
+    border:1px solid #1d1d1d; border-radius:10px;
+    padding:12px 14px;              /* input más alto/ancho */
+    font-size:16px;
     transition:box-shadow .18s ease,border-color .18s ease;
   }
-  input:focus{ outline:none; border-color:#2a2a2a; box-shadow:0 0 0 2px rgba(255,255,255,.12); }
-  .primary{
+  .toolbar input:focus{ outline:none; border-color:#2a2a2a; box-shadow:0 0 0 2px rgba(255,255,255,.12); }
+  .toolbar button{
+    flex:0 0 auto;
+    background:#121212; color:var(--fg);
+    border:1px solid var(--line); border-radius:9px;
+    padding:7px 10px;               /* ↓ botones */
+    font-size:14px; line-height:1;
+  }
+  .toolbar .primary{
     background:linear-gradient(180deg,rgba(230,192,110,.16),rgba(230,192,110,.05));
     border-color:var(--accent)
   }
@@ -97,10 +81,8 @@
   /* ===== GRID/TARJETAS ===== */
   .grid{
     display:grid; grid-template-columns:1fr;
-    gap:var(--gap-cards) 0;                /* más separación */
-    align-items:stretch;
-    max-width:var(--content-max); width:100%;
-    margin:0 auto;
+    gap:var(--gap-cards) 0; align-items:stretch;
+    max-width:var(--content-max); width:100%; margin:0 auto;
   }
   .card{
     background:var(--panel);
@@ -109,49 +91,29 @@
     border-radius:var(--radius);
     padding:var(--card-pad-y) var(--card-pad-x);
     display:flex; flex-direction:column; gap:8px;
-    box-shadow:0 1px 8px rgba(0,0,0,.22);
-    position:relative;
+    box-shadow:0 1px 8px rgba(0,0,0,.22); position:relative;
   }
   .card-body{ max-width:78%; display:flex; flex-direction:column; gap:6px; }
 
   .title{
-    font-family:var(--title-font);
-    font-weight:800;
+    font-family:var(--title-font); font-weight:800;
     font-size:clamp(18px, 4.2vw, 22px);
-    line-height:1.2;
-    letter-spacing:.2px;
-    margin:0 0 2px;
+    line-height:1.2; letter-spacing:.2px; margin:0 0 2px;
   }
 
   .chip{
-    margin:4px 0 6px;
-    display:inline-flex; align-items:center; justify-content:center;
-    padding:5px 9px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.18);
-    color:var(--chip);
-    font-size:12px;
-    letter-spacing:.2px;
-    width:fit-content;
+    margin:4px 0 6px; display:inline-flex; align-items:center; justify-content:center;
+    padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
+    color:var(--chip); font-size:12px; letter-spacing:.2px; width:fit-content;
   }
-
-  .section{ display:block; }
-  .section-label{ display:none; }
 
   .desc{
-    color:#d0d0d0;
-    text-align:left;
-    font-size:14.5px;
-    font-style:italic;
-    font-weight:400;
-    line-height:1.55;
-    position:relative;
-    margin-top:2px;
-    min-height:calc(1.55em * 3);
-    max-height:calc(1.55em * 3 + 8px);
-    overflow:hidden;
+    color:#d0d0d0; text-align:left;
+    font-size:14.5px; font-style:italic; line-height:1.55;
+    margin-top:2px; min-height:calc(1.55em * 3); max-height:calc(1.55em * 3 + 8px);
+    overflow:hidden; position:relative;
   }
-  .desc .line{ margin:.35em 0; font-weight:400; }
+  .desc .line{ margin:.35em 0; }
   .desc:after{
     content:""; position:absolute; left:0; right:0; bottom:0;
     height:2.4em; background:linear-gradient(180deg, rgba(18,18,18,0), var(--panel));
@@ -159,76 +121,61 @@
   }
   .desc .line:nth-child(n+4){ display:none; }
 
-  .actions{
-    display:flex; gap:8px; justify-content:flex-start;
-    margin-top:6px;
-  }
+  .actions{ display:flex; gap:8px; justify-content:flex-start; margin-top:6px; }
   .btn{
-    background:#121212;
-    border:1.5px solid rgba(230,192,110,.38);
-    padding:8px 10px;
-    border-radius:9px;
-    color:#e9e9e9;
-    font-size:14.5px;
+    background:#121212; border:1.5px solid rgba(230,192,110,.38);
+    padding:8px 10px; border-radius:9px; color:#e9e9e9; font-size:14.5px;
   }
-  .btn:hover{ border-color:rgba(230,192,110,.55) }
 
   .footer{ display:flex; justify-content:center; margin:22px 0 8px }
   .more{ padding:8px 10px; border-radius:9px; border:1px solid var(--accent); background:transparent; color:#fff; font-size:15px }
 
   .error{
-    max-width:900px; margin:0 auto 12px;
-    background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
+    max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none
   }
 
   /* ===== Modal ===== */
   .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.7); z-index:9999 }
   .panel{
-    position:relative; background:var(--panel);
-    border:1px solid rgba(230,192,110,.35);
+    position:relative; background:var(--panel); border:1px solid rgba(230,192,110,.35);
     border-radius:14px; max-width:860px; width:100%;
-    padding:12px 14px 14px;
-    box-shadow:0 10px 40px rgba(0,0,0,.5);
-    text-align:center;
+    padding:12px 14px 14px; box-shadow:0 10px 40px rgba(0,0,0,.5); text-align:center;
   }
-  .panel .topbar{
-    display:flex; justify-content:flex-end; align-items:center; margin-bottom:6px;
-  }
+  .panel .topbar{ display:flex; justify-content:flex-end; align-items:center; margin-bottom:4px; }
   .panel .x{
     border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff;
-    border-radius:8px; padding:6px 10px; cursor:pointer; font-size:14px
+    border-radius:8px; padding:4px 8px; cursor:pointer; font-size:12px; /* ↓ más pequeño */
   }
-  .detail-title{ margin:2px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
-  .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; letter-spacing:.25px }
+  .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
+  .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
   .detail-body{ color:#d8d8d8; font-size:14.5px; line-height:1.8 }
   .detail-body .line{ margin:.45em 0 }
 
   /* Vídeo */
-  .video{ width:100%; max-width:520px; margin:8px auto 8px; aspect-ratio:16/9; background:#000; border:1px solid #333; border-radius:12px; overflow:hidden }
+  .video{ width:100%; max-width:520px; margin:8px auto 6px; aspect-ratio:16/9; background:#000; border:1px solid #333; border-radius:12px; overflow:hidden }
   .video iframe,.video video{ width:100%; height:100%; display:block }
   .video-lite{ position:relative; cursor:pointer; width:100%; height:100% }
   .video-lite img{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(.9) contrast(1.05) }
   .video-lite .play{
-    pointer-events:none;                 /* no bloquea el clic */
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:54px; height:54px; border-radius:50%;
-    background:rgba(0,0,0,.45); border:2px solid rgba(230,192,110,.7);
+    pointer-events:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:54px; height:54px; border-radius:50%; background:rgba(0,0,0,.45); border:2px solid rgba(230,192,110,.7);
     display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.4)
   }
   .video-lite .play:before{
-    content:""; display:block; width:0; height:0; border-left:13px solid var(--accent);
+    content:""; width:0; height:0; border-left:13px solid var(--accent);
     border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px
   }
+  .video-link{ margin-top:6px; font-size:13px }
+  .video-link a{ color:var(--accent); text-decoration:none }
 </style>
 
-<!-- Guard de sesión (déjalo si proteges /interfaz) -->
+<!-- Guard de sesión (si proteges /interfaz) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
   document.documentElement.classList.add('guard-hiding');
   (async () => {
     try {
-      // Si usas /api/check-token, valida aquí:
       // const r = await fetch('/api/check-token', { credentials:'include' });
       // if (!(await r.json()).ok) throw 0;
       document.documentElement.classList.remove('guard-hiding');
@@ -262,15 +209,12 @@
   <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
     <div class="panel">
       <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
-      <!-- Título va DESPUÉS de la barra superior (ya no lo tapa el botón) -->
       <div id="detail"></div>
     </div>
   </div>
 
 <script>
-/* ======== JS ======== */
 var CHUNK = 9;
-/* Bloquear pinch-zoom por gestos en iOS Safari */
 ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
@@ -283,7 +227,7 @@ function showErr(msg){
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
 
-/* Indicaciones (sin cambios de lógica) */
+/* Indicaciones */
 function formatIndicaciones(text){
   if(!text) return '';
   var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
@@ -303,11 +247,27 @@ function formatIndicaciones3(text){
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
 
-/* Vídeo: YouTube (miniatura clicable) y Google Drive (iframe directo) */
+/* ---- Vídeo: YouTube + Drive robusto ---- */
+function drivePreviewUrl(url){
+  // ID por varias rutas/patrones
+  var m =
+    /\/file\/d\/([^/]+)\//.exec(url) ||
+    /\/d\/([^/]+)\//.exec(url) ||
+    /[?&]id=([^&]+)/.exec(url) ||
+    /\/preview\?id=([^&]+)/.exec(url) ||
+    /\/uc\?export=download&id=([^&]+)/.exec(url);
+  if (m && m[1]) return 'https://drive.google.com/file/d/'+m[1]+'/preview';
+  // Reemplazar /view por /preview si existe
+  if (/\/view(\?[^#]*)?$/.test(url)) return url.replace(/\/view(\?[^#]*)?$/,'/preview');
+  // Ya es preview
+  if (/\/preview(\?[^#]*)?$/.test(url)) return url;
+  return '';
+}
+
 function embedVideo(url){
   if(!url) return '';
 
-  // YouTube: acepta watch?v=, youtu.be/ID, etc.
+  // YouTube
   var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/)([\w-]{6,})/i);
   if(yt){
     var id = yt[1];
@@ -318,25 +278,22 @@ function embedVideo(url){
           '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
           '<div class="play"></div>'+
         '</div>'+
+        '<div class="video-link"><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v='+id+'">Abrir en pestaña ↗</a></div>'+
       '</div>';
   }
 
-  // Google Drive: múltiples variantes (id extraído)
-  var idMatch =
-    /\/file\/d\/([^/]+)\//.exec(url) ||
-    /\/d\/([^/]+)\//.exec(url) ||
-    /[?&]id=([^&]+)/.exec(url) ||
-    /\/preview\?id=([^&]+)/.exec(url) ||
-    /\/uc\?export=download&id=([^&]+)/.exec(url);
-  var gid = idMatch && idMatch[1];
-
-  if(gid){
-    // Mostramos directamente el iframe de Drive (siempre funciona)
-    return '<div class="video"><iframe src="https://drive.google.com/file/d/'+gid+'/preview" allow="autoplay"></iframe></div>';
+  // Google Drive
+  var pv = drivePreviewUrl(url);
+  if (pv){
+    return ''+
+      '<div class="video"><iframe src="'+pv+'" allow="autoplay; fullscreen"></iframe></div>'+
+      '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
   }
 
-  // Fallback: video nativo
-  return '<div class="video"><video controls src="'+url+'"></video></div>';
+  // Fallback: video nativo + link
+  return ''+
+    '<div class="video"><video controls src="'+url+'"></video></div>'+
+    '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
 }
 
 function ytPlay(el){
@@ -345,6 +302,7 @@ function ytPlay(el){
   el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>';
 }
 
+/* ---- Render ---- */
 function card(x){
   var nombre = escapeHtml(x.ejercicio || x.nombre || '');
   var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
@@ -374,7 +332,7 @@ function setMoreVisibility(){ var show=(state.buffer.length>0)||!!state.nextOffs
 function renderChunk(){ var take=Math.min(CHUNK,state.buffer.length); if(take>0){ var slice=state.buffer.splice(0,take); renderAppend(slice); } setMoreVisibility(); }
 function resetGrid(){ document.getElementById('grid').innerHTML = ''; }
 
-/* API */
+/* ---- API ---- */
 async function apiList(opts){
   const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), { credentials:'include' });
@@ -387,6 +345,7 @@ async function apiDetail(id){
   return r.json();
 }
 
+/* ---- Control ---- */
 async function fetchData(opts){
   opts = opts || {};
   if (state.loading) return; state.loading = true; showErr('');
