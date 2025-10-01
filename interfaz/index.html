@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>TRAINING PRO</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    /* === TUS ESTILOS ORIGINALES (idénticos) === */
+    @font-face{font-family:"The Seasons";src:url("/fonts/TheSeasons-Regular.woff2") format("woff2"),url("/fonts/TheSeasons-Regular.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
+    @font-face{font-family:"The Seasons";src:url("/fonts/TheSeasons-Bold.woff2") format("woff2"),url("/fonts/TheSeasons-Bold.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
+    :root{--bg:#0b0b0b;--panel:#121212;--card:#141414;--line:#272727;--fg:#f7f7f7;--muted:#c7c7c7;--accent:#E6C06E;--chip:#e0e0e0;--white:#ffffff;--muted-weak:#c7c7c7;--title-font:"Sora","Space Grotesk",Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--content-max:860px;--gap-cards:26px;--card-pad-x:24px;--card-pad-y:26px}
+    *{box-sizing:border-box}
+    html,body{margin:0;color:var(--fg);background:var(--bg);font:24px/1.7 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;height:100%;min-height:-webkit-fill-available;overflow-x:hidden;-webkit-touch-callout:none;-webkit-text-size-adjust:100%;touch-action:manipulation}
+    .wrap{max-width:1200px;margin:0 auto;padding:max(30px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(64px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));min-height:100vh}
+    @supports (min-height:100dvh){.wrap{min-height:100dvh}}
+    .top-spacer{height:92px}
+    @supports (height:100dvh){.top-spacer{height:10dvh;max-height:128px}}
+    header{display:block;margin:0 0 20px}
+    h1{margin:0 auto;max-width:var(--content-max);font-family:var(--title-font);font-weight:800;letter-spacing:-0.01em;line-height:1.06;font-size:clamp(40px,8.6vw,62px)}
+    .toolbar{display:flex;gap:12px;margin:24px auto 38px;max-width:var(--content-max);width:100%}
+    input,button{background:#121212;color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:18px 20px;font-size:23px}
+    input{min-width:0;flex:1;border-color:var(--white);box-shadow:0 0 0 rgba(255,255,255,0);transition:box-shadow .18s ease,border-color .18s ease}
+    input:focus{outline:none;border-color:var(--white);box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+    .primary{background:linear-gradient(180deg,rgba(230,192,110,.18),rgba(230,192,110,.05));border-color:var(--accent)}
+    .grid{display:grid;grid-template-columns:1fr;gap:var(--gap-cards) 0;align-items:stretch;max-width:var(--content-max);width:100%;margin:0 auto}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.16);border-left:4px solid rgba(230,192,110,.85);border-radius:16px;padding:var(--card-pad-y) var(--card-pad-x) calc(var(--card-pad-y) + 6px);display:flex;flex-direction:column;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.28);position:relative}
+    .card-body{max-width:75%;display:flex;flex-direction:column;gap:14px}
+    .title{font-family:var(--title-font);font-weight:800;font-size:30px;line-height:1.28;letter-spacing:.2px;margin-bottom:2px}
+    .chip{margin:10px 0 14px;display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);color:var(--chip);font-size:18px;letter-spacing:.3px;width:fit-content}
+    .section{display:block}
+    .section-label{display:none}
+    .desc{color:var(--muted-weak);text-align:left;font-size:22px;font-style:italic;font-weight:400;line-height:1.9;position:relative;margin-top:6px;min-height:calc(1.9em * 3);max-height:calc(1.9em * 3 + 10px);overflow:hidden}
+    .desc .line{margin:.45em 0;font-weight:400}
+    .desc:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3.1em;background:linear-gradient(180deg,rgba(18,18,18,0),var(--panel));pointer-events:none}
+    .desc .line:nth-child(n+4){display:none}
+    .actions{display:flex;gap:16px;justify-content:flex-start;margin-top:16px}
+    .btn{background:#121212;border:2px solid rgba(230,192,110,.38);padding:14px 16px;border-radius:12px;color:#e9e9e9;font-size:22px}
+    .btn:hover{border-color:rgba(230,192,110,.55)}
+    .link{color:var(--accent);text-decoration:none}
+    .footer{display:flex;justify-content:center;margin-top:32px}
+    .more{padding:14px 18px;border-radius:12px;border:1px solid var(--accent);background:transparent;color:#fff;font-size:22px}
+    .error{max-width:900px;margin:0 auto 16px;background:#1a0000;border:1px solid #4a0000;color:#ffb3b3;padding:12px 14px;border-radius:10px;display:none}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.7);z-index:9999}
+    .panel{position:relative;background:var(--panel);border:1px solid rgba(230,192,110,.35);border-radius:18px;max-width:860px;width:100%;padding:26px 26px 22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+    .panel .x{position:absolute;top:14px;right:14px;border:1px solid rgba(230,192,110,.45);background:#181818;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
+    .detail-title{margin:2px 0 12px;font-weight:900;font-size:clamp(30px,5.4vw,44px);letter-spacing:.02em}
+    .detail-chip{display:inline-block;margin:0 auto 16px;padding:8px 15px;border-radius:999px;border:1px solid rgba(255,255,255,.22);color:#ddd;font-size:18px;letter-spacing:.25px}
+    .detail-body{color:#d8d8d8;font-size:22px;line-height:2}
+    .detail-body .line{margin:.6em 0}
+    .video{width:100%;max-width:520px;margin:12px auto 8px;aspect-ratio:16/9;background:#000;border:1px solid #333;border-radius:12px;overflow:hidden}
+    .video iframe,.video video{width:100%;height:100%;display:block}
+    .video-lite{position:relative;cursor:pointer}
+    .video-lite img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.9) contrast(1.05)}
+    .video-lite .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;background:rgba(0,0,0,.45);border:2px solid rgba(230,192,110,.7);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+    .video-lite .play:before{content:"";display:block;width:0;height:0;border-left:18px solid var(--accent);border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
+    .video-lite:hover .play{background:rgba(0,0,0,.55);border-color:var(--accent)}
+  </style>
+
+  <!-- Guard de sesión (si ya estás protegiendo /interfaz con token) -->
+  <style>html.guard-hiding{visibility:hidden}</style>
+  <script>
+    document.documentElement.classList.add('guard-hiding');
+    (async () => {
+      try {
+        // Si usas /api/check-token, descomenta:
+        // const r = await fetch('/api/check-token', { credentials:'include' });
+        // const ok = (await r.json()).ok;
+        // if (!ok) throw 0;
+        document.documentElement.classList.remove('guard-hiding');
+      } catch {
+        location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search));
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-spacer" aria-hidden="true"></div>
+    <header><h1>TRAINING PRO</h1></header>
+
+    <div class="toolbar">
+      <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
+      <button class="primary" onclick="buscar()">Buscar</button>
+      <button onclick="limpiar()">Limpiar</button>
+    </div>
+
+    <div id="err" class="error"></div>
+    <div id="grid" class="grid"></div>
+    <div class="footer"><button id="more" class="more" style="display:none" onclick="cargarMasUI()">Cargar más</button></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
+    <div class="panel">
+      <button class="x" onclick="closeModal()">Cerrar ✕</button>
+      <div id="detail"></div>
+    </div>
+  </div>
+
+<script>
+  var CHUNK = 9;
+  ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
+    document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
+  });
+  var state = { q:'', buffer:[], nextOffset:'', loading:false };
+
+  function showErr(msg){
+    var box = document.getElementById('err');
+    if(!msg){ box.style.display='none'; box.textContent=''; return; }
+    box.textContent = msg; box.style.display='block';
+  }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
+
+  function formatIndicaciones(text){
+    if(!text) return '';
+    var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
+    if(parts.length <= 1) return '<div class="line">'+escapeHtml(text)+'</div>';
+    return parts.map(function(p){ return '<div class="line">'+escapeHtml(p)+'</div>'; }).join('');
+  }
+  function formatIndicaciones3(text){
+    if(!text) return '';
+    var raw = String(text).trim();
+    raw = raw.replace(/\r/g,'\n').replace(/[•\u2022\u2023\u25E6]/g,'\n').replace(/[;·]/g,'\n').replace(/\s*[-–—]\s+/g,'\n');
+    raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2');
+    raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
+    var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+    var merged=[],i;
+    for(i=0;i<parts.length;i++){ var cur=parts[i]; if(/^\d+[.)]$/.test(cur)&&i+1<parts.length){ merged.push(cur+' '+parts[i+1]); i++; } else { merged.push(cur); } }
+    function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
+    return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
+  }
+  function embedVideo(url){
+    if(!url) return '';
+    var yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/i);
+    if(yt){ var id=yt[1]; var thumb='https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
+      return '<div class="video video-lite" data-yt="'+id+'" onclick="ytPlay(this)"><img src="'+thumb+'" alt="Video"><div class="play"></div></div>';
+    }
+    var gd1=/\/file\/d\/([^/]+)\//.exec(url); var gd2=/\/d\/([^/]+)\//.exec(url); var gd3=/[?&]id=([^&]+)/.exec(url);
+    var id2=(gd1&&gd1[1])||(gd2&&gd2[1])||(gd3&&gd3[1])||'';
+    if(id2) return '<div class="video"><iframe src="https://drive.google.com/file/d/'+id2+'/preview" allow="autoplay"></iframe></div>';
+    return '<div class="video"><video controls src="'+url+'"></video></div>';
+  }
+  function ytPlay(el){
+    var id = el.getAttribute('data-yt'); if(!id) return;
+    el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>';
+  }
+  function card(x){
+    var nombre = escapeHtml(x.ejercicio || x.nombre || '');
+    var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
+    var indRaw  = (x.indicaciones || x.descripcion || '');
+    var indHtml = formatIndicaciones3(indRaw);
+    var musc = x.musculo || x["músculo"] || x.musculo_objetivo || x.musculoObjetivo || '';
+    var muscHtml = musc ? ('<div class="section"><div>'+escapeHtml(musc)+'</div></div>') : '';
+    var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
+    return (
+      '<div class="card">'+
+        '<div class="card-body">'+
+          '<div class="title">'+nombre+'</div>'+
+          (cat ? '<div>'+cat+'</div>' : '')+
+          '<div class="section"><div class="desc">'+indHtml+'</div></div>'+
+          muscHtml+
+        '</div>'+
+        '<div class="actions">'+
+          btnVid+
+          '<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+  function renderAppend(rows){ document.getElementById('grid').insertAdjacentHTML('beforeend', rows.map(card).join('')); }
+  function setMoreVisibility(){ var show=(state.buffer.length>0)||!!state.nextOffset; document.getElementById('more').style.display = show ? 'inline-block':'none'; }
+  function renderChunk(){ var take=Math.min(CHUNK,state.buffer.length); if(take>0){ var slice=state.buffer.splice(0,take); renderAppend(slice); } setMoreVisibility(); }
+  function resetGrid(){ document.getElementById('grid').innerHTML=''; }
+
+  async function apiList(opts){
+    const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
+    const r  = await fetch('/api/ejercicios?' + qs.toString(), { credentials:'include' });
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json(); // { ok, rows, nextOffset }
+  }
+  async function apiDetail(id){
+    const r = await fetch('/api/ejercicios?id=' + encodeURIComponent(id), { credentials:'include' });
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json(); // { ok, detail }
+  }
+
+  async function fetchData(opts){
+    opts = opts || {};
+    if (state.loading) return; state.loading = true; showErr('');
+    try{
+      const res = await apiList({ q: (typeof opts.q!=='undefined' ? opts.q : state.q), offset: (opts.offset || '') });
+      const rows = (res && Array.isArray(res.rows)) ? res.rows : [];
+      if (!opts.append){
+        state.buffer = rows.slice();
+        state.nextOffset = res.nextOffset || '';
+        resetGrid();
+      } else {
+        state.buffer = state.buffer.concat(rows);
+        state.nextOffset = res.nextOffset || '';
+      }
+      renderChunk();
+    }catch(err){
+      showErr('Error cargando datos: ' + String(err.message || err));
+    }finally{
+      state.loading = false;
+    }
+  }
+
+  function cargarMasUI(){ if (state.buffer.length>0) renderChunk(); else if(state.nextOffset) fetchData({ q: state.q, offset: state.nextOffset, append:true }); }
+  function buscar(){ state.q = document.getElementById('q').value.trim(); fetchData({ q: state.q }); }
+  function limpiar(){ document.getElementById('q').value=''; state.q=''; fetchData({ q:'' }); }
+
+  async function detalle(id){
+    try{
+      const r = await apiDetail(id);
+      const d = r && r.detail;
+      var nombre = (d && (d.nombre || d.ejercicio)) || 'Ejercicio';
+      var cat = (d && d.categoria) ? d.categoria : '';
+      var ind = (d && (d.descripcion || d.indicaciones)) || '';
+      var vid = (d && d.video) || '';
+      var html =
+        '<div class="detail-title">'+escapeHtml(nombre)+'</div>'+
+        (cat ? '<div class="detail-chip">'+escapeHtml(cat)+'</div>' : '')+
+        (vid ? embedVideo(vid) : '')+
+        '<div class="detail-body">'+formatIndicaciones(ind)+'</div>';
+      document.getElementById('detail').innerHTML = html;
+      document.getElementById('modal').style.display = 'flex';
+    }catch(err){
+      showErr('Error detalle: ' + String(err.message || err));
+    }
+  }
+  function closeModal(){ document.getElementById('modal').style.display = 'none'; }
+
+  document.addEventListener('DOMContentLoaded', function(){ fetchData(); });
+  window.addEventListener('pageshow', function(e){ if (e.persisted) fetchData(); });
+</script>
+</body>
+</html>
