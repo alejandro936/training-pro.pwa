@@ -23,15 +23,23 @@
   </div>
 
 <script>
-/** ================== CONFIG ================== **/
-const DOOR = '/door.html'; // puerta de email
-const VALIDATION_ENDPOINT = '/api/validate-token'; // tu endpoint que valida token->redirect
+/* ================== BASE & URL HELPERS ================== */
+const BASE = new URL('.', location.href);
+const url  = (rel) => new URL(rel, BASE).toString();
+const DOOR_URL    = url('door.html');
+const SESSION_URL = url('session');
+const VALIDATION_ENDPOINT = url('api/validate-token'); // ajusta si tu API vive en otro dominio
 
-/** ====== Util cookies ====== **/
+function toAbsMaybe(p){
+  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
+}
+
+/* ====== Cookies ====== */
 function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
   document.cookie = name + '=' + encodeURIComponent(value)
-    + '; path=/; max-age=' + maxAgeSec
+    + '; path=' + BASE.pathname
+    + '; max-age=' + maxAgeSec
     + '; expires=' + exp
     + '; SameSite=Lax; Secure';
 }
@@ -40,12 +48,12 @@ function getCookie(name){
   return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
 }
 
-/** ====== Rescate desde CacheStorage (iOS) ====== **/
+/* ====== Rescate CacheStorage ====== */
 async function restoreFromCache(){
   try{
     if(!('caches' in self)) return false;
     const cache = await caches.open('tp-session');
-    const res = await cache.match('/session');
+    const res = await cache.match(SESSION_URL);
     if(!res) return false;
     const { token, redirect, email } = await res.json();
     if(!(token && redirect && email)) return false;
@@ -59,11 +67,13 @@ async function restoreFromCache(){
     setCookie('tp_redirect', redirect, ONE_YEAR);
     setCookie('tp_email', email, ONE_YEAR);
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    console.warn('restoreFromCache error', e);
+    return false;
+  }
 }
 
 async function main(){
-  // 1) Intentar rescate si está vacío
   let tk    = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
   let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
   let email = localStorage.getItem('tp_email')    || getCookie('tp_email')    || '';
@@ -77,19 +87,17 @@ async function main(){
     }
   }
 
-  // 2) Si ya tenemos redirect válido, entrar
   if (tk && redir && redir !== '/') {
-    location.replace(redir);
+    location.replace(toAbsMaybe(redir));
     return;
   }
 
-  // 3) Sin email → volver a puerta
   if (!email) {
-    location.replace(DOOR);
+    location.replace(DOOR_URL);
     return;
   }
 
-  // 4) Validar contra servidor
+  // Validar token contra servidor (si existe)
   try{
     const r = await fetch(VALIDATION_ENDPOINT, {
       method:'POST',
@@ -97,41 +105,47 @@ async function main(){
       credentials:'include',
       body: JSON.stringify({ token: tk, email })
     });
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json(); // { ok:boolean, redirect:string, token?:string }
 
-    if (data && data.ok && data.redirect) {
-      const token = data.token || tk || '';
-      const redirect = data.redirect;
+    if (r.ok) {
+      const data = await r.json(); // { ok, redirect, token? }
+      if (data && data.ok && data.redirect) {
+        const token = data.token || tk || '';
+        const redirect = data.redirect;
 
-      // persistir en localStorage
-      localStorage.setItem('tp_redirect', redirect);
-      if (token) localStorage.setItem('tp_token_v1', token);
+        localStorage.setItem('tp_redirect', redirect);
+        if (token) localStorage.setItem('tp_token_v1', token);
 
-      // cookies (1 año)
-      const ONE_YEAR = 60*60*24*365;
-      if (token) setCookie('tp_token_v1', token, ONE_YEAR);
-      setCookie('tp_redirect', redirect, ONE_YEAR);
+        const ONE_YEAR = 60*60*24*365;
+        if (token) setCookie('tp_token_v1', token, ONE_YEAR);
+        setCookie('tp_redirect', redirect, ONE_YEAR);
 
-      // CacheStorage /session como backup
-      if ('caches' in self) {
-        const cache = await caches.open('tp-session');
-        await cache.put('/session', new Response(JSON.stringify({
-          token: token || null,
-          redirect,
-          email
-        }), { headers:{'Content-Type':'application/json'} }));
+        if ('caches' in self) {
+          const cache = await caches.open('tp-session');
+          await cache.put(SESSION_URL, new Response(JSON.stringify({
+            token: token || null,
+            redirect,
+            email
+          }), { headers:{'Content-Type':'application/json'} }));
+        }
+
+        location.replace(toAbsMaybe(redirect));
+        return;
       }
-
-      location.replace(redirect);
-      return;
+    } else {
+      // Si el endpoint no existe (404), continúa con lo que tengamos local
+      if (r.status === 404 && redir) {
+        location.replace(toAbsMaybe(redir));
+        return;
+      }
     }
   }catch(e){
-    // silencioso; cae al fallback
+    console.warn('validate error', e);
+    // Si hay redirect local, úsalo
+    if (redir) { location.replace(toAbsMaybe(redir)); return; }
   }
 
-  // 5) Fallo de validación → puerta
-  location.replace(DOOR);
+  // Fallback
+  location.replace(DOOR_URL);
 }
 
 main();
