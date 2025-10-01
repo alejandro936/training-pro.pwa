@@ -23,18 +23,23 @@
   </div>
 
 <script>
-/** ================== CONFIG ================== **/
-const DOOR = '/door.html'; // Página donde pides/verificas el email
-// Si quieres, pide persistencia de almacenamiento (no afecta si no está soportado)
+/* ================== BASE & URL HELPERS ================== */
+const BASE = new URL('.', location.href); // p.ej. https://dominio.com/app/
+const url  = (rel) => new URL(rel, BASE).toString();
+const DOOR_URL    = url('door.html');
+const SESSION_URL = url('session'); // clave del backup en CacheStorage
+
+/* ================== STORAGE ================== */
 if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().catch(()=>{});
 }
 
-/** ====== Utilidades cookies ====== **/
+/* ====== Cookies ====== */
 function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
   document.cookie = name + '=' + encodeURIComponent(value)
-    + '; path=/; max-age=' + maxAgeSec
+    + '; path=' + BASE.pathname
+    + '; max-age=' + maxAgeSec
     + '; expires=' + exp
     + '; SameSite=Lax; Secure';
 }
@@ -43,32 +48,37 @@ function getCookie(name){
   return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
 }
 
-/** ====== Rescate desde CacheStorage (iOS) ====== **/
+/* ====== Rescate desde CacheStorage (iOS) ====== */
 async function restoreFromCache(){
   try{
     if(!('caches' in self)) return false;
     const cache = await caches.open('tp-session');
-    const res = await cache.match('/session');
+    const res = await cache.match(SESSION_URL);
     if(!res) return false;
     const { token, redirect, email } = await res.json();
     if(!(token && redirect)) return false;
 
-    // Repoblar localStorage
     localStorage.setItem('tp_token_v1', token);
     localStorage.setItem('tp_redirect', redirect);
     if (email) localStorage.setItem('tp_email', email);
 
-    // Repoblar cookies (1 año)
     const ONE_YEAR = 60*60*24*365;
     setCookie('tp_token_v1', token, ONE_YEAR);
     setCookie('tp_redirect', redirect, ONE_YEAR);
     if (email) setCookie('tp_email', email, ONE_YEAR);
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    console.warn('restoreFromCache error', e);
+    return false;
+  }
+}
+
+function toAbsMaybe(p){
+  // Si redirect viene relativo ("interfaz/index.html"), lo resolvemos contra BASE
+  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
 }
 
 (async function boot(){
-  // Intento de rescate ANTES de leer localStorage/cookies
   await restoreFromCache();
 
   const tk   = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
@@ -76,13 +86,11 @@ async function restoreFromCache(){
   const mail = localStorage.getItem('tp_email')    || getCookie('tp_email')    || '';
 
   if (tk && red && red !== '/') {
-    location.replace(red);  // Ir directo a la interfaz autorizada
+    location.replace(toAbsMaybe(red));
     return;
   }
-  // Si no hay token o redirect válido, ir a la puerta
-  location.replace(DOOR);
+  location.replace(DOOR_URL);
 })();
 </script>
 </body>
 </html>
-
