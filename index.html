@@ -18,11 +18,9 @@
   <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
   <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
-  <!-- Favicon genérico -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 
-  <!-- SEO y accesibilidad -->
   <meta name="description" content="Accede a Training Pro, tu biblioteca y clases de programación personalizadas.">
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 
@@ -45,41 +43,20 @@
     <h1 class="title" aria-level="1">BIENVENIDO/A</h1>
     <p class="subtitle">Si ya tienes acceso a Training Pro<br>puedes acceder a</p>
     <div class="actions" role="group" aria-label="Accesos">
+      <!-- Ahora siempre pasa por la puerta -->
       <a class="btn btn-gold" href="/door.html">BIBLIOTECA</a>
       <a class="btn btn-outline" href="HREF_CLASE"><span class="twoline">CLASE&nbsp;DE<br>PROGRAMACIÓN</span></a>
     </div>
   </div>
 
-  <!-- Verificación de sesión activa -->
-  <script>
-  (function () {
-    const ckGet = (name) => {
-      const v = ('; ' + document.cookie).split('; ' + name + '=');
-      return v.length > 1 ? decodeURIComponent(v.pop().split(';').shift() || '') : '';
-    };
+  <!-- (IMPORTANTE) Eliminado el auto-redirect por sesión activa -->
 
-    const tk = localStorage.getItem('tp_token_v1')
-           || localStorage.getItem('ls_token')
-           || ckGet('tp_token_v1')
-           || '';
-
-    const redir = localStorage.getItem('tp_redirect')
-                || localStorage.getItem('ls_redir')
-                || ckGet('tp_redirect')
-                || '';
-
-    if (tk && redir && redir !== '/') {
-      location.replace(redir);
-    }
-  })();
-  </script>
-
-  <!-- Registro del Service Worker -->
+  <!-- Service Worker -->
   <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js?v=6')
-      .then(reg => console.log('✅ Service Worker registrado con éxito:', reg))
-      .catch(err => console.error('❌ Error al registrar el Service Worker:', err));
+    navigator.serviceWorker.register('/service-worker.js?v=7')
+      .then(reg => console.log('✅ SW registrado:', reg))
+      .catch(err => console.error('❌ SW error:', err));
   }
   </script>
 </body>
