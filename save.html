@@ -3,97 +3,81 @@
 <head>
   <meta charset="utf-8">
   <title>Guardando sesión…</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    body{font-family:system-ui,Inter,sans-serif;background:#000;color:#fff;padding:20px}
-    h1{font-size:1.5em;margin-bottom:10px}
-    pre{background:#111;padding:10px;border-radius:6px;white-space:pre-wrap}
+    body {
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { font-size: 1.5em; margin-bottom: 10px; }
+    pre { background: #111; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <h1>💾 Guardando sesión</h1>
   <div id="output"><pre>Cargando…</pre></div>
 
-<script>
-  // ==== Helpers de URL (para usar la MISMA clave que go-lib: url('session')) ====
-  const BASE = new URL('.', location.href);
-  const url = (rel) => new URL(rel, BASE).toString();
-  const SESSION_URL = url('session');   // <- misma clave que lee go-lib
+  <script>
+    function extractParams() {
+      const fromSearch = new URLSearchParams(location.search);
+      const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
 
-  function setCookie(name, value, maxAgeSec){
-    const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
-    document.cookie = name + '=' + encodeURIComponent(value)
-      + '; path=' + BASE.pathname
-      + '; max-age=' + maxAgeSec
-      + '; expires=' + exp
-      + '; SameSite=Lax; Secure';
-  }
+      const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
+      const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
+      const email = fromSearch.get('email') || fromReferrer.get('email') || '';
 
-  function extractParams() {
-    const fromSearch   = new URLSearchParams(location.search);
-    const fromReferrer = new URLSearchParams((document.referrer.split('?')[1] || ''));
-    const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
-    const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
-    const email = fromSearch.get('email') || fromReferrer.get('email') || '';
-    return { tk, redir, email };
-  }
-
-  (async function run () {
-    const { tk, redir, email } = extractParams();
-    const out = [];
-    out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
-    out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
-    out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
-
-    // 1) Guardar en localStorage + cookies (1 año)
-    try {
-      if (tk)    localStorage.setItem('tp_token_v1', tk);
-      if (redir) localStorage.setItem('tp_redirect', redir);
-      if (email) localStorage.setItem('tp_email', email);
-
-      const ONE_YEAR = 60*60*24*365;
-      if (tk)    setCookie('tp_token_v1', tk, ONE_YEAR);
-      if (redir) setCookie('tp_redirect', redir, ONE_YEAR);
-      if (email) setCookie('tp_email', email, ONE_YEAR);
-
-      out.push('✅ Guardado en localStorage y cookies');
-    } catch (e) {
-      out.push('❌ Error guardando en localStorage/cookies');
+      return { tk, redir, email };
     }
 
-    // 2) Backup en CacheStorage (misma clave que leerá go-lib)
-    try {
-      if ('caches' in self) {
-        const cache = await caches.open('tp-session');
-        const payload = { token: tk || null, redirect: redir || '', email: email || null };
-        await cache.put(SESSION_URL, new Response(JSON.stringify(payload), {
-          headers: { 'Content-Type':'application/json' }
-        }));
-        out.push('✅ Guardado en CacheStorage');
-      } else {
-        out.push('ℹ️ CacheStorage no soportado');
+    (async function () {
+      const { tk, redir, email } = extractParams();
+      const out = [];
+
+      out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
+      out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
+      out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
+
+      // Guardar en localStorage y cookies
+      try {
+        localStorage.setItem('tp_token_v1', tk);
+        localStorage.setItem('tp_redirect', redir);
+        localStorage.setItem('tp_email', email);
+        document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        out.push('✅ Guardado en localStorage y cookies');
+      } catch (e) {
+        out.push('❌ Error guardando en localStorage/cookies');
       }
-    } catch (e) {
-      out.push('❌ Error guardando en CacheStorage');
-    }
 
-    // 3) (Opcional) Aviso a tu GAS antiguo — puedes eliminar este bloque si ya no lo usas
-    try {
-      await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
-        + encodeURIComponent(email)
-        + '&token=' + encodeURIComponent(tk)
-        + '&redirect=' + encodeURIComponent(redir));
-      out.push('✅ Enviado al servidor');
-    } catch (e) {
-      out.push('❌ Error enviando al servidor');
-    }
+      // Guardar en CacheStorage
+      try {
+        const cache = await caches.open('tp-session');
+        const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await cache.put('/session', response);
+        out.push('✅ Guardado en CacheStorage');
+      } catch (e) {
+        out.push('❌ Error guardando en CacheStorage');
+      }
 
-    document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+      // Guardar en servidor
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
+          + encodeURIComponent(email)
+          + '&token=' + encodeURIComponent(tk)
+          + '&redirect=' + encodeURIComponent(redir));
+        out.push('✅ Enviado al servidor');
+      } catch (e) {
+        out.push('❌ Error enviando al servidor');
+      }
 
-    // 4) Salto al destino (si es relativo, que sea respecto a la app)
-    const target = (/^https?:\/\//i.test(redir) ? redir : url(redir));
-    setTimeout(() => location.replace(target), 600);
-  })();
-</script>
+      document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+      setTimeout(() => location.replace(redir), 3000);
+    })();
+  </script>
 </body>
 </html>
+
