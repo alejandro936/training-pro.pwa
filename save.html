@@ -29,18 +29,14 @@ const url  = (rel) => new URL(rel, BASE).toString();
 const SESSION_URL = url('session');
 const HOME_URL    = url('index.html');
 
-/* ====== Parámetros recibidos ====== */
-// Espera ?email=...&token=...&redirect=...
-const params   = new URLSearchParams(location.search);
-const email    = params.get('email')    || '';
-const tk       = params.get('token')    || '';
-const redirect = params.get('redirect') || '';
+/* ====== Lee parámetros de GAS y alias ====== */
+// GAS te llama como: save.html?tk=...&redir=... (email opcional)
+// También aceptamos: ?token=...&redirect=...&email=...
+const qp      = new URLSearchParams(location.search);
+const email   = qp.get('email') || '';                    // opcional
+const token   = qp.get('tk') || qp.get('token') || '';    // obligatorio
+const redirect= qp.get('redir') || qp.get('redirect') || ''; // obligatorio
 
-function toAbsMaybe(p){
-  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
-}
-
-/* ====== Cookies ====== */
 function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
   document.cookie = name + '=' + encodeURIComponent(value)
@@ -50,25 +46,33 @@ function setCookie(name, value, maxAgeSec){
     + '; SameSite=Lax; Secure';
 }
 
+function toAbsMaybe(p){
+  try{ return p && !/^https?:\/\//i.test(p) ? url(p) : p; }catch{ return p; }
+}
+
 (async function saveAndGo(){
   try{
+    // 1) Persistencia principal
     if (email)    localStorage.setItem('tp_email', email);
-    if (tk)       localStorage.setItem('tp_token_v1', tk);
+    if (token)    localStorage.setItem('tp_token_v1', token);
     if (redirect) localStorage.setItem('tp_redirect', redirect);
 
+    // 2) Cookies (1 año)
     const ONE_YEAR = 60*60*24*365;
     if (email)    setCookie('tp_email', email, ONE_YEAR);
-    if (tk)       setCookie('tp_token_v1', tk, ONE_YEAR);
+    if (token)    setCookie('tp_token_v1', token, ONE_YEAR);
     if (redirect) setCookie('tp_redirect', redirect, ONE_YEAR);
 
+    // 3) Backup para iOS en CacheStorage (/session)
     if ('caches' in self) {
       const cache = await caches.open('tp-session');
-      const payload = { token: tk || null, redirect: redirect || '', email: email || null };
+      const payload = { token: token || null, redirect: redirect || '', email: email || null };
       await cache.put(SESSION_URL, new Response(JSON.stringify(payload), {
         headers:{'Content-Type':'application/json'}
       }));
     }
 
+    // 4) Salto al destino (tu GAS ya manda redir con la URL completa o relativa)
     const target = redirect ? toAbsMaybe(redirect) : HOME_URL;
     location.replace(target);
   }catch(e){
