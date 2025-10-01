@@ -1,171 +1,82 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Guardando sesión…</title>
-<style>
-body {
-  font-family: sans-serif;
-  background: #000;
-  color: #fff;
-  padding: 20px;
-}
-h1 { font-size: 1.5em; margin-bottom: 10px; }
-pre { background: #111; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
-</style>
+  <meta charset="utf-8">
+  <title>Guardando sesión…</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 { font-size: 1.5em; margin-bottom: 10px; }
+    pre { background: #111; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
+  </style>
 </head>
 <body>
-<h1>💾 Guardando sesión</h1>
-<div id="output"><pre>Cargando…</pre></div>
+  <h1>💾 Guardando sesión</h1>
+  <div id="output"><pre>Cargando…</pre></div>
 
-<!-- IndexedDB helper (idb-helper) -->
-<script>
-/* idb-helper minimal con fallback a localStorage y reporte de errores */
-(function (w) {
-  const DB_NAME = 'tp-db';
-  const STORE = 'session';
-  let _dbPromise = null;
+  <script>
+    function extractParams() {
+      const fromSearch = new URLSearchParams(location.search);
+      const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
 
-  function openDB() {
-    if (_dbPromise) return _dbPromise;
-    _dbPromise = new Promise((resolve, reject) => {
-      try {
-        const req = indexedDB.open(DB_NAME, 1);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(STORE)) {
-            db.createObjectStore(STORE, { keyPath: 'k' });
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      } catch (err) {
-        reject(err);
-      }
-    });
-    return _dbPromise;
-  }
+      const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
+      const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
+      const email = fromSearch.get('email') || fromReferrer.get('email') || '';
 
-  async function idbPut(k, v) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ k, v });
-        tx.oncomplete = () => res(true);
-        tx.onerror = () => rej(tx.error);
-      });
-    } catch (err) {
-      // Fallback a localStorage si IndexedDB no disponible
-      try {
-        localStorage.setItem(k, JSON.stringify(v));
-        return true;
-      } catch (e) {
-        throw err;
-      }
+      return { tk, redir, email };
     }
-  }
 
-  async function idbGet(k) {
-    try {
-      const db = await openDB();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(STORE, 'readonly');
-        const r = tx.objectStore(STORE).get(k);
-        r.onsuccess = () => res(r.result ? r.result.v : null);
-        r.onerror = () => rej(r.error);
-      });
-    } catch (err) {
-      // Fallback a localStorage
+    (async function () {
+      const { tk, redir, email } = extractParams();
+      const out = [];
+
+      out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
+      out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
+      out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
+
+      // Guardar en localStorage y cookies
       try {
-        const v = localStorage.getItem(k);
-        return v ? JSON.parse(v) : null;
+        localStorage.setItem('tp_token_v1', tk);
+        localStorage.setItem('tp_redirect', redir);
+        localStorage.setItem('tp_email', email);
+        document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
+        out.push('✅ Guardado en localStorage y cookies');
       } catch (e) {
-        return null;
+        out.push('❌ Error guardando en localStorage/cookies');
       }
-    }
-  }
 
-  w.idbHelper = { idbPut, idbGet };
-})(window);
-</script>
+      // Guardar en CacheStorage
+      try {
+        const cache = await caches.open('tp-session');
+        const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await cache.put('/session', response);
+        out.push('✅ Guardado en CacheStorage');
+      } catch (e) {
+        out.push('❌ Error guardando en CacheStorage');
+      }
 
-<script>
-function extractParams() {
-  const fromSearch = new URLSearchParams(location.search);
-  const fromReferrer = new URLSearchParams(document.referrer.split('?')[1] || '');
-  const tk = fromSearch.get('tk') || fromReferrer.get('tk') || '';
-  const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
-  const email = fromSearch.get('email') || fromReferrer.get('email') || '';
-  return { tk, redir, email };
-}
+      // Guardar en servidor
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
+          + encodeURIComponent(email)
+          + '&token=' + encodeURIComponent(tk)
+          + '&redirect=' + encodeURIComponent(redir));
+        out.push('✅ Enviado al servidor');
+      } catch (e) {
+        out.push('❌ Error enviando al servidor');
+      }
 
-(async function () {
-  const { tk, redir, email } = extractParams();
-  const out = [];
-
-  out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
-  out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
-  out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
-
-  // Guardar en IndexedDB (primario) con fallback interno en idb-helper
-  try {
-    await idbHelper.idbPut('tp_token_v1', tk);
-    await idbHelper.idbPut('tp_redirect', redir);
-    await idbHelper.idbPut('tp_email', email);
-    out.push('✅ Guardado en IndexedDB');
-  } catch (e) {
-    out.push('❌ Error guardando en IndexedDB');
-    console.error('IndexedDB save error', e);
-  }
-
-  // Guardar en localStorage y cookies como copia
-  try {
-    localStorage.setItem('tp_token_v1', tk);
-    localStorage.setItem('tp_redirect', redir);
-    localStorage.setItem('tp_email', email);
-    document.cookie = 'tp_token_v1=' + encodeURIComponent(tk) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_redirect=' + encodeURIComponent(redir) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    document.cookie = 'tp_email=' + encodeURIComponent(email) + '; path=/; max-age=31536000; SameSite=None; Secure';
-    out.push('✅ Guardado en localStorage y cookies');
-  } catch (e) {
-    out.push('❌ Error guardando en localStorage/cookies');
-    console.error('localStorage/cookie save error', e);
-  }
-
-  // Guardar en CacheStorage como copia no crítica
-  try {
-    const cache = await caches.open('tp-session');
-    const response = new Response(JSON.stringify({ token: tk, redirect: redir }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-    await cache.put('/session', response);
-    out.push('✅ Guardado en CacheStorage');
-  } catch (e) {
-    out.push('❌ Error guardando en CacheStorage');
-    console.error('CacheStorage save error', e);
-  }
-
-  // Enviar al servidor para que guarde token por email
-  try {
-    // endpoint tal como lo proporcionaste en tu proyecto
-    await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
-      + encodeURIComponent(email)
-      + '&token=' + encodeURIComponent(tk)
-      + '&redirect=' + encodeURIComponent(redir));
-    out.push('✅ Enviado al servidor');
-  } catch (e) {
-    out.push('❌ Error enviando al servidor');
-    console.error('Server save error', e);
-  }
-
-  document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
-
-  // espera breve para permitir ver el log y luego redirigir
-  setTimeout(() => {
-    try { location.replace(redir || '/'); } catch (e) { /* no-op */ }
-  }, 1500);
-})();
-</script>
+      document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
+      setTimeout(() => location.replace(redir), 3000);
+    })();
+  </script>
 </body>
 </html>
