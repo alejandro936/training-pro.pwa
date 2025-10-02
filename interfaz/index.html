@@ -251,10 +251,10 @@ function formatIndicaciones3(text){
   // Salto tras fin de frase
   raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
 
-  // 👇 Aquí estaba el fallo: .split (con punto)
+  // 👇 aquí estaba el fallo: tiene que ser .split con punto
   var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
 
-  // Une líneas que quedaron como "1." / "1)"
+  // Une "1." / "1)" con la línea siguiente
   var merged = [], i;
   for(i=0;i<parts.length;i++){
     var cur = parts[i];
