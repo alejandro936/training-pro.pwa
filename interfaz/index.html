@@ -195,14 +195,27 @@
   document.documentElement.classList.add('guard-hiding');
   (async () => {
     try {
-      // const r = await fetch('/api/check-token', { credentials:'include' });
-      // if (!(await r.json()).ok) throw 0;
+      const email = localStorage.getItem('tp_email') || '';
+      const token = localStorage.getItem('tp_token_v1') || '';
+      if (!email || !token) throw 0;
+
+      const r = await fetch('/api/auth/validate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({ email, token })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw 0;
+
       document.documentElement.classList.remove('guard-hiding');
     } catch {
-      location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search));
+      // Sesión inválida o robada → fuerza re-login
+      location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search) + '&force=1');
     }
   })();
 </script>
+
 </head>
 <body>
 
