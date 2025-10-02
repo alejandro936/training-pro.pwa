@@ -1,34 +1,54 @@
 // /api/_diag_clientes.js
+// Diagnóstico de credenciales/variables para la base de CLIENTES en Airtable
+
 export default async function handler(req, res) {
   try {
-    const {
-      AIRTABLE_PAT,
-      AIRTABLE_BASE_CLIENTES,
-      AIRTABLE_BASE, // fallback
-      TABLE_CLIENTES_ID,
-      TABLE_CLIENTES,
-    } = process.env;
+    const PAT   = process.env.AIRTABLE_PAT || '';
+    const BASEC = process.env.AIRTABLE_BASE_CLIENTES || ''; // <— base donde están CLIENTES y SESSIONS
+    const TIDC  = process.env.TABLE_CLIENTES_ID || '';
+    const TNAM  = process.env.TABLE_CLIENTES || '';
+    const TABLE = TIDC || TNAM || ''; // acepta id de tabla o nombre
 
-    const PAT    = AIRTABLE_PAT;
-    const BASE_C = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;
-    const TBL_C  = TABLE_CLIENTES_ID || TABLE_CLIENTES || 'CLIENTES';
+    if (!PAT || !BASEC || !TABLE) {
+      return res.status(200).json({
+        ok: false,
+        reason: 'MISSING_ENV',
+        missing: {
+          AIRTABLE_PAT: !!PAT,
+          AIRTABLE_BASE_CLIENTES: !!BASEC,
+          TABLE_CLIENTES_ID_or_TABLE_CLIENTES: !!TABLE,
+        },
+      });
+    }
 
-    if (!PAT)  return res.status(500).json({ok:false, error:'No AIRTABLE_PAT'});
-    if (!BASE_C) return res.status(500).json({ok:false, error:'No AIRTABLE_BASE_CLIENTES'});
-    if (!TBL_C)  return res.status(500).json({ok:false, error:'No TABLE_CLIENTES_ID/TABLE_CLIENTES'});
-
-    const url = `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_C)}?maxRecords=1`;
-    const r   = await fetch(url, { headers:{ Authorization:`Bearer ${PAT}` } });
-
-    const text = await r.text();
-    return res.status(200).json({
-      ok: r.ok,
-      http: r.status,
-      using: { BASE_C, TBL_C },
-      sample: safeCut(text, 500)
+    const url = `https://api.airtable.com/v0/${BASEC}/${encodeURIComponent(TABLE)}?maxRecords=1`;
+    const r = await fetch(url, {
+      headers: { Authorization: `Bearer ${PAT}` },
     });
-  } catch (e) {
-    return res.status(500).json({ ok:false, error:String(e) });
+
+    const http = r.status;
+    let body = null;
+    try { body = await r.json(); } catch { body = null; }
+
+    // Si 2xx devolvemos un pequeño sample para confirmar acceso
+    if (r.ok) {
+      const sample = (body && body.records && body.records[0]) || null;
+      return res.status(200).json({
+        ok: true,
+        http,
+        using: { BASE_C: BASEC, TABLE_C: TABLE },
+        sample: sample ? { id: sample.id, fields: Object.keys(sample.fields || {}).slice(0, 6) } : null,
+      });
+    }
+
+    // Errores típicos: 401/403/404…
+    return res.status(200).json({
+      ok: false,
+      http,
+      using: { BASE_C: BASEC, TABLE_C: TABLE },
+      airtable_error: body,
+    });
+  } catch (err) {
+    return res.status(200).json({ ok: false, reason: 'EXCEPTION', error: String(err) });
   }
 }
-function safeCut(s, n){ s=String(s||''); return s.length>n? s.slice(0,n)+'…': s; }
