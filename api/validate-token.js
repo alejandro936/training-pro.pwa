@@ -1,73 +1,167 @@
-// api/validate-token.js
+// /api/validate-token.js
+// Valida email contra CLIENTES (Airtable), upsert en SESSIONS y devuelve token + redirect
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
-  }
-
   try {
-    const { email: emailRaw } = req.body || {};
-    const email = String(emailRaw || '').trim().toLowerCase();
-    if (!email || !/@/.test(email)) {
-      return res.status(400).json({ ok: false, error: 'Email no válido' });
+    if (req.method !== 'POST') {
+      return res.status(405).json({ ok: false, error: 'Method not allowed' });
     }
 
-    const PAT     = process.env.AIRTABLE_PAT;
-    const BASE_ID = process.env.AIRTABLE_BASE_CLIENTES;
-    const TABLE   = process.env.TABLE_CLIENTES_ID || process.env.TABLE_CLIENTES || 'CLIENTES';
-    const SECRET  = process.env.SECRET;
-    const DAYS    = Number(process.env.SESSION_DAYS || '30');  // 0 = sin caducidad
-    const BIB_URL = process.env.BIB_WEBAPP_URL; // p. ej. https://tudominio/biblioteca/ o URL externa
+    const {
+      AIRTABLE_PAT,
+      AIRTABLE_BASE_CLIENTES,
+      AIRTABLE_BASE, // fallback
+      TABLE_CLIENTES_ID,
+      TABLE_CLIENTES,
+      TABLE_SESSIONS,
+      CLIENTES_ACCESS_FIELD,
+      SESSION_DAYS,
+      SECRET,
+    } = process.env;
 
-    if (!PAT || !BASE_ID || !TABLE || !SECRET || !BIB_URL) {
-      return res.status(500).json({ ok: false, error: 'Config incompleta en variables de entorno' });
+    // === Config ===
+    const PAT    = AIRTABLE_PAT;
+    const BASE_C = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE; // ← usamos tu base de CLIENTES/SESSIONS
+    const TBL_C  = TABLE_CLIENTES_ID || TABLE_CLIENTES || 'CLIENTES';
+    const TBL_S  = TABLE_SESSIONS || 'SESSIONS';
+    const ACCESS = CLIENTES_ACCESS_FIELD || 'Acceso a Biblioteca';
+    const DAYS   = Number(SESSION_DAYS || '30'); // 0 = sin caducidad
+    const SECRET_KEY = (SECRET || 'change-me') + ''; // string
+
+    if (!PAT || !BASE_C || !TBL_C || !TBL_S || !SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: 'Missing env vars (PAT/BASE/TABLES/SECRET)' });
     }
 
-    // --- Consulta Airtable ---
-    const formula = `AND(
-      OR(LOWER({Email})="${email}", {Email_lc}="${email}"),
-      OR({Acceso a Biblioteca}=1, {Acceso a Biblioteca}="Sí", {Acceso a Biblioteca}="Si")
-    )`;
-
-    const atUrl = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?maxRecords=1&filterByFormula=${encodeURIComponent(formula)}`;
-    const atRes = await fetch(atUrl, { headers: { Authorization: `Bearer ${PAT}` } });
-    if (!atRes.ok) {
-      const txt = await atRes.text();
-      return res.status(atRes.status).json({ ok: false, error: `Airtable ${atRes.status}: ${txt}` });
-    }
-    const data = await atRes.json();
-    const ok = (data.records || []).length > 0;
-    if (!ok) {
-      return res.status(403).json({ ok: false, error: 'No tienes acceso activo.' });
+    const body = await readJson(req);
+    const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
+    if (!email_raw || !email_raw.includes('@')) {
+      return res.status(400).json({ ok: false, error: 'Email inválido' });
     }
 
-    // --- Firma token HS256 simple ---
-    const token = signToken({ sub: email }, SECRET, DAYS);
-    const redirect = `${BIB_URL}?tk=${encodeURIComponent(token)}`;
+    // === 1) CLIENTES: comprobar acceso activo ===
+    // Fórmula flexible: Email o Email_lc, y campo de acceso verdadero (1/"Sí"/"Si"/true)
+    const formula =
+      `AND(
+        OR(LOWER({Email})="${email_raw}", {Email_lc}="${email_raw}"),
+        OR({${ACCESS}}=1, {${ACCESS}}="Sí", {${ACCESS}}="Si", {${ACCESS}}=TRUE())
+      )`;
+
+    const urlClientes =
+      `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+
+    const rCl = await fetch(urlClientes, {
+      headers: { Authorization: `Bearer ${PAT}` },
+    });
+    if (!rCl.ok) {
+      const txt = await rCl.text();
+      return res.status(rCl.status).json({
+        ok: false,
+        error: `Airtable CLIENTES error: HTTP ${rCl.status}`,
+        detail: safeCut(txt, 400),
+        hint: 'Revisa AIRTABLE_BASE_CLIENTES / TABLE_CLIENTES_ID y permisos del PAT (read).',
+      });
+    }
+    const cl = await rCl.json();
+    const hasAccess = Array.isArray(cl.records) && cl.records.length > 0;
+    if (!hasAccess) {
+      return res.status(403).json({ ok: false, error: 'No tienes acceso activo. Contacta con soporte si crees que es un error.' });
+    }
+
+    // === 2) SESSIONS: upsert por Email_lc ===
+    const email_lc = email_raw;
+    const findUrl =
+      `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{Email_lc}="${email_lc}"`)}&maxRecords=1`;
+    const rFind = await fetch(findUrl, { headers: { Authorization: `Bearer ${PAT}` } });
+    if (!rFind.ok) {
+      const txt = await rFind.text();
+      return res.status(rFind.status).json({
+        ok: false,
+        error: `Airtable SESSIONS (find) error: HTTP ${rFind.status}`,
+        detail: safeCut(txt, 400),
+        hint: 'Revisa TABLE_SESSIONS y permisos PAT (write si hay update/insert).',
+      });
+    }
+    const found = await rFind.json();
+    const nowIso = new Date().toISOString();
+
+    if (Array.isArray(found.records) && found.records.length > 0) {
+      // Update ts_login
+      const recId = found.records[0].id;
+      const rUp = await fetch(`https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}/${recId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${PAT}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fields: { Email_lc: email_lc, ts_login: nowIso } }),
+      });
+      if (!rUp.ok) {
+        const txt = await rUp.text();
+        return res.status(rUp.status).json({
+          ok: false,
+          error: `Airtable SESSIONS (update) error: HTTP ${rUp.status}`,
+          detail: safeCut(txt, 400),
+        });
+      }
+    } else {
+      // Create
+      const rIns = await fetch(`https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${PAT}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          records: [{ fields: { Email_lc: email_lc, ts_login: nowIso } }],
+        }),
+      });
+      if (!rIns.ok) {
+        const txt = await rIns.text();
+        return res.status(rIns.status).json({
+          ok: false,
+          error: `Airtable SESSIONS (insert) error: HTTP ${rIns.status}`,
+          detail: safeCut(txt, 400),
+        });
+      }
+    }
+
+    // === 3) Token + redirect ===
+    const token = signToken({ sub: email_lc }, SECRET_KEY, DAYS);
+    const redirect = '/interfaz/';
 
     return res.status(200).json({ ok: true, token, redirect });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: String(err) });
+    return res.status(500).json({ ok: false, error: String(err && err.message ? err.message : err) });
   }
 }
 
+/* ---------- helpers ---------- */
+
+async function readJson(req) {
+  const chunks = [];
+  for await (const c of req) chunks.push(c);
+  if (!chunks.length) return {};
+  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  catch { return {}; }
+}
+
+function safeCut(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n) + '…' : s; }
+
+// HS256 estilo “header.payload.sig” (base64url)
+import crypto from 'crypto';
+function b64u(input) {
+  return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
 function signToken(payload, secret, days) {
   const now = Math.floor(Date.now() / 1000);
   const header = { alg: 'HS256', typ: 'TP' };
-  const body   = { ...payload, iat: now };
+  const body = { ...payload, iat: now };
   if (days > 0) body.exp = now + days * 86400;
 
   const h = b64u(JSON.stringify(header));
   const b = b64u(JSON.stringify(body));
   const msg = `${h}.${b}`;
-  const sig = b64u(hmacSha256(msg, secret));
-  return `${h}.${b}.${sig}`;
-}
-
-function b64u(input) {
-  const s = Buffer.isBuffer(input) ? input : Buffer.from(String(input), 'utf8');
-  return s.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-}
-
-function hmacSha256(message, secret) {
-  return require('crypto').createHmac('sha256', secret).update(message).digest();
+  const sig = crypto.createHmac('sha256', secret).update(msg).digest('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return `${msg}.${sig}`;
 }
