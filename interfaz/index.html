@@ -51,12 +51,22 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* ===== Botón Volver (FIJO) ===== */
+  /* ===== Capa fija + botón Volver (no se mueve) ===== */
+  .fab-layer{
+    position: fixed;
+    inset: 0;                      /* ocupa todo el viewport */
+    z-index: 11000;                /* por encima del modal/backdrop */
+    pointer-events: none;          /* capa no intercepta clics, solo el botón */
+    padding: env(safe-area-inset-top)
+             env(safe-area-inset-right)
+             env(safe-area-inset-bottom)
+             env(safe-area-inset-left); /* respeta notch y bordes redondeados */
+  }
   .back-fab{
-    position: fixed;                 /* se queda fijo aunque haya scroll */
-    z-index: 10050;                  /* por encima del modal (9999) */
-    top: calc(env(safe-area-inset-top) + 2px);
-    left: calc(env(safe-area-inset-left) + 4px);
+    position: absolute;            /* relativo a .fab-layer */
+    top: 4px; left: 6px;           /* ajusta si lo quieres aún más pegado */
+    pointer-events: auto;
+
     padding: 7px 11px;
     font-size: 12px;
     line-height: 1;
@@ -206,8 +216,10 @@
 </head>
 <body>
 
-  <!-- Botón Volver fijo (fuera del header y de .wrap) -->
-  <button class="back-fab" onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
+  <!-- Capa fija para el botón Volver (no se mueve) -->
+  <div class="fab-layer">
+    <button class="back-fab" onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
+  </div>
 
   <div class="wrap">
     <div class="top-spacer" aria-hidden="true"></div>
@@ -336,7 +348,7 @@ function embedVideo(url){
         '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
           '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
           '<div class="play"></div>'+
-        '</div>'+
+        </div>'+
         '<div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div>'+
       '</div>';
   }
