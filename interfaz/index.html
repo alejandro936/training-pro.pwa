@@ -51,14 +51,23 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* Botón Volver */
-  .back-btn{
-    position:absolute; left:0; top:0; transform:translateY(-6px);
-    padding:4px 8px; font-size:12px; line-height:1;
-    color:#e9e9e9; background:#141414;
-    border:1px solid rgba(230,192,110,.45); border-radius:8px; cursor:pointer;
-  }
-  .back-btn:hover{ border-color:rgba(230,192,110,.65) }
+ /* Botón Volver fijo en la esquina superior izquierda */
+.back-fab{
+  position: fixed;
+  z-index: 10000;
+  top: calc(env(safe-area-inset-top) + 8px);
+  left: calc(env(safe-area-inset-left) + 10px);
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+  color:#e9e9e9;
+  background:#141414;
+  border:1px solid rgba(230,192,110,.45);
+  border-radius: 8px;
+  cursor:pointer;
+}
+.back-fab:hover{ border-color: rgba(230,192,110,.65); }
+
 
   /* ===== BARRA (input grande, botones pequeños) ===== */
   .toolbar{
