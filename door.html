@@ -7,9 +7,15 @@
 <style>
   :root{ --bg:#000; --panel:#0c0c0c; --line:#1c1c1c; --fg:#fff; --gold:#E6C06E; --muted:#bdbdbd; }
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,Segoe UI,Roboto; -webkit-text-size-adjust:100%;}
+  html,body{
+    margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.5 system-ui,Segoe UI,Roboto; -webkit-text-size-adjust:100%;
+  }
   .wrap{max-width:720px;margin:0 auto;padding:28px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px; box-shadow:0 8px 28px rgba(0,0,0,.25)}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;
+    box-shadow:0 8px 28px rgba(0,0,0,.25)
+  }
   h1{margin:0 0 10px;font-weight:800;font-size:22px}
   p{color:var(--muted);margin:6px 0 12px}
   .row{display:flex; gap:10px; align-items:center}
@@ -20,7 +26,8 @@
   }
   button{
     flex:0 0 auto; padding:10px 14px; border-radius:12px; border:1px solid var(--gold);
-    background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05)); color:#fff; cursor:pointer; font-weight:700; font-size:14px
+    background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));
+    color:#fff; cursor:pointer; font-weight:700; font-size:14px
   }
   .msg{margin-top:10px; min-height:18px}
   .muted{color:var(--muted);font-size:13px}
@@ -33,7 +40,6 @@
       <h1>Accede a tu biblioteca</h1>
       <p>Introduce tu email de compra para validar el acceso.</p>
 
-      <!-- input más corto y contenido centrado en la tarjeta -->
       <div class="row">
         <input id="email" type="email" placeholder="tu@email.com" autocomplete="email" inputmode="email">
         <button id="btn">Entrar</button>
@@ -50,6 +56,7 @@
   </div>
 
 <script>
+/* ================== helpers ================== */
 const $ = (s)=>document.querySelector(s);
 const BASE = new URL('.', location.href);
 const url  = (rel) => new URL(rel, BASE).toString();
@@ -64,6 +71,18 @@ function setCookie(name, value, maxAgeSec){
 }
 function showForm(){ $('#checking').classList.add('hide'); $('#form').classList.remove('hide'); }
 function showChecking(){ $('#form').classList.add('hide'); $('#checking').classList.remove('hide'); }
+
+function deviceId() {
+  try{
+    const k='tp_device_id';
+    let id = localStorage.getItem(k);
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem(k, id);
+    }
+    return id;
+  }catch(_){ return 'web'; }
+}
 
 async function restoreFromCache(){
   try{
@@ -84,39 +103,79 @@ async function restoreFromCache(){
   }catch{ return null; }
 }
 
+/* ================== init (autologin si hay sesión) ================== */
 (async function init(){
-  const force = new URLSearchParams(location.search).has('force');
+  const usp = new URLSearchParams(location.search);
+  const force = usp.has('force');
+  const redirectPref = usp.get('redirect') || ''; // si nos llaman con ?redirect=...
+
   const savedEmail = localStorage.getItem('tp_email') || getCookie('tp_email') || '';
   if (savedEmail) $('#email').value = savedEmail;
 
   if (force) { showForm(); return; }
   showChecking();
+
+  // Reutiliza sesión si existe
   let tk = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
   let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
   if (!(tk && redir)) {
     const r = await restoreFromCache();
     if (r) { tk = r.token; redir = r.redirect; }
   }
-  if (tk && redir && redir !== '/') location.replace(redir);
-  else showForm();
+  // Si venimos con redirect en la URL, respétalo como preferencia
+  if (redirectPref) redir = redirectPref;
+
+  if (tk && redir && redir !== '/') {
+    location.replace(redir);
+  } else {
+    showForm();
+  }
 })();
 
-$('#btn').addEventListener('click', async ()=>{
+/* ================== login (1 sesión por email) ================== */
+async function doLogin(){
   const email = ($('#email').value||'').trim().toLowerCase();
   if(!email){ $('#msg').textContent='Escribe tu email'; return; }
   $('#loading').style.display='block'; $('#msg').textContent='';
+
   try{
-    const r = await fetch('/api/validate-token', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ email })
+    // Llamada al endpoint que valida acceso y ROTA la sesión (modo Netflix)
+    const r = await fetch('/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, deviceId: deviceId() })
     });
     const data = await r.json();
-    if (!r.ok || !data.ok) throw new Error(data.error || 'No autorizado');
-    const p = new URLSearchParams({ tk:data.token, redir:data.redirect, email });
+
+    if (!r.ok || !data.ok) {
+      $('#msg').textContent = (data && data.error) ? data.error : 'No se pudo validar.';
+      return;
+    }
+
+    // Guarda mínimo para la navegación inmediata
+    try{
+      localStorage.setItem('tp_email', email);
+      localStorage.setItem('tp_token_v1', data.token);
+      localStorage.setItem('tp_redirect', data.redirect || '/interfaz/');
+    }catch(_){}
+
+    // Redirección a save.html (guarda cookies + cache + redirige)
+    const usp = new URLSearchParams(location.search);
+    const redirectPref = usp.get('redirect') || '';
+    const finalRedir = redirectPref || data.redirect || '/interfaz/';
+    const p = new URLSearchParams({ tk:data.token, redir:finalRedir, email });
     location.replace('/save.html?'+p.toString());
-  }catch(e){ $('#msg').textContent=String(e.message||e); }
-  finally{ $('#loading').style.display='none'; }
-});
+
+  }catch(e){
+    $('#msg').textContent = 'Error de red. Inténtalo de nuevo.';
+  }finally{
+    $('#loading').style.display='none';
+  }
+}
+
+/* click + Enter */
+$('#btn').addEventListener('click', doLogin);
+$('#email').addEventListener('keydown', (e)=>{ if (e.key === 'Enter') doLogin(); });
 </script>
 </body>
 </html>
