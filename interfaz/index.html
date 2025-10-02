@@ -41,17 +41,26 @@
 
   .top-spacer{ height:54px; }
 
-  /* ===== TÍTULO (más grande) ===== */
-  header{ margin:0 0 var(--gap-top); }
+  /* ===== TÍTULO (ajusta el clamp si quieres otro tamaño) ===== */
+  header{ margin:0 0 var(--gap-top); position:relative; }
   h1{
     margin:0 auto;
     max-width:var(--content-max);
     font-family:var(--title-font);
     font-weight:800; letter-spacing:-0.01em; line-height:1.02;
-    font-size:clamp(36px, 8vw, 52px); /* ↑ */
+    font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* ===== BARRA (input más grande, botones más pequeños) ===== */
+  /* Botón Volver */
+  .back-btn{
+    position:absolute; left:0; top:0; transform:translateY(-6px);
+    padding:4px 8px; font-size:12px; line-height:1;
+    color:#e9e9e9; background:#141414;
+    border:1px solid rgba(230,192,110,.45); border-radius:8px; cursor:pointer;
+  }
+  .back-btn:hover{ border-color:rgba(230,192,110,.65) }
+
+  /* ===== BARRA (input grande, botones pequeños) ===== */
   .toolbar{
     display:flex; gap:10px;
     margin:0 auto calc(var(--gap-top) + 10px);
@@ -61,8 +70,7 @@
     flex:1 1 auto; min-width:0;
     background:#121212; color:var(--fg);
     border:1px solid #1d1d1d; border-radius:10px;
-    padding:13px 16px;              /* input más alto/ancho */
-    font-size:16px;
+    padding:13px 16px; font-size:16px;
     transition:box-shadow .18s ease,border-color .18s ease;
   }
   .toolbar input:focus{ outline:none; border-color:#2a2a2a; box-shadow:0 0 0 2px rgba(255,255,255,.12); }
@@ -70,8 +78,7 @@
     flex:0 0 auto;
     background:#121212; color:var(--fg);
     border:1px solid var(--line); border-radius:9px;
-    padding:6px 9px;                /* ↓ aún más pequeños */
-    font-size:13px; line-height:1;
+    padding:6px 9px; font-size:13px; line-height:1;
   }
   .toolbar .primary{
     background:linear-gradient(180deg,rgba(230,192,110,.16),rgba(230,192,110,.05));
@@ -145,7 +152,7 @@
   .panel .topbar{ display:flex; justify-content:flex-end; align-items:center; margin-bottom:4px; }
   .panel .x{
     border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff;
-    border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px; /* aún más pequeño */
+    border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px;
   }
   .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
   .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
@@ -170,12 +177,13 @@
   .video-link a{ color:var(--accent); text-decoration:none }
 </style>
 
-<!-- Guard de sesión (si proteges /interfaz) -->
+<!-- Guard de sesión (redirige a /door si no hay sesión válida) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
   document.documentElement.classList.add('guard-hiding');
   (async () => {
     try {
+      // Si tienes /api/check-token, valida aquí:
       // const r = await fetch('/api/check-token', { credentials:'include' });
       // if (!(await r.json()).ok) throw 0;
       document.documentElement.classList.remove('guard-hiding');
@@ -189,7 +197,10 @@
   <div class="wrap">
     <div class="top-spacer" aria-hidden="true"></div>
 
-    <header><h1>TRAINING PRO</h1></header>
+    <header>
+      <button class="back-btn" onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
+      <h1>TRAINING PRO</h1>
+    </header>
 
     <div class="toolbar">
       <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
@@ -214,11 +225,21 @@
   </div>
 
 <script>
+/* ======== Utilidades ======== */
 var CHUNK = 9;
 ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
 var state = { q:'', buffer:[], nextOffset:'', loading:false };
+
+function goHome(e){
+  e.preventDefault();
+  try{
+    var ref = document.referrer ? new URL(document.referrer) : null;
+    if (ref && ref.origin === location.origin && history.length > 1) { history.back(); return; }
+  }catch(_){}
+  location.href = '/';
+}
 
 function showErr(msg){
   var box = document.getElementById('err');
@@ -227,7 +248,7 @@ function showErr(msg){
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
 
-/* Indicaciones */
+/* ======== Indicaciones ======== */
 function formatIndicaciones(text){
   if(!text) return '';
   var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
@@ -237,50 +258,30 @@ function formatIndicaciones(text){
 function formatIndicaciones3(text){
   if(!text) return '';
   var raw = String(text).trim();
-
-  // Normaliza separadores
-  raw = raw
-    .replace(/\r/g,'\n')
-    .replace(/[•\u2022\u2023\u25E6]/g,'\n')
-    .replace(/[;·]/g,'\n')
-    .replace(/\s*[-–—]\s+/g,'\n');
-
-  // Salto antes de numeraciones "1." o "1)"
+  raw = raw.replace(/\r/g,'\n')
+           .replace(/[•\u2022\u2023\u25E6]/g,'\n')
+           .replace(/[;·]/g,'\n')
+           .replace(/\s*[-–—]\s+/g,'\n');
   raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2');
-
-  // Salto tras fin de frase
   raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
 
-  // 👇 aquí estaba el fallo: tiene que ser .split con punto
-  var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+  var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);  /* <- split correcto */
 
-  // Une "1." / "1)" con la línea siguiente
   var merged = [], i;
   for(i=0;i<parts.length;i++){
     var cur = parts[i];
-    if(/^\d+[.)]$/.test(cur) && i+1<parts.length){
-      merged.push(cur + ' ' + parts[i+1]); i++;
-    } else {
-      merged.push(cur);
-    }
+    if(/^\d+[.)]$/.test(cur) && i+1<parts.length){ merged.push(cur + ' ' + parts[i+1]); i++; }
+    else { merged.push(cur); }
   }
-
   function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
 
-/* ---- Vídeo: YouTube + Drive con thumbnail lite ---- */
-<script>
-/* ...deja el resto igual... */
-
-/* —— DRIVE helpers robustos —— */
+/* ======== Vídeo: YouTube + Drive ======== */
 function driveIdFromAny(url){
   try{
-    // Limpia #fragment y normaliza
     var clean = String(url).split('#')[0];
-    // Quita utm/usp/resourcekey/etc.
-    clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=([^&#]+)/gi,'');
-    // Patrones con ID
+    clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=[^&#]*/gi,'');
     var m =
       /\/file\/d\/([^/]+)\//.exec(clean) ||
       /\/d\/([^/]+)\//.exec(clean) ||
@@ -290,19 +291,13 @@ function driveIdFromAny(url){
     return m && m[1] ? m[1] : '';
   }catch(_){ return ''; }
 }
-function drivePreviewUrlFromId(id){
-  return 'https://drive.google.com/file/d/'+id+'/preview';
-}
-function driveThumbUrlFromId(id){
-  // Miniatura oficial de Drive
-  return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280';
-}
+function drivePreviewUrlFromId(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
+function driveThumbUrlFromId(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
 
-/* —— EMBED genérico (YouTube + Drive + fallback) —— */
 function embedVideo(url){
   if(!url) return '';
 
-  // 1) YouTube (watch?v=, youtu.be/, shorts, etc.)
+  // YouTube
   var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
   if(yt){
     var id = yt[1];
@@ -317,7 +312,7 @@ function embedVideo(url){
       '</div>';
   }
 
-  // 2) Google Drive (diversos formatos)
+  // Google Drive
   var gid = driveIdFromAny(url);
   if(gid){
     var thumb = driveThumbUrlFromId(gid);
@@ -332,34 +327,27 @@ function embedVideo(url){
       '</div>';
   }
 
-  // 3) Fallback: reproducir como <video> (puede fallar por CORS)
+  // Fallback
   return ''+
     '<div class="video"><video controls src="'+url+'"></video></div>'+
     '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
 }
-
 function ytPlay(el){
-  var id = el.getAttribute('data-yt');
-  if(!id) return;
+  var id = el.getAttribute('data-yt'); if(!id) return;
   el.outerHTML =
     '<div class="video">'+
       '<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'+
     '</div>';
 }
 function drivePlay(el){
-  var src = el.getAttribute('data-drive');
-  if(!src) return;
+  var src = el.getAttribute('data-drive'); if(!src) return;
   el.outerHTML =
     '<div class="video">'+
       '<iframe src="'+src+'" allow="autoplay; fullscreen"></iframe>'+
     '</div>';
 }
 
-/* ...deja el resto igual... */
-</script>
-
-
-/* ---- Render ---- */
+/* ======== Render ======== */
 function card(x){
   var esc = escapeHtml;
   var nombre = esc(x.ejercicio || x.nombre || '');
@@ -390,7 +378,7 @@ function setMoreVisibility(){ var show=(state.buffer.length>0)||!!state.nextOffs
 function renderChunk(){ var take=Math.min(CHUNK,state.buffer.length); if(take>0){ var slice=state.buffer.splice(0,take); renderAppend(slice); } setMoreVisibility(); }
 function resetGrid(){ document.getElementById('grid').innerHTML = ''; }
 
-/* ---- API ---- */
+/* ======== API ======== */
 async function apiList(opts){
   const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), { credentials:'include' });
@@ -403,7 +391,7 @@ async function apiDetail(id){
   return r.json();
 }
 
-/* ---- Control ---- */
+/* ======== Control ======== */
 async function fetchData(opts){
   opts = opts || {};
   if (state.loading) return; state.loading = true; showErr('');
