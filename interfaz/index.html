@@ -51,23 +51,26 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* ===== Botón Volver (fijo, estilo dorado) ===== */
+  /* ===== Botón Volver (FIJO) ===== */
   .back-fab{
-    position:fixed;
-    z-index:10000;
-    top:calc(env(safe-area-inset-top) + 2px);
-    left:calc(env(safe-area-inset-left) + 4px);
-    padding:6px 10px;
-    font-size:12px;
-    line-height:1;
+    position: fixed;                 /* se queda fijo aunque haya scroll */
+    z-index: 10050;                  /* por encima del modal (9999) */
+    top: calc(env(safe-area-inset-top) + 2px);
+    left: calc(env(safe-area-inset-left) + 4px);
+    padding: 7px 11px;
+    font-size: 12px;
+    line-height: 1;
     color:#fff;
-    background:linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
+    background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
     border:1px solid var(--accent);
-    border-radius:8px;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
+    border-radius: 9px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.25);
     cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .back-fab:hover{ border-color:rgba(230,192,110,.65); }
+  .back-fab:active{ transform: translateY(1px); }
 
   /* ===== BARRA (input grande, botones pequeños) ===== */
   .toolbar{
@@ -85,7 +88,7 @@
   .toolbar input:focus{ outline:none; border-color:#2a2a2a; box-shadow:0 0 0 2px rgba(255,255,255,.12); }
   .toolbar button{
     flex:0 0 auto;
-    background:#121212; color:var(--fg);
+    background:#121212; color:#fff;
     border:1px solid var(--line); border-radius:9px;
     padding:6px 9px; font-size:13px; line-height:1;
   }
@@ -203,7 +206,7 @@
 </head>
 <body>
 
-  <!-- Botón Volver fijo (fuera del header) -->
+  <!-- Botón Volver fijo (fuera del header y de .wrap) -->
   <button class="back-fab" onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
 
   <div class="wrap">
