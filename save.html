@@ -1,99 +1,101 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Guardando sesión…</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
   <style>
-    body{font-family:system-ui,Inter,sans-serif;background:#000;color:#fff;padding:20px}
-    h1{font-size:1.5em;margin-bottom:10px}
-    pre{background:#111;padding:10px;border-radius:6px;white-space:pre-wrap}
+    :root { color-scheme: dark; }
+    html,body{height:100%}
+    body{
+      margin:0; background:#000; color:#fff; font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      display:grid; place-items:center; padding:24px;
+    }
+    .card{
+      width:min(640px,92vw);
+      background:#0c0c0c; border:1px solid #1d1d1d; border-radius:14px; padding:22px;
+      text-align:center; box-shadow:0 10px 24px rgba(0,0,0,.35);
+    }
+    h1{margin:0 0 10px; font-size:18px}
+    .muted{opacity:.8; font-size:14px}
+    .spinner{
+      margin:16px auto 6px; width:28px; height:28px; border-radius:50%;
+      border:3px solid rgba(255,255,255,.18); border-top-color:#E6C06E;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <h1>💾 Guardando sesión</h1>
-  <div id="output"><pre>Cargando…</pre></div>
+  <div class="card" role="status" aria-live="polite" aria-busy="true">
+    <div class="spinner" aria-hidden="true"></div>
+    <h1>Guardando sesión…</h1>
+    <p class="muted">Un momento, por favor.</p>
+  </div>
 
 <script>
-  // ==== Helpers de URL (para usar la MISMA clave que go-lib: url('session')) ====
-  const BASE = new URL('.', location.href);
-  const url = (rel) => new URL(rel, BASE).toString();
-  const SESSION_URL = url('session');   // <- misma clave que lee go-lib
+/* ========= util ========= */
+function getParams(){
+  const qs1 = new URLSearchParams(location.search);
+  const qs2 = new URLSearchParams((document.referrer.split('?')[1]||''));
+  const tk    = qs1.get('tk')    || qs2.get('tk')    || '';
+  const redir = qs1.get('redir') || qs2.get('redir') || '/';
+  const email = qs1.get('email') || qs2.get('email') || '';
+  return { tk, redir, email };
+}
+function setCookie(name, value, maxAgeSec){
+  document.cookie = name + '=' + encodeURIComponent(value)
+    + '; path=/; max-age=' + (maxAgeSec||31536000)
+    + '; SameSite=None; Secure';
+}
 
-  function setCookie(name, value, maxAgeSec){
-    const exp = new Date(Date.now() + maxAgeSec*1000).toUTCString();
-    document.cookie = name + '=' + encodeURIComponent(value)
-      + '; path=' + BASE.pathname
-      + '; max-age=' + maxAgeSec
-      + '; expires=' + exp
-      + '; SameSite=Lax; Secure';
-  }
+/* ========= main ========= */
+(async function(){
+  const { tk, redir, email } = getParams();
+  const target = redir && redir !== '/' ? redir : '/interfaz/';
 
-  function extractParams() {
-    const fromSearch   = new URLSearchParams(location.search);
-    const fromReferrer = new URLSearchParams((document.referrer.split('?')[1] || ''));
-    const tk    = fromSearch.get('tk')    || fromReferrer.get('tk')    || '';
-    const redir = fromSearch.get('redir') || fromReferrer.get('redir') || '/';
-    const email = fromSearch.get('email') || fromReferrer.get('email') || '';
-    return { tk, redir, email };
-  }
+  // 1) localStorage + cookies
+  try{
+    if (tk) localStorage.setItem('tp_token_v1', tk);
+    if (email) localStorage.setItem('tp_email', email);
+    if (target) localStorage.setItem('tp_redirect', target);
 
-  (async function run () {
-    const { tk, redir, email } = extractParams();
-    const out = [];
-    out.push(`📧 Email recibido: ${email || '[NO ENVIADO]'}`);
-    out.push(`🔑 Token recibido: ${tk || '[NO ENVIADO]'}`);
-    out.push(`➡️ Redirección recibida: ${redir || '[NO ENVIADO]'}`);
+    if (tk) setCookie('tp_token_v1', tk);
+    if (email) setCookie('tp_email', email);
+    if (target) setCookie('tp_redirect', target);
+  }catch(_){}
 
-    // 1) Guardar en localStorage + cookies (1 año)
-    try {
-      if (tk)    localStorage.setItem('tp_token_v1', tk);
-      if (redir) localStorage.setItem('tp_redirect', redir);
-      if (email) localStorage.setItem('tp_email', email);
-
-      const ONE_YEAR = 60*60*24*365;
-      if (tk)    setCookie('tp_token_v1', tk, ONE_YEAR);
-      if (redir) setCookie('tp_redirect', redir, ONE_YEAR);
-      if (email) setCookie('tp_email', email, ONE_YEAR);
-
-      out.push('✅ Guardado en localStorage y cookies');
-    } catch (e) {
-      out.push('❌ Error guardando en localStorage/cookies');
+  // 2) CacheStorage (para rescate offline)
+  try{
+    if ('caches' in self){
+      const cache = await caches.open('tp-session');
+      await cache.put('/session', new Response(
+        JSON.stringify({ token: tk || null, redirect: target, email: email || null }),
+        { headers: { 'Content-Type': 'application/json' } }
+      ));
     }
+  }catch(_){}
 
-    // 2) Backup en CacheStorage (misma clave que leerá go-lib)
-    try {
-      if ('caches' in self) {
-        const cache = await caches.open('tp-session');
-        const payload = { token: tk || null, redirect: redir || '', email: email || null };
-        await cache.put(SESSION_URL, new Response(JSON.stringify(payload), {
-          headers: { 'Content-Type':'application/json' }
-        }));
-        out.push('✅ Guardado en CacheStorage');
-      } else {
-        out.push('ℹ️ CacheStorage no soportado');
-      }
-    } catch (e) {
-      out.push('❌ Error guardando en CacheStorage');
+  // 3) (Opcional) Avisar a tu GAS para guardado servidor
+  //    Cambia la URL si usas este endpoint; o comenta este bloque si no lo necesitas.
+  try{
+    const GAS_SAVE_URL = 'https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec';
+    if (email && target) {
+      const u = new URL(GAS_SAVE_URL);
+      if (tk) u.searchParams.set('token', tk);
+      u.searchParams.set('email', email);
+      u.searchParams.set('redirect', target);
+      // No esperamos la respuesta para no bloquear la UX
+      fetch(u.toString()).catch(()=>{});
     }
+  }catch(_){}
 
-    // 3) (Opcional) Aviso a tu GAS antiguo — puedes eliminar este bloque si ya no lo usas
-    try {
-      await fetch('https://script.google.com/macros/s/AKfycbz8d_Zx_iK2Yn8ojMQGjrTigZIKlGpKyM_ln4-zFAeG7vL62550SdHa-szs3ZEAui8E/exec?email='
-        + encodeURIComponent(email)
-        + '&token=' + encodeURIComponent(tk)
-        + '&redirect=' + encodeURIComponent(redir));
-      out.push('✅ Enviado al servidor');
-    } catch (e) {
-      out.push('❌ Error enviando al servidor');
-    }
-
-    document.getElementById('output').innerHTML = `<pre>${out.join('\n')}</pre>`;
-
-    // 4) Salto al destino (si es relativo, que sea respecto a la app)
-    const target = (/^https?:\/\//i.test(redir) ? redir : url(redir));
-    setTimeout(() => location.replace(target), 600);
-  })();
+  // 4) Redirigir (garantizamos al menos ~600ms para que dé tiempo a guardar)
+  const MIN_WAIT = 600;
+  const start = performance.now();
+  const waitLeft = Math.max(0, MIN_WAIT - (performance.now() - start));
+  setTimeout(() => location.replace(target), waitLeft);
+})();
 </script>
 </body>
 </html>
