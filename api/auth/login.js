@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     // ENV
     const PAT    = process.env.AIRTABLE_PAT;
-    const BASE_CLIENTES = process.env.AIRTABLE_BASE_CLIENTES || process.env.AIRTABLE_BASE;
+    const BASE_CLIENTES = process.env.AIRTABLE_BASE;
     const TBL_C  = process.env.TABLE_CLIENTES_ID || process.env.TABLE_CLIENTES || 'CLIENTES';
     const TBL_S  = process.env.TABLE_SESSIONS || 'SESSIONS';
     const SECRET = process.env.SECRET || 'change-me';
