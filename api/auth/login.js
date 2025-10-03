@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     // ENV
     const PAT    = process.env.AIRTABLE_PAT;
-    const BASE_CLIENTES = process.env.AIRTABLE_BASE;
+    const BASE   = process.env.AIRTABLE_BASE_CLIENTES || process.env.AIRTABLE_BASE;
     const TBL_C  = process.env.TABLE_CLIENTES_ID || process.env.TABLE_CLIENTES || 'CLIENTES';
     const TBL_S  = process.env.TABLE_SESSIONS || 'SESSIONS';
     const SECRET = process.env.SECRET || 'change-me';
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     if (!TBL_C) return res.status(500).json({ ok:false, error:'Falta TABLE_CLIENTES_ID/TABLE_CLIENTES' });
 
     // 1) Buscar cliente
-    const formula = `LOWER({Email})="${email_lc}"`;
+    const formula = `OR(LOWER({Email})="${email_lc}", {Email_lc}="${email_lc}")`;
     const urlClientes = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
     const rClients = await fetch(urlClientes, { headers: { Authorization: `Bearer ${PAT}` } });
