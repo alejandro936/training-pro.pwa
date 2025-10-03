@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     if (!TBL_C) return res.status(500).json({ ok:false, error:'Falta TABLE_CLIENTES_ID/TABLE_CLIENTES' });
 
     // 1) Buscar cliente
-    const formula = `OR(LOWER({Email})="${email_lc}", {Email_lc}="${email_lc}")`;
+    const formula = `LOWER({Email})="${email_lc}"`;
     const urlClientes = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
     const rClients = await fetch(urlClientes, { headers: { Authorization: `Bearer ${PAT}` } });
