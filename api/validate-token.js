@@ -39,12 +39,20 @@ export default async function handler(req, res) {
     }
 
     // === 1) CLIENTES: comprobar acceso activo ===
-    // Fórmula flexible: Email o Email_lc, y campo de acceso verdadero (1/"Sí"/"Si"/true)
-    const formula =
-      `AND(
-        OR(LOWER({Email})="${email_raw}", {Email_lc}="${email_raw}"),
-        OR({${ACCESS}}=1, {${ACCESS}}="Sí", {${ACCESS}}="Si", {${ACCESS}}=TRUE())
-      )`;
+    
+    // Fórmula flexible: Email o Email_lc, y campo de acceso verdadero (1/TRUE/"si"/"sí")
+const F = ACCESS; // p.ej. 'Acceso a Biblioteca'
+const formula = `AND(
+  OR(
+    LOWER({Email})="${email_raw}",
+    IFERROR({Email_lc},"")="${email_raw}"
+  ),
+  OR(
+    {${F}}=1,
+    {${F}}=TRUE(),
+    LOWER(SUBSTITUTE({${F}},"í","i"))="si"
+  )
+)`;
 
     const urlClientes =
       `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
