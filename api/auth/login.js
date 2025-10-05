@@ -1,6 +1,6 @@
 // /api/auth/login.js
 // Valida email en CLIENTES y crea/actualiza SESSIONS (1 sesión por email)
-// Soporta ?debug=1 para sacar detalle de los errores
+// Soporta ?debug=1 para ver detalle de errores
 
 export default async function handler(req, res) {
   const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
@@ -20,6 +20,10 @@ export default async function handler(req, res) {
       TABLE_SESSIONS,
       CLIENTES_ACCESS_FIELD,
       SECRET,
+      // (opcionales) permite redefinir nombres de campos de SESSIONS
+      SESSIONS_EMAIL_FIELD,
+      SESSIONS_TOKEN_FIELD,
+      SESSIONS_DEVICE_FIELD,
     } = process.env;
 
     const PAT   = AIRTABLE_PAT;
@@ -27,6 +31,11 @@ export default async function handler(req, res) {
     const TBL_C = TABLE_CLIENTES_ID || TABLE_CLIENTES || 'CLIENTES';
     const TBL_S = TABLE_SESSIONS      || 'SESSIONS';
     const ACCESS = CLIENTES_ACCESS_FIELD || 'Acceso a Biblioteca';
+
+    // nombres de campo en SESSIONS (tu tabla usa "email_lc")
+    const S_EMAIL  = SESSIONS_EMAIL_FIELD  || 'email_lc';
+    const S_TOKEN  = SESSIONS_TOKEN_FIELD  || 'Token';
+    const S_DEVICE = SESSIONS_DEVICE_FIELD || 'DeviceId';
 
     if (!PAT || !BASE || !TBL_C || !TBL_S || !SECRET) {
       const msg = 'Missing env vars (AIRTABLE_PAT / AIRTABLE_BASE_CLIENTES|AIRTABLE_BASE / TABLE_CLIENTES_ID|TABLE_CLIENTES / TABLE_SESSIONS / SECRET)';
@@ -77,16 +86,23 @@ export default async function handler(req, res) {
     const nowIso = new Date().toISOString();
     const token = await makeToken(email_lc, SECRET);
 
-    const payloadFields = {
-      email_lc: email_lc,   // *** minúsculas en SESSIONS ***
-      ts_login: nowIso,
-      Token: token,         // opcional, tener la columna creada o comenta esta línea
-      DeviceId: deviceId    // opcional, tener la columna creada o comenta esta línea
+    // payload con todos los campos (algunos pueden no existir en tu tabla)
+    const fieldsFull = {
+      [S_EMAIL]:  email_lc,   // <-- minúsculas
+      ts_login:   nowIso,
+      [S_TOKEN]:  token,
+      [S_DEVICE]: deviceId
     };
 
-    // Buscar existente
+    // payload mínimo (si alguno no existe reintentamos con este)
+    const fieldsMin = {
+      [S_EMAIL]:  email_lc,
+      ts_login:   nowIso
+    };
+
+    // Buscar existente por email_lc
     const urlFind =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{email_lc}="${email_lc}"`)}&maxRecords=1`;
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${S_EMAIL}}="${email_lc}"`)}&maxRecords=1`;
 
     const rFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
     const txtFind = await rFind.text();
@@ -98,24 +114,31 @@ export default async function handler(req, res) {
     const jFind = safeJson(txtFind);
     const existing = (jFind.records || [])[0];
 
-    let rSave, txtSave;
-    if (existing) {
-      // PATCH
-      const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
-      rSave = await fetch(urlPatch, {
-        method:'PATCH',
-        headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ fields: payloadFields })
-      });
-      txtSave = await rSave.text();
-    } else {
-      // POST
-      const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
-      rSave = await fetch(urlPost, {
-        method:'POST',
-        headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ records:[{ fields: payloadFields }] })
-      });
+    async function save(fields) {
+      if (existing) {
+        const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
+        return fetch(urlPatch, {
+          method:'PATCH',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ fields })
+        });
+      } else {
+        const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
+        return fetch(urlPost, {
+          method:'POST',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ records:[{ fields }] })
+        });
+      }
+    }
+
+    // 1º intento con todos los campos
+    let rSave = await save(fieldsFull);
+    let txtSave = await rSave.text();
+
+    // Si falla por nombre de campo desconocido, reintenta con el mínimo
+    if (!rSave.ok && /UNKNOWN_FIELD_NAME/i.test(txtSave)) {
+      rSave = await save(fieldsMin);
       txtSave = await rSave.text();
     }
 
