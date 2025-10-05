@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     const formula = `AND(
       OR(
         LOWER({Email})="${email_lc}",
-        IFERROR({Email_lc},"")="${email_lc}"
+        {Email_lc}="${email_lc}"
       ),
       OR(
         {${F}}=1,
