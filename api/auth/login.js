@@ -1,139 +1,161 @@
+// /api/auth/login.js
+// Valida email en CLIENTES y crea/actualiza SESSIONS (1 sesión por email)
+// Soporta ?debug=1 para sacar detalle de los errores
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method not allowed' });
+  const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
 
   try {
-    const { email, deviceId } = req.body || {};
-    const email_lc = String(email || '').trim().toLowerCase();
-    if (!email_lc || !/@/.test(email_lc)) return res.status(400).json({ ok:false, error:'Email no válido' });
+    if (req.method !== 'POST') {
+      return res.status(405).json({ ok:false, error:'Method not allowed' });
+    }
 
-    // ENV
-    const PAT    = process.env.AIRTABLE_PAT;
-    const BASE   = process.env.AIRTABLE_BASE_CLIENTES || process.env.AIRTABLE_BASE;
-    const TBL_C  = process.env.TABLE_CLIENTES_ID || process.env.TABLE_CLIENTES || 'CLIENTES';
-    const TBL_S  = process.env.TABLE_SESSIONS || 'SESSIONS';
-    const SECRET = process.env.SECRET || 'change-me';
-    const ACCESS_FIELD = process.env.CLIENTES_ACCESS_FIELD || 'Acceso a Biblioteca'; // <- configurable
+    // ===== ENV =====
+    const {
+      AIRTABLE_PAT,
+      AIRTABLE_BASE_CLIENTES,
+      AIRTABLE_BASE,          // fallback
+      TABLE_CLIENTES_ID,
+      TABLE_CLIENTES,
+      TABLE_SESSIONS,
+      CLIENTES_ACCESS_FIELD,
+      SECRET,
+    } = process.env;
 
-    // Validaciones mínimas de ENV
-    if (!PAT)  return res.status(500).json({ ok:false, error:'Falta AIRTABLE_PAT' });
-    if (!BASE) return res.status(500).json({ ok:false, error:'Falta AIRTABLE_BASE' });
-    if (!TBL_C) return res.status(500).json({ ok:false, error:'Falta TABLE_CLIENTES_ID/TABLE_CLIENTES' });
+    const PAT   = AIRTABLE_PAT;
+    const BASE  = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;   // base donde están CLIENTES y SESSIONS
+    const TBL_C = TABLE_CLIENTES_ID || TABLE_CLIENTES || 'CLIENTES';
+    const TBL_S = TABLE_SESSIONS      || 'SESSIONS';
+    const ACCESS = CLIENTES_ACCESS_FIELD || 'Acceso a Biblioteca';
 
-    // 1) Buscar cliente
-    const formula = `OR(LOWER({Email})="${email_lc}", {Email_lc}="${email_lc}")`;
-    const urlClientes = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+    if (!PAT || !BASE || !TBL_C || !TBL_S || !SECRET) {
+      const msg = 'Missing env vars (AIRTABLE_PAT / AIRTABLE_BASE_CLIENTES|AIRTABLE_BASE / TABLE_CLIENTES_ID|TABLE_CLIENTES / TABLE_SESSIONS / SECRET)';
+      if (debug) return res.status(500).json({ ok:false, error:msg, detail:{ PAT:!!PAT, BASE, TBL_C, TBL_S, SECRET:!!SECRET } });
+      return res.status(500).json({ ok:false, error:'Config error' });
+    }
 
-    const rClients = await fetch(urlClientes, { headers: { Authorization: `Bearer ${PAT}` } });
-    const textClients = await rClients.text(); // para debug
-    if (!rClients.ok) {
-      return res.status(502).json({
-        ok:false,
-        error:`Airtable CLIENTES error: HTTP ${rClients.status}`,
-        detail:textClients.slice(0,500),
-        hint:`Revisa TABLE_CLIENTES_ID/TABLE_CLIENTES (nombre/ID correcto) y permisos del PAT`
+    // ===== BODY =====
+    const body = await readJson(req);
+    const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
+    const deviceId  = body && body.deviceId ? String(body.deviceId) : '';
+    if (!email_raw || !email_raw.includes('@')) {
+      return res.status(400).json({ ok:false, error:'Email inválido' });
+    }
+    const email_lc = email_raw;
+
+    // ===== 1) CLIENTES: ¿tiene acceso? =====
+    const F = ACCESS;
+    const formula = `AND(
+      OR(
+        LOWER({Email})="${email_lc}",
+        IFERROR({Email_lc},"")="${email_lc}"
+      ),
+      OR(
+        {${F}}=1,
+        {${F}}=TRUE(),
+        LOWER(SUBSTITUTE({${F}},"í","i"))="si"
+      )
+    )`;
+
+    const urlClientes =
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+
+    const rCl = await fetch(urlClientes, { headers: { Authorization:`Bearer ${PAT}` } });
+    const txtCl = await rCl.text();
+    if (!rCl.ok) {
+      const payload = { ok:false, error:`Airtable CLIENTES error: HTTP ${rCl.status}` };
+      if (debug) payload.detail = safeCut(txtCl, 1000);
+      return res.status(rCl.status).json(payload);
+    }
+    const jCl = safeJson(txtCl);
+    const hasAccess = Array.isArray(jCl.records) && jCl.records.length > 0;
+    if (!hasAccess) {
+      return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
+    }
+
+    // ===== 2) SESSIONS: upsert por email_lc =====
+    const nowIso = new Date().toISOString();
+    const token = await makeToken(email_lc, SECRET);
+
+    const payloadFields = {
+      email_lc: email_lc,   // *** minúsculas en SESSIONS ***
+      ts_login: nowIso,
+      Token: token,         // opcional, tener la columna creada o comenta esta línea
+      DeviceId: deviceId    // opcional, tener la columna creada o comenta esta línea
+    };
+
+    // Buscar existente
+    const urlFind =
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{email_lc}="${email_lc}"`)}&maxRecords=1`;
+
+    const rFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
+    const txtFind = await rFind.text();
+    if (!rFind.ok) {
+      const payload = { ok:false, error:`Airtable SESSIONS (find) error: HTTP ${rFind.status}` };
+      if (debug) payload.detail = safeCut(txtFind, 1000);
+      return res.status(502).json(payload);
+    }
+    const jFind = safeJson(txtFind);
+    const existing = (jFind.records || [])[0];
+
+    let rSave, txtSave;
+    if (existing) {
+      // PATCH
+      const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
+      rSave = await fetch(urlPatch, {
+        method:'PATCH',
+        headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ fields: payloadFields })
       });
-    }
-    const jClients = JSON.parse(textClients);
-    const rec = (jClients.records || [])[0];
-    if (!rec) {
-      return res.status(403).json({ ok:false, error:'Email no encontrado en CLIENTES' });
-    }
-
-    // 2) ¿Tiene acceso? (campo configurable y valores amplios)
-    const v = rec.fields && rec.fields[ACCESS_FIELD];
-    const allowed = (
-      v === true || v === 1 ||
-      (typeof v === 'string' && ['si','sí','yes','true','1','y','s'].includes(v.trim().toLowerCase()))
-    );
-    if (!allowed) {
-      return res.status(403).json({
-        ok:false,
-        error:`No tienes acceso activo (${ACCESS_FIELD} ≠ Sí).`,
-        hint:`Cambia CLIENTES_ACCESS_FIELD o corrige el campo en Airtable`
+      txtSave = await rSave.text();
+    } else {
+      // POST
+      const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
+      rSave = await fetch(urlPost, {
+        method:'POST',
+        headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ records:[{ fields: payloadFields }] })
       });
+      txtSave = await rSave.text();
     }
 
-   // 3) Generar token y upsert en SESSIONS
-const token = await makeToken(email_lc, SECRET);
-const nowIso = new Date().toISOString();
+    if (!rSave.ok) {
+      const payload = { ok:false, error:`Airtable SESSIONS error: HTTP ${rSave.status}` };
+      if (debug) payload.detail = safeCut(txtSave, 2000);
+      return res.status(502).json(payload);
+    }
 
-const payload = {
-  fields: {
-    email_lc: email_lc,        // <- minúsculas
-    Token: token,
-    DeviceId: String(deviceId || ''),
-    ts_login: nowIso           // opcional pero útil
+    // ===== 3) OK =====
+    return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
+
+  } catch (e) {
+    if (debug) return res.status(500).json({ ok:false, error:'Exception', detail:String(e && e.message || e), stack: String(e && e.stack || '') });
+    return res.status(500).json({ ok:false, error:'Error HTTP 500' });
   }
-};
-
-// Buscar sesión existente por email_lc (minúsculas)
-const urlFind =
-  `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${
-    encodeURIComponent(`{email_lc}="${email_lc}"`)
-  }&maxRecords=1`;
-
-const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
-const jFind = await rFind.json();
-const existing = (jFind.records || [])[0];
-
-let rSave, textSave;
-if (existing) {
-  const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
-  rSave = await fetch(urlPatch, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  textSave = await rSave.text();
-} else {
-  const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
-  rSave = await fetch(urlPost, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ records: [payload] })
-  });
-  textSave = await rSave.text();
 }
 
-if (!rSave.ok) {
-  return res.status(502).json({
-    ok:false,
-    error:`Airtable SESSIONS error: HTTP ${rSave.status}`,
-    detail:textSave.slice(0,500),
-    hint:`Revisa TABLE_SESSIONS y permisos de escritura del PAT`
-  });
+/* ------- helpers ------- */
+async function readJson(req){
+  const chunks=[]; for await (const c of req) chunks.push(c);
+  if (!chunks.length) return {};
+  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  catch { return {}; }
 }
+function safeJson(txt){ try{ return JSON.parse(txt); } catch { return {}; } }
+function safeCut(s, n){ s = String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
 
-return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
-
-
-/* ===== helpers ===== */
-async function makeToken(email_lc, secret) {
-  const rand = cryptoRandom(32);
-  const iat  = Math.floor(Date.now() / 1000);
-  const raw  = `${email_lc}:${iat}:${rand}`;
-  const sig  = await hmacSha256(raw, secret);
-  return toB64Url(`${raw}.${sig}`);
+// Token simple HS256
+import crypto from 'crypto';
+function b64u(input){
+  return Buffer.from(input).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
 }
-
-function cryptoRandom(n) {
-  const bytes = new Uint8Array(n);
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(bytes);
-  } else {
-    const { randomBytes } = require('crypto');
-    const b = randomBytes(n);
-    for (let i=0;i<n;i++) bytes[i] = b[i];
-  }
-  return Buffer.from(bytes).toString('base64url');
-}
-
-async function hmacSha256(msg, key) {
-  const enc = new TextEncoder();
-  const cryptoKey = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(msg));
-  return Buffer.from(new Uint8Array(sig)).toString('base64url');
-}
-function toB64Url(s) {
-  return Buffer.from(s).toString('base64url');
+async function makeToken(sub, secret){
+  const now = Math.floor(Date.now()/1000);
+  const header = { alg:'HS256', typ:'TP' };
+  const body   = { sub, iat: now };
+  const h = b64u(JSON.stringify(header));
+  const b = b64u(JSON.stringify(body));
+  const sig = crypto.createHmac('sha256', secret).update(`${h}.${b}`).digest('base64')
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+  return `${h}.${b}.${sig}`;
 }
