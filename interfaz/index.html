@@ -189,32 +189,30 @@
   .video-link a{ color:var(--accent); text-decoration:none }
 </style>
 
-<!-- Guard de sesión (redirige a /door si no hay sesión válida) -->
+<!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
-  document.documentElement.classList.add('guard-hiding');
-  (async () => {
+  (function(){
+    document.documentElement.classList.add('guard-hiding');
     try {
-      const email = localStorage.getItem('tp_email') || '';
-      const token = localStorage.getItem('tp_token_v1') || '';
-      if (!email || !token) throw 0;
+      // 1) intenta cookie
+      var m = document.cookie.match(/(?:^|;\s*)tp_token_v1=([^;]+)/);
+      var tk = (m && m[1]) || '';
+      // 2) fallback a localStorage
+      if (!tk) tk = localStorage.getItem('tp_token_v1') || '';
+      if (tk && tk.length > 10) {
+        document.documentElement.classList.remove('guard-hiding');
+        return;
+      }
+    } catch (_) {}
 
-      const r = await fetch('/api/auth/validate', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        credentials:'include',
-        body: JSON.stringify({ email, token })
-      });
-      const data = await r.json();
-      if (!r.ok || !data.ok) throw 0;
-
-      document.documentElement.classList.remove('guard-hiding');
-    } catch {
-      // Sesión inválida o robada → fuerza re-login
-      location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search) + '&force=1');
-    }
+    // No hay token -> fuerza login y vuelve aquí después
+    var back = location.pathname + location.search;
+    var qs = '?redirect=' + encodeURIComponent(back) + '&force=1';
+    location.replace('/door.html' + qs);
   })();
 </script>
+
 
 </head>
 <body>
