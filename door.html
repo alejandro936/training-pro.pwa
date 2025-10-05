@@ -29,9 +29,10 @@
     background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));
     color:#fff; cursor:pointer; font-weight:700; font-size:14px
   }
-  .msg{margin-top:10px; min-height:18px}
+  .msg{margin-top:10px; min-height:18px; white-space:pre-wrap}
   .muted{color:var(--muted);font-size:13px}
   .hide{display:none}
+  .detail{margin-top:6px; color:#b5b5b5; font-size:12px; white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -46,6 +47,7 @@
       </div>
 
       <div class="msg" id="msg"></div>
+      <pre class="detail hide" id="detail"></pre>
       <p class="muted" id="loading" style="display:none">Validando…</p>
     </div>
 
@@ -61,6 +63,8 @@ const $ = (s)=>document.querySelector(s);
 const BASE = new URL('.', location.href);
 const url  = (rel) => new URL(rel, BASE).toString();
 const SESSION_URL = url('session');
+const usp = new URLSearchParams(location.search);
+const DEBUG = usp.has('debug'); // añade ?debug=1 para ver detalles de error
 
 function getCookie(name){
   const v=('; '+document.cookie).split('; '+name+'='); return v.length>1 ? decodeURIComponent(v.pop().split(';').shift()||'') : '';
@@ -71,6 +75,17 @@ function setCookie(name, value, maxAgeSec){
 }
 function showForm(){ $('#checking').classList.add('hide'); $('#form').classList.remove('hide'); }
 function showChecking(){ $('#form').classList.add('hide'); $('#checking').classList.remove('hide'); }
+function showError(msg, detail){
+  $('#msg').textContent = msg || '';
+  if (DEBUG && detail){
+    const d = $('#detail');
+    d.textContent = String(detail || '');
+    d.classList.remove('hide');
+  } else {
+    $('#detail').classList.add('hide');
+    $('#detail').textContent = '';
+  }
+}
 
 function deviceId() {
   try{
@@ -105,9 +120,8 @@ async function restoreFromCache(){
 
 /* ================== init (autologin si hay sesión) ================== */
 (async function init(){
-  const usp = new URLSearchParams(location.search);
   const force = usp.has('force');
-  const redirectPref = usp.get('redirect') || ''; // si nos llaman con ?redirect=...
+  const redirectPref = usp.get('redirect') || '';
 
   const savedEmail = localStorage.getItem('tp_email') || getCookie('tp_email') || '';
   if (savedEmail) $('#email').value = savedEmail;
@@ -115,14 +129,12 @@ async function restoreFromCache(){
   if (force) { showForm(); return; }
   showChecking();
 
-  // Reutiliza sesión si existe
   let tk = localStorage.getItem('tp_token_v1') || getCookie('tp_token_v1') || '';
   let redir = localStorage.getItem('tp_redirect') || getCookie('tp_redirect') || '';
   if (!(tk && redir)) {
     const r = await restoreFromCache();
     if (r) { tk = r.token; redir = r.redirect; }
   }
-  // Si venimos con redirect en la URL, respétalo como preferencia
   if (redirectPref) redir = redirectPref;
 
   if (tk && redir && redir !== '/') {
@@ -135,20 +147,24 @@ async function restoreFromCache(){
 /* ================== login (1 sesión por email) ================== */
 async function doLogin(){
   const email = ($('#email').value||'').trim().toLowerCase();
-  if(!email){ $('#msg').textContent='Escribe tu email'; return; }
-  $('#loading').style.display='block'; $('#msg').textContent='';
+  if(!email){ showError('Escribe tu email'); return; }
+  $('#loading').style.display='block'; showError('');
 
   try{
-    // Llamada al endpoint que valida acceso y ROTA la sesión (modo Netflix)
-    const r = await fetch('/api/auth/login', {
+    const r = await fetch('/api/auth/login' + (DEBUG ? '?debug=1' : ''), {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ email, deviceId: deviceId() })
     });
-    const data = await r.json();
+
+    let data = {};
+    try { data = await r.json(); } catch {}
 
     if (!r.ok || !data.ok) {
-      $('#msg').textContent = (data && data.error) ? data.error : 'No se pudo validar.';
+      // Enseña error principal y, en modo debug, el detalle devuelto por el backend
+      const msg = (data && data.error) ? data.error : `Error HTTP ${r.status}`;
+      const detail = (data && data.detail) ? data.detail : '';
+      showError(msg, detail);
       return;
     }
 
@@ -160,14 +176,13 @@ async function doLogin(){
     }catch(_){}
 
     // Redirección a save.html (guarda cookies + cache + redirige)
-    const usp = new URLSearchParams(location.search);
-    const redirectPref = usp.get('redirect') || '';
+    const redirectPref = new URLSearchParams(location.search).get('redirect') || '';
     const finalRedir = redirectPref || data.redirect || '/interfaz/';
     const p = new URLSearchParams({ tk:data.token, redir:finalRedir, email });
     location.replace('/save.html?'+p.toString());
 
   }catch(e){
-    $('#msg').textContent = 'Error de red. Inténtalo de nuevo.';
+    showError('Error de red. Inténtalo de nuevo.');
   }finally{
     $('#loading').style.display='none';
   }
