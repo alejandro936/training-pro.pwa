@@ -53,49 +53,59 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3) Generar token y upsert en SESSIONS
-    const token = await makeToken(email_lc, SECRET);
-    const payload = { fields: { 'Email_lc': email_lc, 'Token': token, 'DeviceId': String(deviceId || '') } };
+   // 3) Generar token y upsert en SESSIONS
+const token = await makeToken(email_lc, SECRET);
+const nowIso = new Date().toISOString();
 
-    // Buscar sesión existente por Email_lc
-    const urlFind = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{Email_lc}="${email_lc}"`)}&maxRecords=1`;
-    const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
-    const jFind = await rFind.json();
-    const existing = (jFind.records || [])[0];
-
-    let rSave, textSave;
-    if (existing) {
-      const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
-      rSave = await fetch(urlPatch, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      textSave = await rSave.text();
-    } else {
-      const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
-      rSave = await fetch(urlPost, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      textSave = await rSave.text();
-    }
-    if (!rSave.ok) {
-      return res.status(502).json({
-        ok:false,
-        error:`Airtable SESSIONS error: HTTP ${rSave.status}`,
-        detail:textSave.slice(0,500),
-        hint:`Revisa TABLE_SESSIONS y permisos de escritura del PAT`
-      });
-    }
-
-    return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
-
-  } catch (e) {
-    return res.status(500).json({ ok:false, error:String(e) });
+const payload = {
+  fields: {
+    email_lc: email_lc,        // <- minúsculas
+    Token: token,
+    DeviceId: String(deviceId || ''),
+    ts_login: nowIso           // opcional pero útil
   }
+};
+
+// Buscar sesión existente por email_lc (minúsculas)
+const urlFind =
+  `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${
+    encodeURIComponent(`{email_lc}="${email_lc}"`)
+  }&maxRecords=1`;
+
+const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
+const jFind = await rFind.json();
+const existing = (jFind.records || [])[0];
+
+let rSave, textSave;
+if (existing) {
+  const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
+  rSave = await fetch(urlPatch, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  textSave = await rSave.text();
+} else {
+  const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
+  rSave = await fetch(urlPost, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ records: [payload] })
+  });
+  textSave = await rSave.text();
 }
+
+if (!rSave.ok) {
+  return res.status(502).json({
+    ok:false,
+    error:`Airtable SESSIONS error: HTTP ${rSave.status}`,
+    detail:textSave.slice(0,500),
+    hint:`Revisa TABLE_SESSIONS y permisos de escritura del PAT`
+  });
+}
+
+return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
+
 
 /* ===== helpers ===== */
 async function makeToken(email_lc, secret) {
