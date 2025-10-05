@@ -69,6 +69,24 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+      /* ===== Botón Cerrar sesión (FIJO) ===== */
+.logout-fab{
+  position: fixed;                 /* se queda fijo aunque haya scroll */
+  z-index: 10050;                  /* por encima del modal (9999) */
+  top: calc(env(safe-area-inset-top) + 2px);
+  right: calc(env(safe-area-inset-right) + 4px);
+  padding: 7px 11px;
+  font-size: 12px;
+  line-height: 1;
+  color:#fff;
+  background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
+  border:1px solid var(--accent);
+  border-radius: 9px;
+  box-shadow: 0 6px 14px rgba(0,0,0,.25);
+  cursor:pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
   .back-fab:hover{ border-color:rgba(230,192,110,.65); }
   .back-fab:active{ transform: translateY(1px); }
 
@@ -217,8 +235,10 @@
 </head>
 <body>
 
-  <!-- Botón Volver fijo (fuera del header y de .wrap) -->
-  <button class="back-fab" onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
+  <!-- Botones fijos arriba (izquierda/derecha) -->
+<button class="back-fab"   onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
+<button class="logout-fab" onclick="logout()"      aria-label="Cerrar sesión">Cerrar sesión</button>
+
 
   <div class="wrap">
     <div class="top-spacer" aria-hidden="true"></div>
@@ -264,6 +284,36 @@ function goHome(e){
     if (ref && ref.origin === location.origin && history.length > 1) { history.back(); return; }
   }catch(_){}
   location.href = '/';
+}
+function deleteCookie(name){
+  try{
+    document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+  }catch(_){}
+}
+
+async function logout(){
+  try{
+    // localStorage
+    localStorage.removeItem('tp_token_v1');
+    localStorage.removeItem('tp_redirect');
+    localStorage.removeItem('tp_email');
+
+    // cookies
+    deleteCookie('tp_token_v1');
+    deleteCookie('tp_redirect');
+    deleteCookie('tp_email');
+
+    // CacheStorage
+    if ('caches' in self){
+      try { await caches.delete('tp-session'); } catch(_){}
+    }
+
+    // (opcional) avisar backend:
+    // fetch('/api/auth/logout', { method:'POST' }).catch(()=>{});
+  }catch(_){}
+
+  // puerta de entrada forzada
+  location.replace('/door.html?force=1');
 }
 
 function showErr(msg){
