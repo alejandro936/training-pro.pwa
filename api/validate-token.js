@@ -75,63 +75,78 @@ const formula = `AND(
       return res.status(403).json({ ok: false, error: 'No tienes acceso activo. Contacta con soporte si crees que es un error.' });
     }
 
-    // === 2) SESSIONS: upsert por Email_lc ===
-    const email_lc = email_raw;
-    const findUrl =
-      `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{Email_lc}="${email_lc}"`)}&maxRecords=1`;
-    const rFind = await fetch(findUrl, { headers: { Authorization: `Bearer ${PAT}` } });
-    if (!rFind.ok) {
-      const txt = await rFind.text();
-      return res.status(rFind.status).json({
-        ok: false,
-        error: `Airtable SESSIONS (find) error: HTTP ${rFind.status}`,
-        detail: safeCut(txt, 400),
-        hint: 'Revisa TABLE_SESSIONS y permisos PAT (write si hay update/insert).',
-      });
-    }
-    const found = await rFind.json();
-    const nowIso = new Date().toISOString();
+    // === 2) SESSIONS: upsert por email_lc ===
+const email_lc = email_raw;
 
-    if (Array.isArray(found.records) && found.records.length > 0) {
-      // Update ts_login
-      const recId = found.records[0].id;
-      const rUp = await fetch(`https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}/${recId}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${PAT}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ fields: { Email_lc: email_lc, ts_login: nowIso } }),
-      });
-      if (!rUp.ok) {
-        const txt = await rUp.text();
-        return res.status(rUp.status).json({
-          ok: false,
-          error: `Airtable SESSIONS (update) error: HTTP ${rUp.status}`,
-          detail: safeCut(txt, 400),
-        });
-      }
-    } else {
-      // Create
-      const rIns = await fetch(`https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${PAT}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          records: [{ fields: { Email_lc: email_lc, ts_login: nowIso } }],
-        }),
-      });
-      if (!rIns.ok) {
-        const txt = await rIns.text();
-        return res.status(rIns.status).json({
-          ok: false,
-          error: `Airtable SESSIONS (insert) error: HTTP ${rIns.status}`,
-          detail: safeCut(txt, 400),
-        });
-      }
+// nombres REALES de campos en tu tabla SESSIONS
+const F_EMAIL = process.env.SESSIONS_EMAIL_FIELD || 'email_lc';
+const F_TS    = process.env.SESSIONS_TS_FIELD    || 'ts_login';
+
+// 2.1 Buscar si ya existe sesión para ese email
+const findUrl =
+  `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}?filterByFormula=${
+    encodeURIComponent(`{${F_EMAIL}}="${email_lc}"`)
+  }&maxRecords=1`;
+
+const rFind = await fetch(findUrl, { headers: { Authorization: `Bearer ${PAT}` } });
+if (!rFind.ok) {
+  const txt = await rFind.text();
+  return res.status(rFind.status).json({
+    ok: false,
+    error: `Airtable SESSIONS (find) error: HTTP ${rFind.status}`,
+    detail: safeCut(txt, 400),
+    hint: 'Revisa TABLE_SESSIONS y permisos PAT (write si hay update/insert).',
+  });
+}
+
+const found  = await rFind.json();
+const nowIso = new Date().toISOString();
+
+// 2.2 Upsert (update si existe, si no insert)
+if (Array.isArray(found.records) && found.records.length > 0) {
+  const recId = found.records[0].id; // update
+  const rUp = await fetch(
+    `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}/${recId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${PAT}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fields: { [F_EMAIL]: email_lc, [F_TS]: nowIso } }),
     }
+  );
+  if (!rUp.ok) {
+    const txt = await rUp.text();
+    return res.status(rUp.status).json({
+      ok: false,
+      error: `Airtable SESSIONS (update) error: HTTP ${rUp.status}`,
+      detail: safeCut(txt, 400),
+    });
+  }
+} else {
+  const rIns = await fetch(
+    `https://api.airtable.com/v0/${BASE_C}/${encodeURIComponent(TBL_S)}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${PAT}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        records: [{ fields: { [F_EMAIL]: email_lc, [F_TS]: nowIso } }],
+      }),
+    }
+  );
+  if (!rIns.ok) {
+    const txt = await rIns.text();
+    return res.status(rIns.status).json({
+      ok: false,
+      error: `Airtable SESSIONS (insert) error: HTTP ${rIns.status}`,
+      detail: safeCut(txt, 400),
+    });
+  }
+}
 
     // === 3) Token + redirect ===
     const token = signToken({ sub: email_lc }, SECRET_KEY, DAYS);
