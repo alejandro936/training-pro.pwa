@@ -136,8 +136,8 @@ async function restoreFromCache(){
   const finalRedir = (redirectPref || redir || '').trim();
 
   if (tk && finalRedir && finalRedir !== '/') {
-    // 👇 usar assign para mantener historial (Android podrá volver)
-    window.location.assign(finalRedir);
+    // ← volvemos a replace para que /door no quede en el historial
+    location.replace(finalRedir);
   } else {
     showForm();
   }
@@ -178,8 +178,8 @@ async function doLogin(){
     const redirectPref = new URLSearchParams(location.search).get('redirect') || '';
     const finalRedir = redirectPref || data.redirect || DEFAULT_REDIR;
     const p = new URLSearchParams({ tk:data.token, redir:finalRedir, email });
-    // 👇 usar assign para mantener historial (clave en Android/PWA)
-    window.location.assign('/save.html?'+p.toString());
+    // ← volvemos a replace para que /door no quede en el historial
+    location.replace('/save.html?'+p.toString());
 
   }catch(e){
     showError('Error de red. Inténtalo de nuevo.', String(e && e.message || e));
