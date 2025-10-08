@@ -3,10 +3,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
 
-  const { email, token } = req.body;
+  const { email } = req.body;
 
-  if (!email || !token) {
-    return res.status(400).json({ ok: false, error: 'Faltan datos: email o token' });
+  if (!email) {
+    return res.status(400).json({ ok: false, error: 'Falta el email' });
   }
 
   const {
@@ -20,10 +20,9 @@ export default async function handler(req, res) {
   const BASE = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;
   const TBL_S = TABLE_SESSIONS || 'SESSIONS';
 
-  const EMAIL_FIELD = 'email_lc';   // Ajusta si tu campo se llama distinto
-  const TOKEN_FIELD = 'Token';      // Ajusta si tu campo se llama distinto
+  const EMAIL_FIELD = 'email_lc';
 
-  const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_FIELD}}="${token}")`;
+  const formula = `{${EMAIL_FIELD}}="${email.trim().toLowerCase()}"`;
   const urlFind = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
   const rFind = await fetch(urlFind, {
@@ -50,4 +49,3 @@ export default async function handler(req, res) {
 
   return res.status(200).json({ ok: true, message: 'Sesión eliminada correctamente' });
 }
-
