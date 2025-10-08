@@ -54,10 +54,7 @@
 
 <script>
 /* ================== config ================== */
-/* Cambia esto si la biblioteca está en otro dominio/proyecto: */
 const DEFAULT_REDIR = '/interfaz/';
-// Ejemplo multi-dominio:
-// const DEFAULT_REDIR = 'https://tu-proyecto.vercel.app/interfaz/';
 
 /* ================== helpers ================== */
 const $ = (s)=>document.querySelector(s);
@@ -136,10 +133,11 @@ async function restoreFromCache(){
     const r = await restoreFromCache();
     if (r) { tk = r.token; redir = r.redirect; }
   }
-  if (redirectPref) redir = redirectPref;
+  const finalRedir = (redirectPref || redir || '').trim();
 
-  if (tk && redir && redir !== '/') {
-    location.replace(redir);
+  if (tk && finalRedir && finalRedir !== '/') {
+    // 👇 usar assign para mantener historial (Android podrá volver)
+    window.location.assign(finalRedir);
   } else {
     showForm();
   }
@@ -171,6 +169,7 @@ async function doLogin(){
     // Guarda mínimo para la navegación inmediata
     try{
       localStorage.setItem('tp_email', email);
+      if (data.sessionId) localStorage.setItem('tp_sessionId', data.sessionId);
       localStorage.setItem('tp_token_v1', data.token);
       localStorage.setItem('tp_redirect', data.redirect || DEFAULT_REDIR);
     }catch(_){}
@@ -179,7 +178,8 @@ async function doLogin(){
     const redirectPref = new URLSearchParams(location.search).get('redirect') || '';
     const finalRedir = redirectPref || data.redirect || DEFAULT_REDIR;
     const p = new URLSearchParams({ tk:data.token, redir:finalRedir, email });
-    location.replace('/save.html?'+p.toString());
+    // 👇 usar assign para mantener historial (clave en Android/PWA)
+    window.location.assign('/save.html?'+p.toString());
 
   }catch(e){
     showError('Error de red. Inténtalo de nuevo.', String(e && e.message || e));
