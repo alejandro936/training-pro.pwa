@@ -292,17 +292,26 @@ function deleteCookie(name){
 }
 
 async function logout(){
-  try{
+  try {
     const email = localStorage.getItem('tp_email');
-    const deviceId = localStorage.getItem('deviceId');
+    const token = localStorage.getItem('tp_token_v1'); // ← este es el que usa el backend
 
     // Llama al backend para eliminar la sesión
-    if (email && deviceId) {
-      await fetch('/api/auth/logout', {
+    if (email && token) {
+      const res = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, deviceId })
+        body: JSON.stringify({ email, token })
       });
+
+      const result = await res.json();
+      if (!result.ok) {
+        console.error('Error desde backend:', result.error);
+      } else {
+        console.log('Sesión eliminada correctamente');
+      }
+    } else {
+      console.warn('Faltan email o token para cerrar sesión');
     }
 
     // Elimina datos locales
@@ -321,14 +330,13 @@ async function logout(){
       try { await caches.delete('tp-session'); } catch(_){}
     }
 
-  }catch(err){
+    // Redirige al login
+    location.replace('/door.html?force=1');
+
+  } catch (err) {
     console.error('Error al cerrar sesión:', err);
   }
-
-  // Redirige a pantalla de login
-  location.replace('/door.html?force=1');
 }
-
 
 function showErr(msg){
   var box = document.getElementById('err');
