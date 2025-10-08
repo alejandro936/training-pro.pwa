@@ -1,6 +1,6 @@
 // /api/auth/login.js
-// Valida email en CLIENTES y crea/actualiza SESSIONS (máx. 1 dispositivo activo por email)
-// Usa ?debug=1 para obtener detalle de errores en la respuesta
+// Valida email en CLIENTES y crea/actualiza SESSIONS (1 sesión por email).
+// Soporta ?debug=1 para ver detalle de errores en las respuestas.
 
 export default async function handler(req, res) {
   const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
@@ -23,35 +23,31 @@ export default async function handler(req, res) {
     } = process.env;
 
     const PAT   = AIRTABLE_PAT;
-    const BASE  = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;  // base donde están CLIENTES y SESSIONS
+    const BASE  = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;   // base donde están CLIENTES y SESSIONS
     const TBL_C = TABLE_CLIENTES_ID || TABLE_CLIENTES || 'CLIENTES';
     const TBL_S = TABLE_SESSIONS      || 'SESSIONS';
     const ACCESS = CLIENTES_ACCESS_FIELD || 'Acceso a Biblioteca';
 
     if (!PAT || !BASE || !TBL_C || !TBL_S || !SECRET) {
       const msg = 'Missing env vars (AIRTABLE_PAT / AIRTABLE_BASE_CLIENTES|AIRTABLE_BASE / TABLE_CLIENTES_ID|TABLE_CLIENTES / TABLE_SESSIONS / SECRET)';
-      return res.status(500).json(
-        debug ? { ok:false, error:msg, detail:{ PAT:!!PAT, BASE, TBL_C, TBL_S, SECRET:!!SECRET } }
-              : { ok:false, error:'Config error' }
-      );
+      if (debug) return res.status(500).json({ ok:false, error:msg, detail:{ PAT:!!PAT, BASE, TBL_C, TBL_S, SECRET:!!SECRET } });
+      return res.status(500).json({ ok:false, error:'Config error' });
     }
 
     // ===== BODY =====
     const body = await readJson(req);
     const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
-    // Requerimos deviceId para poder aplicar el bloqueo estricto
-    const deviceId  = body && body.deviceId ? String(body.deviceId).trim() : '';
+    // Fallback robusto para deviceId (si no viene desde el cliente, generamos uno en servidor)
+    const deviceIdClient = body && body.deviceId ? String(body.deviceId).trim() : '';
+    const deviceId       = deviceIdClient || makeDeviceId();   // <- AQUÍ EL CAMBIO
+
     if (!email_raw || !email_raw.includes('@')) {
       return res.status(400).json({ ok:false, error:'Email inválido' });
-    }
-    if (!deviceId) {
-      return res.status(400).json({ ok:false, error:'Falta el identificador del dispositivo.' });
     }
     const email_lc = email_raw;
 
     // ===== 1) CLIENTES: ¿tiene acceso? =====
-    // Fórmula flexible para campo de acceso (1/TRUE/"si"/"sí")
-    const F = ACCESS;
+    const F = ACCESS; // p.ej. 'Acceso a Biblioteca'
     const formula = `AND(
       OR(
         LOWER({Email})="${email_lc}",
@@ -63,7 +59,6 @@ export default async function handler(req, res) {
         LOWER(SUBSTITUTE({${F}},"í","i"))="si"
       )
     )`;
-
     const urlClientes =
       `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_C)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
@@ -71,7 +66,7 @@ export default async function handler(req, res) {
     const txtCl = await rCl.text();
     if (!rCl.ok) {
       const payload = { ok:false, error:`Airtable CLIENTES error: HTTP ${rCl.status}` };
-      if (debug) payload.detail = safeCut(txtCl, 1000);
+      if (debug) payload.detail = safeCut(txtCl, 1200);
       return res.status(rCl.status).json(payload);
     }
     const jCl = safeJson(txtCl);
@@ -80,75 +75,113 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
     }
 
-    // ===== 2) SESSIONS: política ESTRICTA (un dispositivo a la vez) =====
-    // Ventana de actividad para considerar la sesión “activa”
-    const ACTIVE_WINDOW_MIN = 10; // ajústalo a tu gusto
-    const ACTIVE_WINDOW_MS  = ACTIVE_WINDOW_MIN * 60 * 1000;
-    const now               = Date.now();
+    // ===== 2) SESSIONS: upsert por email =====
+    const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
+    const nowIso = new Date().toISOString();
+    const token  = await makeToken(email_lc, SECRET);
 
-    // Buscar sesión existente por email_lc (nombre exacto de la columna en Airtable)
+    const TOKEN_FIELD  = 'Token';     // ajusta si tu columna se llama distinto
+    const DEVICE_FIELD = 'DeviceId';  // ajusta si tu columna se llama distinto
+
+    const fullFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso,
+      [TOKEN_FIELD]: token,
+      [DEVICE_FIELD]: deviceId
+    };
+    const minFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso
+    };
+
+    // Buscar existente
     const urlFind =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{email_lc}="${email_lc}"`)}&maxRecords=1`;
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${EMAIL_FIELD_NAME}}="${email_lc}"`)}&maxRecords=1`;
 
-    const rFind  = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
+    const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
     const txtFind = await rFind.text();
     if (!rFind.ok) {
       const payload = { ok:false, error:`Airtable SESSIONS (find) error: HTTP ${rFind.status}` };
-      if (debug) payload.detail = safeCut(txtFind, 1000);
+      if (debug) payload.detail = safeCut(txtFind, 1200);
       return res.status(502).json(payload);
     }
     const jFind = safeJson(txtFind);
     const existing = (jFind.records || [])[0];
 
-    // Si existe una sesión “activa” de otro dispositivo, DENEGAR
-    if (existing) {
-      const f  = existing.fields || {};
-      const exDev = String(f.DeviceId || '').trim();
-      const ts   = f.ts_login ? new Date(f.ts_login).getTime() : 0;
-      const isRecent = ts ? (now - ts) < ACTIVE_WINDOW_MS : true; // si no hay fecha, por seguridad asumimos activa
-
-      if (isRecent && exDev && exDev !== deviceId) {
-        return res.status(423).json({
-          ok: false,
-          error: 'Tu cuenta ya tiene una sesión activa en otro dispositivo. Cierra sesión allí para continuar.'
-        });
-      }
-    }
-
-    // Si llegamos aquí: o no había sesión o era del mismo device o estaba expirada.
-    // Generamos token y guardamos/actualizamos.
-    const token = await makeToken(email_lc, SECRET);
-    const nowIso = new Date().toISOString();
-
-    const payloadFields = {
-      email_lc: email_lc,   // *** minúsculas en SESSIONS ***
-      ts_login: nowIso,
-      Token: token,
-      DeviceId: deviceId
-    };
-
     let rSave, txtSave;
+
     if (existing) {
-      // PATCH (refresca misma sesión o revive una expirada)
+      // PATCH full → si 422 reintenta min → luego parchea token/device por separado
       const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
+
       rSave = await fetch(urlPatch, {
         method:'PATCH',
         headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ fields: payloadFields })
+        body: JSON.stringify({ fields: fullFields })
       });
       txtSave = await rSave.text();
+
+      if (rSave.status === 422) {
+        // guarda mínimo
+        await fetch(urlPatch, {
+          method:'PATCH',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ fields: minFields })
+        }).catch(()=>{});
+
+        // añade Token y DeviceId por separado (si existen columnas)
+        await fetch(urlPatch, {
+          method:'PATCH',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ fields: { [TOKEN_FIELD]: token } })
+        }).catch(()=>{});
+        await fetch(urlPatch, {
+          method:'PATCH',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ fields: { [DEVICE_FIELD]: deviceId } })
+        }).catch(()=>{});
+      }
     } else {
-      // POST (nueva sesión)
+      // POST full → si 422 POST min → re-busca → PATCH token/device
       const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
+
       rSave = await fetch(urlPost, {
         method:'POST',
         headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ records:[{ fields: payloadFields }] })
+        body: JSON.stringify({ records: [{ fields: fullFields }] })
       });
       txtSave = await rSave.text();
+
+      if (rSave.status === 422) {
+        // crea mínima
+        await fetch(urlPost, {
+          method:'POST',
+          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+          body: JSON.stringify({ records: [{ fields: minFields }] })
+        }).catch(()=>{});
+
+        // vuelve a buscar la fila recién creada
+        const rReFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
+        const jReFind = await rReFind.json();
+        const created = (jReFind.records || [])[0];
+
+        if (created) {
+          const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${created.id}`;
+          await fetch(urlPatch, {
+            method:'PATCH',
+            headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+            body: JSON.stringify({ fields: { [TOKEN_FIELD]: token } })
+          }).catch(()=>{});
+          await fetch(urlPatch, {
+            method:'PATCH',
+            headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+            body: JSON.stringify({ fields: { [DEVICE_FIELD]: deviceId } })
+          }).catch(()=>{});
+        }
+      }
     }
 
-    if (!rSave.ok) {
+    if (rSave && !rSave.ok && rSave.status !== 422) {
       const payload = { ok:false, error:`Airtable SESSIONS error: HTTP ${rSave.status}` };
       if (debug) payload.detail = safeCut(txtSave, 2000);
       return res.status(502).json(payload);
@@ -158,10 +191,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
 
   } catch (e) {
-    return res.status(500).json(
-      debug ? { ok:false, error:'Exception', detail:String(e && e.message || e), stack: String(e && e.stack || '') }
-            : { ok:false, error:'Error HTTP 500' }
-    );
+    if (debug) return res.status(500).json({ ok:false, error:'Exception', detail:String(e && e.message || e), stack:String(e && e.stack || '') });
+    return res.status(500).json({ ok:false, error:'Error HTTP 500' });
   }
 }
 
@@ -175,7 +206,17 @@ async function readJson(req){
 function safeJson(txt){ try{ return JSON.parse(txt); } catch { return {}; } }
 function safeCut(s, n){ s = String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
 
-// Token simple HS256
+// Detecta si el campo email de SESSIONS es 'email_lc' o 'Email_lc'
+async function detectEmailFieldName({ BASE, TBL_S, PAT }){
+  const test = async (field) => {
+    const u = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${field}}=""`)}&maxRecords=1`;
+    const r = await fetch(u, { headers:{ Authorization:`Bearer ${PAT}` } });
+    return r.ok ? field : null;
+  };
+  return (await test('email_lc')) || (await test('Email_lc')) || 'email_lc';
+}
+
+// Token HS256 simple
 import crypto from 'crypto';
 function b64u(input){
   return Buffer.from(input).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
@@ -189,4 +230,12 @@ async function makeToken(sub, secret){
   const sig = crypto.createHmac('sha256', secret).update(`${h}.${b}`).digest('base64')
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
   return `${h}.${b}.${sig}`;
+}
+
+// Genera ID de dispositivo (servidor) si no vino desde el cliente
+function makeDeviceId(){
+  try {
+    if (crypto.randomUUID) return 'srv_' + crypto.randomUUID();
+  } catch {}
+  return 'srv_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
