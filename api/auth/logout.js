@@ -22,7 +22,6 @@ export default async function handler(req, res) {
 
   const EMAIL_FIELD = 'email_lc';
   const DEVICE_FIELD = 'DeviceId';
-  const LOGOUT_FIELD = 'ts_logout';
 
   const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${DEVICE_FIELD}}="${deviceId}")`;
   const urlFind = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
@@ -35,14 +34,16 @@ export default async function handler(req, res) {
     return res.status(404).json({ ok: false, error: 'Sesión no encontrada' });
   }
 
-  const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${record.id}`;
-  const nowIso = new Date().toISOString();
+  const urlDelete = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${record.id}`;
 
-  await fetch(urlPatch, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: { [LOGOUT_FIELD]: nowIso } }),
+  const rDelete = await fetch(urlDelete, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${PAT}` },
   });
 
-  return res.status(200).json({ ok: true, message: 'Sesión cerrada correctamente' });
+  if (!rDelete.ok) {
+    return res.status(500).json({ ok: false, error: 'Error al eliminar la sesión' });
+  }
+
+  return res.status(200).json({ ok: true, message: 'Sesión eliminada correctamente' });
 }
