@@ -1,7 +1,6 @@
 // /api/auth/logout.js
-// Cierra sesión por email (case-insensitive):
-// 1) Pone Token="" y ts_logout=now en TODAS las filas coincidentes
-// 2) Intenta borrar las filas (opcional); si no puede, no pasa nada
+// Cierra sesión por email: limpia Token/ts_logout en todas las filas encontradas (case-insensitive)
+// y luego intenta borrarlas. Con ?debug=1 devuelve detalles (base, tabla, fórmula, ids).
 export default async function handler(req, res){
   const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
 
@@ -12,69 +11,64 @@ export default async function handler(req, res){
       AIRTABLE_PAT,
       AIRTABLE_BASE_CLIENTES,
       AIRTABLE_BASE,
-      TABLE_SESSIONS,
-      SESSIONS_EMAIL_FIELD // opcional para fijar el nombre del campo de email
+      TABLE_SESSIONS
     } = process.env;
 
     const PAT  = AIRTABLE_PAT;
     const BASE = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;
     const TBL  = TABLE_SESSIONS || 'SESSIONS';
+
     if (!PAT || !BASE || !TBL) {
-      const msg = 'Missing env vars (AIRTABLE_PAT / AIRTABLE_BASE_CLIENTES|AIRTABLE_BASE / TABLE_SESSIONS)';
-      if (debug) return res.status(500).json({ ok:false, error:msg, detail:{ PAT:!!PAT, BASE, TBL } });
-      return res.status(500).json({ ok:false, error:'Config error' });
+      const detail = { PAT: !!PAT, BASE, TBL };
+      return res.status(500).json({ ok:false, error:'Config error (PAT/BASE/TABLE_SESSIONS)', detail });
     }
 
-    // Body
     const body = await readJson(req);
     const emailInput = String(body?.email || '').trim();
     if (!emailInput) return res.status(400).json({ ok:false, error:'Email requerido' });
     const emailLc = emailInput.toLowerCase();
-
-    // Detectar nombre del campo email en SESSIONS
-    const EMAIL_FIELD = await detectEmailFieldName({ BASE, TBL, PAT, forced: SESSIONS_EMAIL_FIELD });
-
-    // 1) Buscar TODAS las filas por email (case-insensitive): LOWER({field})="email_lc"
     const esc = (s) => String(s||'').replace(/"/g, '\\"');
-    const filter = `LOWER({${EMAIL_FIELD}})="${esc(emailLc)}"`;
 
+    // Fórmula robusta: busca en varios campos habituales (case-insensitive)
+    const candidateFields = ['Email','email','Email_lc','email_lc','Correo','correo'];
+    const ors = candidateFields.map(f => `LOWER({${f}})="${esc(emailLc)}"`).join(', ');
+    const filter = `OR(${ors})`;
+
+    // 1) Buscar TODAS las filas (paginación)
     const ids = [];
-    let page = null, total = 0;
+    let offset = null, pages = 0;
     do {
       const url = new URL(`https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL)}`);
       url.searchParams.set('filterByFormula', filter);
       url.searchParams.set('pageSize', '100');
-      if (page) url.searchParams.set('offset', page);
+      if (offset) url.searchParams.set('offset', offset);
 
       const r = await fetch(url.toString(), { headers:{ Authorization:`Bearer ${PAT}` } });
       const txt = await r.text();
       if (!r.ok) {
         const payload = { ok:false, error:`Airtable find error ${r.status}` };
-        if (debug) payload.detail = txt;
+        if (debug) payload.detail = { txt, BASE, TBL, filter };
         return res.status(502).json(payload);
       }
       const j = safeJson(txt);
-      const recs = j.records || [];
-      total += recs.length;
-      for (const rec of recs) ids.push(rec.id);
-      page = j.offset;
-    } while (page);
+      (j.records || []).forEach(rec => ids.push(String(rec.id)));
+      offset = j.offset;
+      pages++;
+    } while (offset);
 
     if (!ids.length) {
-      return res.status(200).json({ ok:true, matched:0, patched:0, deleted:0 });
+      return res.status(200).json({ ok:true, matched:0, patched:0, deleted:0, ...(debug ? { BASE, TBL, filter } : {}) });
     }
 
-    // 2) PATCH: limpiar Token y marcar ts_logout en lotes de 10
-    const chunk = (arr, n) => arr.reduce((a,_,i)=> (i%n? a : [...a, arr.slice(i,i+n)]), []);
-    let patched = 0, deleted = 0;
+    // Helper para trocear en lotes de 10
+    const chunk = (arr, n) => arr.reduce((a,_,i)=> (i%n ? a : [...a, arr.slice(i,i+n)]), []);
 
+    // 2) PATCH: limpiar Token y marcar ts_logout
+    let patched = 0;
     for (const group of chunk(ids, 10)) {
       const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL)}`;
       const payload = {
-        records: group.map(id => ({
-          id,
-          fields: { Token: '', ts_logout: new Date().toISOString() }
-        }))
+        records: group.map(id => ({ id, fields: { Token: '', ts_logout: new Date().toISOString() } }))
       };
       const rP = await fetch(urlPatch, {
         method:'PATCH',
@@ -85,12 +79,12 @@ export default async function handler(req, res){
         const jP = await rP.json();
         patched += (jP.records || []).length;
       } else if (debug) {
-        const t = await rP.text();
-        console.warn('PATCH fail', rP.status, t);
+        console.warn('PATCH fail', rP.status, await rP.text());
       }
     }
 
-    // 3) (Opcional) borrar filas si tu PAT/rol lo permite
+    // 3) DELETE: intentar borrar (opcional)
+    let deleted = 0;
     for (const group of chunk(ids, 10)) {
       const qs = new URLSearchParams();
       for (const id of group) qs.append('records[]', id);
@@ -100,16 +94,20 @@ export default async function handler(req, res){
         const jDel = await rDel.json();
         deleted += (jDel.records || []).length;
       } else if (debug) {
-        const t = await rDel.text();
-        console.warn('DELETE fail', rDel.status, t);
+        console.warn('DELETE fail', rDel.status, await rDel.text());
       }
     }
 
-    return res.status(200).json({ ok:true, matched: ids.length, patched, deleted });
+    return res.status(200).json({
+      ok:true,
+      matched: ids.length,
+      patched,
+      deleted,
+      ...(debug ? { BASE, TBL, filter, ids } : {})
+    });
 
   } catch(e){
-    if (debug) return res.status(500).json({ ok:false, error:String(e && e.message || e), stack:String(e && e.stack || '') });
-    return res.status(500).json({ ok:false, error:'Error HTTP 500' });
+    return res.status(500).json({ ok:false, error:String(e && e.message || e) });
   }
 }
 
@@ -119,15 +117,4 @@ async function readJson(req){
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return {}; }
 }
 function safeJson(txt){ try{ return JSON.parse(txt); } catch { return {}; } }
-
-async function detectEmailFieldName({ BASE, TBL, PAT, forced }){
-  if (forced) return forced;
-  const candidates = ['email_lc','Email_lc','email','Email','correo','Correo'];
-  for (const field of candidates) {
-    const u = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL)}?filterByFormula=${encodeURIComponent(`{${field}}=""`)}&maxRecords=1`;
-    const r = await fetch(u, { headers:{ Authorization:`Bearer ${PAT}` } });
-    if (r.ok) return field;
-  }
-  throw new Error('No pude detectar el campo de email en SESSIONS.');
-}
 
