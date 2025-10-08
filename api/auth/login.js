@@ -35,13 +35,6 @@ export default async function handler(req, res) {
       if (debug) return res.status(500).json({ ok:false, error:msg, detail:{ PAT:!!PAT, BASE, TBL_C, TBL_S, SECRET:!!SECRET } });
       return res.status(500).json({ ok:false, error:'Config error' });
     }
-    const deviceId = getOrCreateDeviceId();
-
-const res = await fetch('/api/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email, deviceId })
-});
 
     // ===== BODY =====
     const body = await readJson(req);
