@@ -3,10 +3,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
 
-  const { email, deviceId } = req.body;
+  const { email, token } = req.body;
 
-  if (!email || !deviceId) {
-    return res.status(400).json({ ok: false, error: 'Faltan datos: email o deviceId' });
+  if (!email || !token) {
+    return res.status(400).json({ ok: false, error: 'Faltan datos: email o token' });
   }
 
   const {
@@ -20,14 +20,16 @@ export default async function handler(req, res) {
   const BASE = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;
   const TBL_S = TABLE_SESSIONS || 'SESSIONS';
 
-  const EMAIL_FIELD = 'email_lc';
-  const TOKEN_FIELD = 'Token';
-  
-const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_FIELD}}="${token}")`;
+  const EMAIL_FIELD = 'email_lc';   // Ajusta si tu campo se llama distinto
+  const TOKEN_FIELD = 'Token';      // Ajusta si tu campo se llama distinto
 
+  const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_FIELD}}="${token}")`;
   const urlFind = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
-  const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
+  const rFind = await fetch(urlFind, {
+    headers: { Authorization: `Bearer ${PAT}` }
+  });
+
   const jFind = await rFind.json();
   const record = (jFind.records || [])[0];
 
@@ -39,7 +41,7 @@ const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_
 
   const rDelete = await fetch(urlDelete, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${PAT}` },
+    headers: { Authorization: `Bearer ${PAT}` }
   });
 
   if (!rDelete.ok) {
@@ -48,3 +50,4 @@ const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_
 
   return res.status(200).json({ ok: true, message: 'Sesión eliminada correctamente' });
 }
+
