@@ -293,28 +293,42 @@ function deleteCookie(name){
 
 async function logout(){
   try{
-    // localStorage
+    const email = localStorage.getItem('tp_email');
+    const deviceId = localStorage.getItem('deviceId');
+
+    // Llama al backend para eliminar la sesión
+    if (email && deviceId) {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, deviceId })
+      });
+    }
+
+    // Elimina datos locales
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_redirect');
     localStorage.removeItem('tp_email');
+    localStorage.removeItem('deviceId');
 
-    // cookies
+    // Elimina cookies
     deleteCookie('tp_token_v1');
     deleteCookie('tp_redirect');
     deleteCookie('tp_email');
 
-    // CacheStorage
+    // Elimina caché
     if ('caches' in self){
       try { await caches.delete('tp-session'); } catch(_){}
     }
 
-    // (opcional) avisar backend:
-    // fetch('/api/auth/logout', { method:'POST' }).catch(()=>{});
-  }catch(_){}
+  }catch(err){
+    console.error('Error al cerrar sesión:', err);
+  }
 
-  // puerta de entrada forzada
+  // Redirige a pantalla de login
   location.replace('/door.html?force=1');
 }
+
 
 function showErr(msg){
   var box = document.getElementById('err');
