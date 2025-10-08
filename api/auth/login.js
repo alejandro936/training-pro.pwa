@@ -3,6 +3,7 @@
 // Bloquea segundo acceso si ya hay sesión activa en otro dispositivo.
 // Soporta ?debug=1 para ver detalle de errores en las respuestas.
 
+import { createSession } from "../_lib/airtable";
 export default async function handler(req, res) {
   const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
 
