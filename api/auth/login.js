@@ -76,68 +76,96 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
     }
 
-    // ===== 2) SESSIONS: bloqueo fuerte (antes de escribir) =====
-    const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
-    const TOKEN_FIELD   = 'Token';
-    const DEVICE_FIELD  = 'DeviceId';       // confirmado por ti
-    const LOGOUT_FIELD  = 'ts_logout';      // opcional si existe
+   // ===== 2) SESSIONS: bloqueo fuerte (antes de escribir) =====
+const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
+const TOKEN_FIELD   = 'Token';
+const DEVICE_FIELD  = 'DeviceId';
+const LOGOUT_FIELD  = 'ts_logout'; // idealmente existe; si no, caemos al fallback
 
-    const esc = (s) => String(s||'').replace(/"/g, '\\"');
+const esc = (s) => String(s||'').replace(/"/g, '\\"');
 
-    // 2.1) ¿Activa con otro device?
-    const formulaActiveOther = `AND(
-      {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
-      LEN({${TOKEN_FIELD}})>0,
-      OR({${LOGOUT_FIELD}}="", {${LOGOUT_FIELD}}=BLANK()),
-      {${DEVICE_FIELD}} != "${esc(deviceId)}",
-      LEN({${DEVICE_FIELD}})>0
-    )`;
-    const urlActiveOther =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formulaActiveOther)}&maxRecords=1`;
+// Helpers para construir fórmulas
+function activeCond(useLogout){
+  return useLogout
+    ? `AND(LEN({${TOKEN_FIELD}})>0, OR({${LOGOUT_FIELD}}="", IS_BLANK({${LOGOUT_FIELD}})))`
+    : `LEN({${TOKEN_FIELD}})>0`;
+}
+function formulaActiveOther(email_lc, deviceId, useLogout){
+  return `AND(
+    {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
+    ${activeCond(useLogout)},
+    LEN({${DEVICE_FIELD}})>0,
+    {${DEVICE_FIELD}} != "${esc(deviceId)}"
+  )`;
+}
+function formulaActiveNoDevice(email_lc, useLogout){
+  return `AND(
+    {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
+    ${activeCond(useLogout)},
+    OR({${DEVICE_FIELD}}="", IS_BLANK({${DEVICE_FIELD}}))
+  )`;
+}
 
-    const rActiveOther = await fetch(urlActiveOther, { headers:{ Authorization:`Bearer ${PAT}` } });
-    const txtActiveOther = await rActiveOther.text();
-    if (!rActiveOther.ok) {
-      const payload = { ok:false, error:`Airtable SESSIONS (active-other) error: HTTP ${rActiveOther.status}` };
-      if (debug) payload.detail = safeCut(txtActiveOther, 1200);
-      return res.status(502).json(payload);
-    }
-    const jActiveOther = safeJson(txtActiveOther);
-    const conflictOther = Array.isArray(jActiveOther.records) && jActiveOther.records.length > 0;
-    if (conflictOther) {
-      return res.status(409).json({
-        ok:false,
-        error:'Sesión ya iniciada en otro dispositivo. Cierra sesión allí para continuar.',
-        code:'SESSION_ACTIVE_ELSEWHERE'
-      });
-    }
+// Intenta con ts_logout; si 422, reintenta sin ts_logout
+async function queryOnce(formula){
+  const u = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+  const r = await fetch(u, { headers:{ Authorization:`Bearer ${PAT}` } });
+  const txt = await r.text();
+  return { ok: r.ok, status: r.status, json: safeJson(txt), txt };
+}
 
-    // 2.2) ¿Activa sin DeviceId (caso legado)? → también bloquea
-    const formulaActiveNoDevice = `AND(
-      {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
-      LEN({${TOKEN_FIELD}})>0,
-      OR({${LOGOUT_FIELD}}="", {${LOGOUT_FIELD}}=BLANK()),
-      OR({${DEVICE_FIELD}}="", {${DEVICE_FIELD}}=BLANK())
-    )`;
-    const urlActiveNoDevice =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formulaActiveNoDevice)}&maxRecords=1`;
+async function checkConflicts(){
+  // Intento 1: con ts_logout
+  let useLogout = true;
 
-    const rActiveNoDevice = await fetch(urlActiveNoDevice, { headers:{ Authorization:`Bearer ${PAT}` } });
-    const txtActiveNoDevice = await rActiveNoDevice.text();
-    if (!rActiveNoDevice.ok) {
-      const payload = { ok:false, error:`Airtable SESSIONS (active-nodevice) error: HTTP ${rActiveNoDevice.status}` };
-      if (debug) payload.detail = safeCut(txtActiveNoDevice, 1200);
-      return res.status(502).json(payload);
-    }
-    const jActiveNoDevice = safeJson(txtActiveNoDevice);
-    const conflictNoDevice = Array.isArray(jActiveNoDevice.records) && jActiveNoDevice.records.length > 0;
-    if (conflictNoDevice) {
-      return res.status(409).json({
-        ok:false,
-        error:'Sesión activa detectada. Por seguridad, cierra sesión antes de entrar desde otro dispositivo.',
-        code:'SESSION_ACTIVE_WITHOUT_DEVICE'
-      });
-    }
+  // ---- ACTIVE OTHER ----
+  let f1 = formulaActiveOther(email_lc, deviceId, useLogout);
+  let r1 = await queryOnce(f1);
+  if (!r1.ok && r1.status === 422) {
+    useLogout = false; // fallback
+    f1 = formulaActiveOther(email_lc, deviceId, useLogout);
+    r1 = await queryOnce(f1);
+  }
+  if (!r1.ok) {
+    const payload = { ok:false, error:`Airtable SESSIONS (active-other) error: HTTP ${r1.status}` };
+    if (debug) payload.detail = safeCut(r1.txt, 1200);
+    return { error: payload };
+  }
+  const conflictOther = Array.isArray(r1.json.records) && r1.json.records.length > 0;
+  if (conflictOther) {
+    return { conflict: { code:'SESSION_ACTIVE_ELSEWHERE', msg:'Sesión ya iniciada en otro dispositivo. Cierra sesión allí para continuar.' } };
+  }
+
+  // ---- ACTIVE NO DEVICE ----
+  let f2 = formulaActiveNoDevice(email_lc, useLogout);
+  let r2 = await queryOnce(f2);
+  if (!r2.ok && r2.status === 422 && useLogout) {
+    // si la primera parte fue con logout y aquí falla, reintenta sin logout
+    f2 = formulaActiveNoDevice(email_lc, false);
+    r2 = await queryOnce(f2);
+  }
+  if (!r2.ok) {
+    const payload = { ok:false, error:`Airtable SESSIONS (active-nodevice) error: HTTP ${r2.status}` };
+    if (debug) payload.detail = safeCut(r2.txt, 1200);
+    return { error: payload };
+  }
+  const conflictNoDevice = Array.isArray(r2.json.records) && r2.json.records.length > 0;
+  if (conflictNoDevice) {
+    return { conflict: { code:'SESSION_ACTIVE_WITHOUT_DEVICE', msg:'Sesión activa detectada. Por seguridad, cierra sesión antes de entrar desde otro dispositivo.' } };
+  }
+
+  return {}; // sin conflictos
+}
+
+// Ejecuta el chequeo
+const chk = await checkConflicts();
+if (chk.error) {
+  return res.status(502).json(chk.error); // incluye detail si ?debug=1
+}
+if (chk.conflict) {
+  return res.status(409).json({ ok:false, error: chk.conflict.msg, code: chk.conflict.code });
+}
+
 
     // ===== 3) Crear/actualizar sesión =====
     const nowIso = new Date().toISOString();
