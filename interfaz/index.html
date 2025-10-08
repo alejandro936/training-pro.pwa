@@ -210,27 +210,45 @@
 <!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
-  (function(){
-    document.documentElement.classList.add('guard-hiding');
-    try {
-      // 1) intenta cookie
-      var m = document.cookie.match(/(?:^|;\s*)tp_token_v1=([^;]+)/);
-      var tk = (m && m[1]) || '';
-      // 2) fallback a localStorage
-      if (!tk) tk = localStorage.getItem('tp_token_v1') || '';
-      if (tk && tk.length > 10) {
-        document.documentElement.classList.remove('guard-hiding');
-        return;
-      }
-    } catch (_) {}
+  document.documentElement.classList.add('guard-hiding');
 
-    // No hay token -> fuerza login y vuelve aquí después
-    var back = location.pathname + location.search;
-    var qs = '?redirect=' + encodeURIComponent(back) + '&force=1';
-    location.replace('/door.html' + qs);
+  function deviceId(){
+    try{
+      const k='tp_device_id';
+      let id = localStorage.getItem(k);
+      if (!id) {
+        id = (crypto.randomUUID && crypto.randomUUID()) || Math.random().toString(36).slice(2)+Date.now().toString(36);
+        localStorage.setItem(k, id);
+      }
+      return id;
+    }catch(_){ return 'web'; }
+  }
+
+  (async () => {
+    try {
+      // pequeño margen por si venimos de /save.html
+      await new Promise(r => setTimeout(r, 120));
+
+      const email   = (localStorage.getItem('tp_email')     || '').trim().toLowerCase();
+      const token   = (localStorage.getItem('tp_token_v1')  || '').trim();
+      const devId   = deviceId();
+      if (!email || !token) throw 0;
+
+      const r = await fetch('/api/auth/validate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({ email, token, deviceId: devId })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw 0;
+
+      document.documentElement.classList.remove('guard-hiding');
+    } catch {
+      location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search) + '&force=1');
+    }
   })();
 </script>
-
 
 </head>
 <body>
