@@ -1,30 +1,40 @@
+// /api/auth/validate.js
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ ok: false, error: 'Method not allowed' });
-    return;
-  }
   try {
-    const { email, token } = req.body || {};
-    const email_lc = String(email || '').trim().toLowerCase();
-    if (!email_lc || !token) return res.status(400).json({ ok:false, error:'Faltan parámetros' });
+    if (req.method !== 'POST') return res.status(405).json({ ok:false, error:'Method not allowed' });
 
-    const PAT   = process.env.AIRTABLE_PAT;
-    const BASE  = process.env.AIRTABLE_BASE;
-    const TBL_S = process.env.TABLE_SESSIONS || 'SESSIONS';
+    const { AIRTABLE_PAT, AIRTABLE_BASE_CLIENTES, AIRTABLE_BASE, TABLE_SESSIONS } = process.env;
+    const PAT  = AIRTABLE_PAT;
+    const BASE = AIRTABLE_BASE_CLIENTES || AIRTABLE_BASE;
+    const TBL  = TABLE_SESSIONS || 'SESSIONS';
+    if (!PAT || !BASE || !TBL) return res.status(500).json({ ok:false, error:'Config error' });
 
-    const r = await fetch(`https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{Email_lc}="${email_lc}"`)}&maxRecords=1`, {
-      headers: { Authorization: `Bearer ${PAT}` }
-    });
-    if (!r.ok) return res.status(502).json({ ok:false, error:'Airtable error' });
+    const body = await readJson(req);
+    const email = (body && body.email || '').toLowerCase().trim();
+    const token = (body && body.token || '').trim();
+    const deviceId = (body && body.deviceId || '').trim();
+
+    if (!email || !token || !deviceId) return res.status(400).json({ ok:false, error:'Missing fields' });
+
+    const url =
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL)}?filterByFormula=${encodeURIComponent(`{email_lc}="${email}"`)}&maxRecords=1`;
+
+    const r = await fetch(url, { headers: { Authorization:`Bearer ${PAT}` } });
+    if (!r.ok) return res.status(502).json({ ok:false, error:`Airtable error: ${r.status}` });
     const j = await r.json();
-    const rec = (j.records || [])[0];
-    const good = !!rec && rec.fields && rec.fields['Token'] === token;
+    const row = (j.records || [])[0];
+    if (!row) return res.status(401).json({ ok:false, error:'No session' });
 
-    if (!good) return res.status(401).json({ ok:false, error:'Sesión invalidada en otro dispositivo' });
+    const f = row.fields || {};
+    const ok = f.Token && f.Token === token && f.DeviceId && f.DeviceId === deviceId;
+    if (!ok) return res.status(401).json({ ok:false, error:'Invalid session' });
 
-    // ok
-    res.status(200).json({ ok:true, redirect:'/interfaz/' });
+    return res.status(200).json({ ok:true });
   } catch (e) {
-    res.status(500).json({ ok:false, error:String(e) });
+    return res.status(500).json({ ok:false, error:'Error 500' });
   }
 }
+
+/* helpers */
+async function readJson(req){ const chunks=[]; for await(const c of req) chunks.push(c); try{ return JSON.parse(Buffer.concat(chunks).toString('utf8')); }catch{ return {}; } }
+
