@@ -1,8 +1,7 @@
 // /api/auth/login.js
 // Valida email en CLIENTES y crea/actualiza SESSIONS (1 sesión por email).
-// Bloquea un segundo acceso si existe sesión activa en otro dispositivo
-// o si existe una sesión activa sin DeviceId (caso legado).
-// Soporta ?debug=1 para respuestas con detalle.
+// Bloquea segundo acceso si ya hay sesión activa en otro dispositivo.
+// Soporta ?debug=1 para ver detalle de errores en las respuestas.
 
 export default async function handler(req, res) {
   const debug = req.query && (req.query.debug === '1' || req.query.debug === 'true');
@@ -39,8 +38,9 @@ export default async function handler(req, res) {
     // ===== BODY =====
     const body = await readJson(req);
     const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
+    // Fallback robusto para deviceId (si no viene desde el cliente, generamos uno en servidor)
     const deviceIdClient = body && body.deviceId ? String(body.deviceId).trim() : '';
-    const deviceId       = deviceIdClient || makeDeviceId(); // fallback servidor
+    const deviceId       = deviceIdClient || makeDeviceId();
 
     if (!email_raw || !email_raw.includes('@')) {
       return res.status(400).json({ ok:false, error:'Email inválido' });
@@ -76,117 +76,19 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
     }
 
-   // ===== 2) SESSIONS: bloqueo fuerte (antes de escribir) =====
-const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
-const TOKEN_FIELD   = 'Token';
-const DEVICE_FIELD  = 'DeviceId';
-const LOGOUT_FIELD  = 'ts_logout'; // idealmente existe; si no, caemos al fallback
-
-const esc = (s) => String(s||'').replace(/"/g, '\\"');
-
-// Helpers para construir fórmulas
-function activeCond(useLogout){
-  return useLogout
-    ? `AND(LEN({${TOKEN_FIELD}})>0, OR({${LOGOUT_FIELD}}="", IS_BLANK({${LOGOUT_FIELD}})))`
-    : `LEN({${TOKEN_FIELD}})>0`;
-}
-function formulaActiveOther(email_lc, deviceId, useLogout){
-  return `AND(
-    {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
-    ${activeCond(useLogout)},
-    LEN({${DEVICE_FIELD}})>0,
-    {${DEVICE_FIELD}} != "${esc(deviceId)}"
-  )`;
-}
-function formulaActiveNoDevice(email_lc, useLogout){
-  return `AND(
-    {${EMAIL_FIELD_NAME}}="${esc(email_lc)}",
-    ${activeCond(useLogout)},
-    OR({${DEVICE_FIELD}}="", IS_BLANK({${DEVICE_FIELD}}))
-  )`;
-}
-
-// Intenta con ts_logout; si 422, reintenta sin ts_logout
-async function queryOnce(formula){
-  const u = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
-  const r = await fetch(u, { headers:{ Authorization:`Bearer ${PAT}` } });
-  const txt = await r.text();
-  return { ok: r.ok, status: r.status, json: safeJson(txt), txt };
-}
-
-async function checkConflicts(){
-  // Intento 1: con ts_logout
-  let useLogout = true;
-
-  // ---- ACTIVE OTHER ----
-  let f1 = formulaActiveOther(email_lc, deviceId, useLogout);
-  let r1 = await queryOnce(f1);
-  if (!r1.ok && r1.status === 422) {
-    useLogout = false; // fallback
-    f1 = formulaActiveOther(email_lc, deviceId, useLogout);
-    r1 = await queryOnce(f1);
-  }
-  if (!r1.ok) {
-    const payload = { ok:false, error:`Airtable SESSIONS (active-other) error: HTTP ${r1.status}` };
-    if (debug) payload.detail = safeCut(r1.txt, 1200);
-    return { error: payload };
-  }
-  const conflictOther = Array.isArray(r1.json.records) && r1.json.records.length > 0;
-  if (conflictOther) {
-    return { conflict: { code:'SESSION_ACTIVE_ELSEWHERE', msg:'Sesión ya iniciada en otro dispositivo. Cierra sesión allí para continuar.' } };
-  }
-
-  // ---- ACTIVE NO DEVICE ----
-  let f2 = formulaActiveNoDevice(email_lc, useLogout);
-  let r2 = await queryOnce(f2);
-  if (!r2.ok && r2.status === 422 && useLogout) {
-    // si la primera parte fue con logout y aquí falla, reintenta sin logout
-    f2 = formulaActiveNoDevice(email_lc, false);
-    r2 = await queryOnce(f2);
-  }
-  if (!r2.ok) {
-    const payload = { ok:false, error:`Airtable SESSIONS (active-nodevice) error: HTTP ${r2.status}` };
-    if (debug) payload.detail = safeCut(r2.txt, 1200);
-    return { error: payload };
-  }
-  const conflictNoDevice = Array.isArray(r2.json.records) && r2.json.records.length > 0;
-  if (conflictNoDevice) {
-    return { conflict: { code:'SESSION_ACTIVE_WITHOUT_DEVICE', msg:'Sesión activa detectada. Por seguridad, cierra sesión antes de entrar desde otro dispositivo.' } };
-  }
-
-  return {}; // sin conflictos
-}
-
-// Ejecuta el chequeo
-const chk = await checkConflicts();
-if (chk.error) {
-  return res.status(502).json(chk.error); // incluye detail si ?debug=1
-}
-if (chk.conflict) {
-  return res.status(409).json({ ok:false, error: chk.conflict.msg, code: chk.conflict.code });
-}
-
-
-    // ===== 3) Crear/actualizar sesión =====
+    // ===== 2) SESSIONS: buscar por email =====
+    const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
     const nowIso = new Date().toISOString();
     const token  = await makeToken(email_lc, SECRET);
 
-    const fullFields = {
-      [EMAIL_FIELD_NAME]: email_lc,
-      ts_login: nowIso,
-      [TOKEN_FIELD]: token,
-      [DEVICE_FIELD]: deviceId
-      // No tocamos ts_logout aquí
-    };
-    const minFields = {
-      [EMAIL_FIELD_NAME]: email_lc,
-      ts_login: nowIso
-    };
+    const TOKEN_FIELD   = 'Token';      // ajusta si tu columna se llama distinto
+    const DEVICE_FIELD  = 'DeviceId';   // ajusta si tu columna se llama distinto
+    const LOGOUT_FIELD  = 'ts_logout';  // opcional: si no existe en tu tabla, simplemente quedará undefined al leer
 
-    const urlFindByEmail =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${EMAIL_FIELD_NAME}}="${esc(email_lc)}"`)}&maxRecords=1`;
+    const urlFind =
+      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${EMAIL_FIELD_NAME}}="${email_lc}"`)}&maxRecords=1`;
 
-    const rFind = await fetch(urlFindByEmail, { headers: { Authorization: `Bearer ${PAT}` } });
+    const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
     const txtFind = await rFind.text();
     if (!rFind.ok) {
       const payload = { ok:false, error:`Airtable SESSIONS (find) error: HTTP ${rFind.status}` };
@@ -196,10 +98,46 @@ if (chk.conflict) {
     const jFind = safeJson(txtFind);
     const existing = (jFind.records || [])[0];
 
+    // ===== 2.1) Política de UNA SESIÓN por email =====
+    if (existing) {
+      const exFields       = existing.fields || {};
+      const exDevice       = exFields[DEVICE_FIELD];
+      const exToken        = exFields[TOKEN_FIELD];
+      const exTsLogout     = exFields[LOGOUT_FIELD]; // puede no existir
+      const exIsActive     = !!exToken && !exTsLogout; // activa si hay token y no hay ts_logout
+
+      // Si hay sesión activa y es OTRO dispositivo → bloquear
+      if (exIsActive && exDevice && exDevice !== deviceId) {
+        const payload = {
+          ok: false,
+          error: 'Sesión ya iniciada en otro dispositivo. Cierra sesión en el otro dispositivo para continuar.',
+          code: 'SESSION_ACTIVE_ELSEWHERE'
+        };
+        if (debug) payload.detail = { exDevice, deviceId, exIsActive };
+        return res.status(409).json(payload);
+      }
+      // Si no hay device guardado, o es el mismo device, o la sesión está cerrada → continuar y refrescar
+    }
+
+    // ===== 2.2) Preparar escritura =====
+    const fullFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso,
+      [TOKEN_FIELD]: token,
+      [DEVICE_FIELD]: deviceId,
+      // No tocamos ts_logout aquí (se gestiona en /logout)
+    };
+    const minFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso
+    };
+
     let rSave, txtSave;
 
     if (existing) {
+      // PATCH full → si 422 reintenta min → luego parchea token/device por separado
       const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
+
       rSave = await fetch(urlPatch, {
         method:'PATCH',
         headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
@@ -208,13 +146,12 @@ if (chk.conflict) {
       txtSave = await rSave.text();
 
       if (rSave.status === 422) {
-        // guarda lo mínimo
         await fetch(urlPatch, {
           method:'PATCH',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
           body: JSON.stringify({ fields: minFields })
         }).catch(()=>{});
-        // y parchea token y device por separado
+
         await fetch(urlPatch, {
           method:'PATCH',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
@@ -227,7 +164,9 @@ if (chk.conflict) {
         }).catch(()=>{});
       }
     } else {
+      // POST full → si 422 POST min → re-busca → PATCH token/device
       const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
+
       rSave = await fetch(urlPost, {
         method:'POST',
         headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
@@ -236,16 +175,16 @@ if (chk.conflict) {
       txtSave = await rSave.text();
 
       if (rSave.status === 422) {
-        // crea mínima
         await fetch(urlPost, {
           method:'POST',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
           body: JSON.stringify({ records: [{ fields: minFields }] })
         }).catch(()=>{});
-        // re-busca y parchea token/device
-        const rReFind = await fetch(urlFindByEmail, { headers:{ Authorization:`Bearer ${PAT}` } });
+
+        const rReFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
         const jReFind = await rReFind.json();
         const created = (jReFind.records || [])[0];
+
         if (created) {
           const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${created.id}`;
           await fetch(urlPatch, {
@@ -268,26 +207,8 @@ if (chk.conflict) {
       return res.status(502).json(payload);
     }
 
-    // ===== 4) Verificación post-save (imprescindible) =====
-    const rVerify = await fetch(urlFindByEmail, { headers:{ Authorization:`Bearer ${PAT}` } });
-    if (!rVerify.ok) {
-      return res.status(502).json({ ok:false, error:`Airtable verify error ${rVerify.status}` });
-    }
-    const jVerify = await rVerify.json();
-    const row = (jVerify.records||[])[0];
-    const fields = row?.fields || {};
-    if (!fields[TOKEN_FIELD] || !fields[DEVICE_FIELD]) {
-      // no devolvemos 200 si no tenemos consistencia
-      return res.status(502).json({
-        ok:false,
-        error:'No se pudo persistir DeviceId/Token de forma consistente.',
-        code:'DEVICE_NOT_PERSISTED'
-      });
-    }
-
-    // ===== 5) OK =====
-    const nowToken = await makeToken(email_lc, SECRET); // opcional: ya lo generamos arriba
-    return res.status(200).json({ ok:true, token: nowToken, redirect:'/interfaz/' });
+    // ===== 3) OK =====
+    return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
 
   } catch (e) {
     if (debug) return res.status(500).json({ ok:false, error:'Exception', detail:String(e && e.message || e), stack:String(e && e.stack || '') });
