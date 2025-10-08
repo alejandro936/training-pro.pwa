@@ -21,9 +21,10 @@ export default async function handler(req, res) {
   const TBL_S = TABLE_SESSIONS || 'SESSIONS';
 
   const EMAIL_FIELD = 'email_lc';
-  const DEVICE_FIELD = 'DeviceId';
+  const TOKEN_FIELD = 'Token';
+  
+const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${TOKEN_FIELD}}="${token}")`;
 
-  const formula = `AND({${EMAIL_FIELD}}="${email.trim().toLowerCase()}", {${DEVICE_FIELD}}="${deviceId}")`;
   const urlFind = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
 
   const rFind = await fetch(urlFind, { headers: { Authorization: `Bearer ${PAT}` } });
