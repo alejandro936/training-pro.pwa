@@ -82,71 +82,73 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
     }
 
-    // ===== 2) SESSIONS: upsert por email_lc =====
-    const nowIso = new Date().toISOString();
-    const token = await makeToken(email_lc, SECRET);
+ // ===== 2) SESSIONS: upsert por email_lc (token rotado y ligado a deviceId) =====
+const nowIso = new Date().toISOString();
+const token  = await makeToken(email_lc, SECRET);
 
-    // payload con todos los campos (algunos pueden no existir en tu tabla)
-    const fieldsFull = {
-      [S_EMAIL]:  email_lc,   // <-- minúsculas
-      ts_login:   nowIso,
-      [S_TOKEN]:  token,
-      [S_DEVICE]: deviceId
+const payloadFields = {
+  email_lc: email_lc,   // campo en minúsculas en tu tabla
+  ts_login: nowIso,
+  Token: token,
+  DeviceId: deviceId || ''   // ← guarda el deviceId del login actual
+};
+
+// 2.1 Buscar registros de ese email
+const urlFind =
+  `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{email_lc}="${email_lc}"`)}&maxRecords=10`;
+
+const rFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
+const txtFind = await rFind.text();
+if (!rFind.ok) {
+  const payload = { ok:false, error:`Airtable SESSIONS (find) error: HTTP ${rFind.status}` };
+  if (debug) payload.detail = safeCut(txtFind, 1000);
+  return res.status(502).json(payload);
+}
+const jFind = safeJson(txtFind);
+const existing = (jFind.records || []);
+
+// 2.2 Si hay varios, deja UNO activo con el nuevo token/deviceId y vacía los demás
+let primaryId = existing[0] && existing[0].id;
+if (primaryId) {
+  // Actualiza el primero
+  await fetch(`https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${primaryId}`, {
+    method:'PATCH',
+    headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({ fields: payloadFields })
+  });
+
+  // Invalida los demás (Token vacío y sin DeviceId)
+  const others = existing.slice(1);
+  if (others.length) {
+    const batch = {
+      records: others.map(r => ({
+        id: r.id,
+        fields: { Token: '', DeviceId: '' }
+      }))
     };
+    await fetch(`https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`, {
+      method:'PATCH',
+      headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+      body: JSON.stringify(batch)
+    });
+  }
+} else {
+  // Crea el registro
+  const rIns = await fetch(`https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`, {
+    method:'POST',
+    headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({ records:[{ fields: payloadFields }] })
+  });
+  if (!rIns.ok) {
+    const txt = await rIns.text();
+    const payload = { ok:false, error:`Airtable SESSIONS error: HTTP ${rIns.status}` };
+    if (debug) payload.detail = safeCut(txt, 2000);
+    return res.status(502).json(payload);
+  }
+}
 
-    // payload mínimo (si alguno no existe reintentamos con este)
-    const fieldsMin = {
-      [S_EMAIL]:  email_lc,
-      ts_login:   nowIso
-    };
+return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
 
-    // Buscar existente por email_lc
-    const urlFind =
-      `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${S_EMAIL}}="${email_lc}"`)}&maxRecords=1`;
-
-    const rFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
-    const txtFind = await rFind.text();
-    if (!rFind.ok) {
-      const payload = { ok:false, error:`Airtable SESSIONS (find) error: HTTP ${rFind.status}` };
-      if (debug) payload.detail = safeCut(txtFind, 1000);
-      return res.status(502).json(payload);
-    }
-    const jFind = safeJson(txtFind);
-    const existing = (jFind.records || [])[0];
-
-    async function save(fields) {
-      if (existing) {
-        const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
-        return fetch(urlPatch, {
-          method:'PATCH',
-          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-          body: JSON.stringify({ fields })
-        });
-      } else {
-        const urlPost = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}`;
-        return fetch(urlPost, {
-          method:'POST',
-          headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
-          body: JSON.stringify({ records:[{ fields }] })
-        });
-      }
-    }
-
-    // 1º intento con todos los campos
-    let rSave = await save(fieldsFull);
-    let txtSave = await rSave.text();
-
-    // Si falla por nombre de campo desconocido, reintenta con el mínimo
-    if (!rSave.ok && /UNKNOWN_FIELD_NAME/i.test(txtSave)) {
-      rSave = await save(fieldsMin);
-      txtSave = await rSave.text();
-    }
-
-    if (!rSave.ok) {
-      const payload = { ok:false, error:`Airtable SESSIONS error: HTTP ${rSave.status}` };
-      if (debug) payload.detail = safeCut(txtSave, 2000);
-      return res.status(502).json(payload);
-    }
 
     // ===== 3) OK =====
     return res.status(200).json({ ok:true, token, redirect:'/interfaz/' });
