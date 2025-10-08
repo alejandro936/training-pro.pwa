@@ -1,5 +1,6 @@
 // /api/auth/login.js
 // Valida email en CLIENTES y crea/actualiza SESSIONS (1 sesión por email).
+// Bloquea segundo acceso si ya hay sesión activa en otro dispositivo.
 // Soporta ?debug=1 para ver detalle de errores en las respuestas.
 
 export default async function handler(req, res) {
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
     const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
     // Fallback robusto para deviceId (si no viene desde el cliente, generamos uno en servidor)
     const deviceIdClient = body && body.deviceId ? String(body.deviceId).trim() : '';
-    const deviceId       = deviceIdClient || makeDeviceId();   // <- AQUÍ EL CAMBIO
+    const deviceId       = deviceIdClient || makeDeviceId();
 
     if (!email_raw || !email_raw.includes('@')) {
       return res.status(400).json({ ok:false, error:'Email inválido' });
@@ -75,26 +76,15 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok:false, error:'No tienes acceso activo.' });
     }
 
-    // ===== 2) SESSIONS: upsert por email =====
+    // ===== 2) SESSIONS: buscar por email =====
     const EMAIL_FIELD_NAME = await detectEmailFieldName({ BASE, TBL_S, PAT });
     const nowIso = new Date().toISOString();
     const token  = await makeToken(email_lc, SECRET);
 
-    const TOKEN_FIELD  = 'Token';     // ajusta si tu columna se llama distinto
-    const DEVICE_FIELD = 'DeviceId';  // ajusta si tu columna se llama distinto
+    const TOKEN_FIELD   = 'Token';      // ajusta si tu columna se llama distinto
+    const DEVICE_FIELD  = 'DeviceId';   // ajusta si tu columna se llama distinto
+    const LOGOUT_FIELD  = 'ts_logout';  // opcional: si no existe en tu tabla, simplemente quedará undefined al leer
 
-    const fullFields = {
-      [EMAIL_FIELD_NAME]: email_lc,
-      ts_login: nowIso,
-      [TOKEN_FIELD]: token,
-      [DEVICE_FIELD]: deviceId
-    };
-    const minFields = {
-      [EMAIL_FIELD_NAME]: email_lc,
-      ts_login: nowIso
-    };
-
-    // Buscar existente
     const urlFind =
       `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}?filterByFormula=${encodeURIComponent(`{${EMAIL_FIELD_NAME}}="${email_lc}"`)}&maxRecords=1`;
 
@@ -107,6 +97,40 @@ export default async function handler(req, res) {
     }
     const jFind = safeJson(txtFind);
     const existing = (jFind.records || [])[0];
+
+    // ===== 2.1) Política de UNA SESIÓN por email =====
+    if (existing) {
+      const exFields       = existing.fields || {};
+      const exDevice       = exFields[DEVICE_FIELD];
+      const exToken        = exFields[TOKEN_FIELD];
+      const exTsLogout     = exFields[LOGOUT_FIELD]; // puede no existir
+      const exIsActive     = !!exToken && !exTsLogout; // activa si hay token y no hay ts_logout
+
+      // Si hay sesión activa y es OTRO dispositivo → bloquear
+      if (exIsActive && exDevice && exDevice !== deviceId) {
+        const payload = {
+          ok: false,
+          error: 'Sesión ya iniciada en otro dispositivo. Cierra sesión en el otro dispositivo para continuar.',
+          code: 'SESSION_ACTIVE_ELSEWHERE'
+        };
+        if (debug) payload.detail = { exDevice, deviceId, exIsActive };
+        return res.status(409).json(payload);
+      }
+      // Si no hay device guardado, o es el mismo device, o la sesión está cerrada → continuar y refrescar
+    }
+
+    // ===== 2.2) Preparar escritura =====
+    const fullFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso,
+      [TOKEN_FIELD]: token,
+      [DEVICE_FIELD]: deviceId,
+      // No tocamos ts_logout aquí (se gestiona en /logout)
+    };
+    const minFields = {
+      [EMAIL_FIELD_NAME]: email_lc,
+      ts_login: nowIso
+    };
 
     let rSave, txtSave;
 
@@ -122,14 +146,12 @@ export default async function handler(req, res) {
       txtSave = await rSave.text();
 
       if (rSave.status === 422) {
-        // guarda mínimo
         await fetch(urlPatch, {
           method:'PATCH',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
           body: JSON.stringify({ fields: minFields })
         }).catch(()=>{});
 
-        // añade Token y DeviceId por separado (si existen columnas)
         await fetch(urlPatch, {
           method:'PATCH',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
@@ -153,14 +175,12 @@ export default async function handler(req, res) {
       txtSave = await rSave.text();
 
       if (rSave.status === 422) {
-        // crea mínima
         await fetch(urlPost, {
           method:'POST',
           headers:{ Authorization:`Bearer ${PAT}`, 'Content-Type':'application/json' },
           body: JSON.stringify({ records: [{ fields: minFields }] })
         }).catch(()=>{});
 
-        // vuelve a buscar la fila recién creada
         const rReFind = await fetch(urlFind, { headers:{ Authorization:`Bearer ${PAT}` } });
         const jReFind = await rReFind.json();
         const created = (jReFind.records || [])[0];
