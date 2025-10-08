@@ -208,28 +208,40 @@
 </style>
 
 <!-- Guard de sesión (redirige a /door si no hay token) -->
-<style>html.guard-hiding{visibility:hidden}</style>
 <script>
-  (function(){
-    document.documentElement.classList.add('guard-hiding');
-    try {
-      // 1) intenta cookie
-      var m = document.cookie.match(/(?:^|;\s*)tp_token_v1=([^;]+)/);
-      var tk = (m && m[1]) || '';
-      // 2) fallback a localStorage
-      if (!tk) tk = localStorage.getItem('tp_token_v1') || '';
-      if (tk && tk.length > 10) {
-        document.documentElement.classList.remove('guard-hiding');
-        return;
-      }
-    } catch (_) {}
+  document.documentElement.classList.add('guard-hiding');
 
-    // No hay token -> fuerza login y vuelve aquí después
-    var back = location.pathname + location.search;
-    var qs = '?redirect=' + encodeURIComponent(back) + '&force=1';
-    location.replace('/door.html' + qs);
+  function deviceId(){
+    try{
+      const k='tp_device_id'; let id = localStorage.getItem(k);
+      if (!id) { id = (crypto.randomUUID && crypto.randomUUID()) || Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem(k,id); }
+      return id;
+    }catch(_){ return 'web'; }
+  }
+
+  (async () => {
+    try {
+      const email = localStorage.getItem('tp_email') || '';
+      const token = localStorage.getItem('tp_token_v1') || '';
+      const devId = deviceId();
+      if (!email || !token) throw 0;
+
+      const r = await fetch('/api/auth/validate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({ email, token, deviceId: devId })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw 0;
+
+      document.documentElement.classList.remove('guard-hiding');
+    } catch {
+      location.replace('/door.html?redirect=' + encodeURIComponent(location.pathname + location.search) + '&force=1');
+    }
   })();
 </script>
+
 
 
 </head>
@@ -293,6 +305,12 @@ function deleteCookie(name){
 
 async function logout(){
   try{
+    const email = localStorage.getItem('tp_email') || '';
+    // avisa al backend para invalidar Token/DeviceId
+    if (email) {
+      try { await fetch('/api/auth/logout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) }); } catch(_){}
+    }
+
     // localStorage
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_redirect');
@@ -308,13 +326,19 @@ async function logout(){
       try { await caches.delete('tp-session'); } catch(_){}
     }
 
-    // (opcional) avisar backend:
-    // fetch('/api/auth/logout', { method:'POST' }).catch(()=>{});
+    // Pide al SW limpiar (si lo usas)
+    if ('serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg && reg.active) reg.active.postMessage({ type:'TP_LOGOUT_CLEAR' });
+      } catch(_){}
+    }
   }catch(_){}
 
-  // puerta de entrada forzada
-  location.replace('/door.html?force=1');
+  // puerta de entrada forzada con cache-bust
+  location.replace('/door.html?force=1&cb=' + Date.now());
 }
+
 
 function showErr(msg){
   var box = document.getElementById('err');
