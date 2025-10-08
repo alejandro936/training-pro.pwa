@@ -37,14 +37,16 @@ export default async function handler(req, res) {
     // ===== BODY =====
     const body = await readJson(req);
     const email_raw = (body && body.email) ? String(body.email).trim().toLowerCase() : '';
-    const deviceId  = body && body.deviceId ? String(body.deviceId) : '';
+    // Fallback robusto para deviceId (si no viene desde el cliente, generamos uno en servidor)
+    const deviceIdClient = body && body.deviceId ? String(body.deviceId).trim() : '';
+    const deviceId       = deviceIdClient || makeDeviceId();   // <- AQUÍ EL CAMBIO
+
     if (!email_raw || !email_raw.includes('@')) {
       return res.status(400).json({ ok:false, error:'Email inválido' });
     }
     const email_lc = email_raw;
 
     // ===== 1) CLIENTES: ¿tiene acceso? =====
-    // Fórmula flexible: Email o Email_lc y campo de acceso verdadero (1/TRUE/"si"/"sí")
     const F = ACCESS; // p.ej. 'Acceso a Biblioteca'
     const formula = `AND(
       OR(
@@ -109,7 +111,7 @@ export default async function handler(req, res) {
     let rSave, txtSave;
 
     if (existing) {
-      // PATCH full → si 422 reintenta min → luego intenta parchear token/device por separado
+      // PATCH full → si 422 reintenta min → luego parchea token/device por separado
       const urlPatch = `https://api.airtable.com/v0/${BASE}/${encodeURIComponent(TBL_S)}/${existing.id}`;
 
       rSave = await fetch(urlPatch, {
@@ -228,4 +230,12 @@ async function makeToken(sub, secret){
   const sig = crypto.createHmac('sha256', secret).update(`${h}.${b}`).digest('base64')
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
   return `${h}.${b}.${sig}`;
+}
+
+// Genera ID de dispositivo (servidor) si no vino desde el cliente
+function makeDeviceId(){
+  try {
+    if (crypto.randomUUID) return 'srv_' + crypto.randomUUID();
+  } catch {}
+  return 'srv_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
