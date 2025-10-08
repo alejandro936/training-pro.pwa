@@ -294,14 +294,13 @@ function deleteCookie(name){
 async function logout(){
   try {
     const email = localStorage.getItem('tp_email');
-    const token = localStorage.getItem('tp_token_v1'); // ← este es el que usa el backend
 
-    // Llama al backend para eliminar la sesión
-    if (email && token) {
+    // Llama al backend para eliminar la sesión por email
+    if (email) {
       const res = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token })
+        body: JSON.stringify({ email })
       });
 
       const result = await res.json();
@@ -311,7 +310,7 @@ async function logout(){
         console.log('Sesión eliminada correctamente');
       }
     } else {
-      console.warn('Faltan email o token para cerrar sesión');
+      console.warn('No se encontró el email en localStorage');
     }
 
     // Elimina datos locales
