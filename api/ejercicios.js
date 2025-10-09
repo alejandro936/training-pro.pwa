@@ -1,4 +1,4 @@
-// api/ejercicios.js
+// api/ejercicios.js 
 import { atList, atGet } from './_lib/airtable.js';
 import { requireSession } from './_lib/session';
 
