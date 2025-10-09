@@ -22,6 +22,7 @@ function mapRow(r) {
     id:           r.id,
     ejercicio:    f['Ejercicio']        || '',
     categoria:    f['Categoría']        || '',
+    musculo:      f['Músculo objetivo'] || '',   // ⬅️ NUEVO
     indicaciones: f['Indicaciones']     || '',
     video:        extractVideoUrl(f['Vídeo']),
   };
