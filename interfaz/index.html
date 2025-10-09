@@ -538,7 +538,8 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 document.addEventListener('DOMContentLoaded', function(){ fetchData(); });
 window.addEventListener('pageshow', function(e){ if (e.persisted) fetchData(); });
 </script>
-      
+
+<script>
 // Valida sesión al entrar y cada 5 minutos
 (async function guard(){
   const token = localStorage.getItem('tp_token_v1') || '';
