@@ -317,7 +317,24 @@ function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
   el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
 function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
   el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>'; }
-
+      
+// === helpers de orden ===
+function normStr(s){
+  return String(s||'')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ''); // quita acentos
+}
+function compareByName(a,b){
+  const A = normStr(a.ejercicio || a.nombre || '');
+  const B = normStr(b.ejercicio || b.nombre || '');
+  if (A < B) return -1;
+  if (A > B) return 1;
+  return 0;
+}
+function sortRowsInPlace(arr){
+  try { arr.sort(compareByName); } catch (_){}
+}
 /* ======== Render ======== */
 function card(x){
   var esc = escapeHtml;
@@ -369,10 +386,12 @@ async function fetchData(opts){
     if (!opts.append){
       state.buffer = rows.slice();
       state.nextOffset = res.nextOffset || '';
+          sortRowsInPlace(state.buffer);      // 👈 ORDENAR AQUÍ
       resetGrid();
     } else {
       state.buffer = state.buffer.concat(rows);
       state.nextOffset = res.nextOffset || '';
+          sortRowsInPlace(state.buffer);      // 👈 ORDENAR AQUÍ
     }
     renderChunk();
   }catch(err){
