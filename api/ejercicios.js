@@ -1,5 +1,6 @@
 // api/ejercicios.js
 import { atList, atGet } from './_lib/airtable.js';
+import { requireSession } from './_lib/session';
 
 /* ======== helpers ======== */
 function norm(s) {
@@ -40,13 +41,21 @@ function mapDetail(r) {
 /* ======== API ======== */
 export default async function handler(req, res) {
   try {
+    // 🔐 Exigir sesión válida + token presente en SESSIONS
+    const gate = await requireSession(req);
+    if (!gate.ok) {
+      return res.status(gate.status).json({ ok:false, error: gate.error });
+    }
+
     const BASE = process.env.AIRTABLE_BASE;
     const TBL  = process.env.TABLE_EJERCICIOS_ID || process.env.TABLE_EJERCICIOS;
     if (!process.env.AIRTABLE_PAT || !BASE || !TBL) {
       return res.status(500).json({ ok:false, error:'Faltan variables AIRTABLE_PAT / AIRTABLE_BASE / TABLE_EJERCICIOS(_ID)' });
     }
 
-    if (req.method !== 'GET') return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    if (req.method !== 'GET') {
+      return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+    }
 
     const { id, q = '', offset = '' } = req.query || {};
     const pageSize = 48;
