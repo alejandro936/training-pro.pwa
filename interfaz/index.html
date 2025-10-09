@@ -538,5 +538,37 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 document.addEventListener('DOMContentLoaded', function(){ fetchData(); });
 window.addEventListener('pageshow', function(e){ if (e.persisted) fetchData(); });
 </script>
+      
+// Valida sesión al entrar y cada 5 minutos
+(async function guard(){
+  const token = localStorage.getItem('tp_token_v1') || '';
+  if (!token) { kick(); return; }
+  const ok = await check(token);
+  if (!ok) { kick(); return; }
+  // Revalida cada 5 min por si el admin borra la sesión
+  setInterval(async ()=>{
+    const tok = localStorage.getItem('tp_token_v1') || '';
+    if (!tok || !(await check(tok))) kick();
+  }, 5 * 60 * 1000);
+})();
+
+async function check(token){
+  try{
+    const r = await fetch('/api/auth/check', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ token })
+    });
+    return r.ok;
+  }catch{ return false; }
+}
+function kick(){
+  try{
+    localStorage.removeItem('tp_token_v1');
+    localStorage.removeItem('tp_sessionId');
+  }catch{}
+  window.location.assign('/'); // a la portada
+}
+</script>
 </body>
 </html>
