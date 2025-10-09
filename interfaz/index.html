@@ -73,10 +73,10 @@
 
   .toolbar{
     display:flex; gap:10px; margin:0 auto calc(var(--gap-top) + 10px);
-    max-width:var(--content-max); width:100%; flex-wrap:wrap;
+    max-width:var(--content-max); width:100%;
   }
   .toolbar input{
-    flex:1 1 320px; min-width:0; background:#121212; color:var(--fg);
+    flex:1 1 auto; min-width:0; background:#121212; color:var(--fg);
     border:1px solid #1d1d1d; border-radius:10px; padding:13px 16px; font-size:16px;
     transition:box-shadow .18s ease,border-color .18s ease;
   }
@@ -88,14 +88,6 @@
   .toolbar .primary{
     background:linear-gradient(180deg,rgba(230,192,110,.16),rgba(230,192,110,.05));
     border-color:var(--accent)
-  }
-  .chip-filter{
-    flex:0 0 auto; display:none; align-items:center; gap:6px;
-    padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22);
-    color:#ddd; font-size:13px;
-  }
-  .chip-filter button{
-    background:#181818; border:1px solid rgba(230,192,110,.45); border-radius:8px; padding:2px 6px; font-size:11px;
   }
 
   .grid{ display:grid; grid-template-columns:1fr; gap:var(--gap-cards) 0;
@@ -126,19 +118,28 @@
 
   .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none }
-
-  /* MÚSCULOS: tarjetas tipo “carpeta” */
-  .folder{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    background:var(--panel); border:1px solid rgba(255,255,255,.14);
-    border-left:3px solid rgba(230,192,110,.85); border-radius:var(--radius);
-    padding:14px; cursor:pointer;
-  }
-  .folder .name{ font-family:var(--title-font); font-weight:800; font-size:18px; }
-  .folder .count{ font-size:12px; color:#cfcfcf; border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:4px 8px; }
+  .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.7); z-index:9999 }
+  .panel{ position:relative; background:var(--panel); border:1px solid rgba(230,192,110,.35);
+    border-radius:14px; max-width:860px; width:100%; padding:12px 14px 14px; box-shadow:0 10px 40px rgba(0,0,0,.5); text-align:center; }
+  .panel .topbar{ display:flex; justify-content:flex-end; align-items:center; margin-bottom:4px; }
+  .panel .x{ border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff; border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px; }
+  .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
+  .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
+  .detail-body{ color:#d8d8d8; font-size:14.5px; line-height:1.8 }
+  .video{ width:100%; max-width:520px; margin:8px auto 6px; aspect-ratio:16/9; background:#000; border:1px solid #333; border-radius:12px; overflow:hidden }
+  .video iframe,.video video{ width:100%; height:100%; display:block }
+  .video-lite{ position:relative; cursor:pointer; width:100%; height:100% }
+  .video-lite img{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(.9) contrast(1.05) }
+  .video-lite .play{ pointer-events:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:54px; height:54px; border-radius:50%; background:rgba(0,0,0,.45); border:2px solid rgba(230,192,110,.7);
+    display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.4) }
+  .video-lite .play:before{ content:""; width:0; height:0; border-left:13px solid var(--accent);
+    border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px }
+  .video-link{ margin-top:6px; font-size:13px }
+  .video-link a{ color:var(--accent); text-decoration:none }
 </style>
 
-<!-- Guard de sesion (redirige a /door si no hay token) -->
+<!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
   (function(){
@@ -171,12 +172,6 @@
     <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
     <button class="primary" onclick="buscar()">Buscar</button>
     <button onclick="limpiar()">Limpiar</button>
-
-    <!-- chip del filtro por músculo (visible solo en vista lista con filtro) -->
-    <div id="chipFilter" class="chip-filter">
-      <span id="chipLabel"></span>
-      <button onclick="clearMuscle()">Quitar</button>
-    </div>
   </div>
 
   <div id="err" class="error"></div>
@@ -201,15 +196,13 @@ var CHUNK = 9;
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
 
-// === Estado global ===
+// ======== NUEVO estado global de lista/render ========
 var state = {
   q: '',
-  items: [],       // todos los ejercicios cargados
-  rendered: 0,     // cuántas tarjetas de ejercicios están pintadas
+  items: [],      // TODOS los ejercicios cargados (sin duplicados)
+  rendered: 0,    // cuántos hay pintados en el grid
   nextOffset: '',
-  loading: false,
-  view: 'muscles', // 'muscles' | 'list'
-  muscle: ''       // nombre del músculo filtrado en vista list
+  loading: false
 };
 
 function goHome(e){
@@ -227,13 +220,25 @@ function deleteCookie(name){
 }
 async function kick(){
   try{
+    // Local
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_sessionId');
     localStorage.removeItem('tp_redirect');
     localStorage.removeItem('tp_email');
-    deleteCookie('tp_token_v1'); deleteCookie('tp_redirect'); deleteCookie('tp_email');
-    if ('caches' in self){ try { await caches.delete('tp-session'); } catch(_){ } }
-  }finally{ window.location.assign('/'); }
+
+    // Cookies que usa door.html para auto-login
+    deleteCookie('tp_token_v1');
+    deleteCookie('tp_redirect');
+    deleteCookie('tp_email');
+
+    // Cache usada por door.html (restoreFromCache)
+    if ('caches' in self){
+      try { await caches.delete('tp-session'); } catch(_){}
+    }
+  }finally{
+    // Portada
+    window.location.assign('/');
+  }
 }
 
 async function logout(){
@@ -254,7 +259,9 @@ async function logout(){
     deleteCookie('tp_token_v1'); deleteCookie('tp_redirect'); deleteCookie('tp_email');
     if ('caches' in self){ try { await caches.delete('tp-session'); } catch(_){} }
     location.replace('/door.html?force=1');
-  } catch (err) { console.error('Error al cerrar sesión:', err); }
+  } catch (err) {
+    console.error('Error al cerrar sesión:', err);
+  }
 }
 
 function showErr(msg){
@@ -262,10 +269,67 @@ function showErr(msg){
   if(!msg){ box.style.display='none'; box.textContent=''; return; }
   box.textContent = msg; box.style.display='block';
 }
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&quot;'}[m]); }); }
 
-/* ======== Normalizadores y orden ======== */
-function normStr(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+/* ======== Indicaciones ======== */
+function formatIndicaciones(text){
+  if(!text) return '';
+  var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
+  if(parts.length <= 1) return '<div class="line">'+escapeHtml(text)+'</div>';
+  return parts.map(function(p){ return '<div class="line">'+escapeHtml(p)+'</div>'; }).join('');
+}
+function formatIndicaciones3(text){
+  if(!text) return '';
+  var raw = String(text).trim();
+  raw = raw.replace(/\r/g,'\n').replace(/[•\u2022\u2023\u25E6]/g,'\n').replace(/[;·]/g,'\n').replace(/\s*[-–—]\s+/g,'\n');
+  raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2').replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
+  var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
+  var merged = [], i;
+  for(i=0;i<parts.length;i++){
+    var cur = parts[i];
+    if(/^\d+[.)]$/.test(cur) && i+1<parts.length){ merged.push(cur + ' ' + parts[i+1]); i++; }
+    else { merged.push(cur); }
+  }
+  function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&gt;','>':'&quot;'}[m]); }); }
+  return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
+}
+
+/* ======== Vídeo ======== */
+function driveIdFromAny(url){
+  try{
+    var clean = String(url).split('#')[0];
+    clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=[^&#]*/gi,'');
+    var m = /\/file\/d\/([^/]+)\//.exec(clean) || /\/d\/([^/]+)\//.exec(clean) ||
+            /[?&]id=([^&]+)/.exec(clean) || /\/preview\?id=([^&]+)/.exec(clean) ||
+            /\/uc\?export=download&id=([^&]+)/.exec(clean);
+    return m && m[1] ? m[1] : '';
+  }catch(_){ return ''; }
+}
+function drivePreviewUrlFromId(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
+function driveThumbUrlFromId(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
+function embedVideo(url){
+  if(!url) return '';
+  var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
+  if(yt){
+    var id = yt[1], thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
+    return '<div class="video"><div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v='+id+'">Abrir en pestaña ↗</a></div></div>';
+  }
+  var gid = driveIdFromAny(url);
+  if(gid){
+    var thumb = driveThumbUrlFromId(gid), pv = drivePreviewUrlFromId(gid);
+    return '<div class="video"><div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div></div>';
+  }
+  return '<div class="video"><video controls src="'+url+'"></video></div><div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
+}
+function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
+  el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
+function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
+  el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>'; }
+
+/* ======== NUEVO: helpers de orden y merge ======== */
+function normStr(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 function compareByName(a,b){
   const A = normStr(a.ejercicio || a.nombre || '');
   const B = normStr(b.ejercicio || b.nombre || '');
@@ -277,76 +341,37 @@ function mergeUnique(existing, incoming){
   for (const x of incoming) if (!seen.has(x.id)) { existing.push(x); seen.set(x.id,true); }
 }
 
-/* ======== MÚSCULOS: indexado y render ======== */
-function getMuscleName(x){
-  return (x.musculo || x['músculo'] || x.musculo_objetivo || x.musculoObjetivo || '').trim();
-}
-function buildMuscleIndex(){
-  const map = new Map();
-  for (const it of state.items){
-    const name = getMuscleName(it) || 'Sin músculo';
-    const key  = normStr(name);
-    const cur = map.get(key) || { name, key, count:0 };
-    cur.count += 1;
-    // preserva capitalización “bonita”
-    if (name.length > cur.name.length) cur.name = name;
-    map.set(key, cur);
-  }
-  // orden A→Z por nombre visible
-  return Array.from(map.values()).sort((a,b)=> (a.name.localeCompare(b.name, 'es', {sensitivity:'base'})));
-}
-function renderMuscles(){
-  const grid = document.getElementById('grid');
-  const groups = buildMuscleIndex();
-  grid.innerHTML = groups.map(g => (
-    '<div class="folder" onclick="selectMuscle(\''+escapeHtml(g.name).replace(/'/g,"&#39;")+'\')">'+
-      '<div class="name">'+escapeHtml(g.name)+'</div>'+
-      '<div class="count">'+g.count+'</div>'+
-    '</div>'
-  )).join('');
-  // footer: mostrar “Cargar más” si hay más páginas
-  document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
-  // chip oculto en vista músculos
-  document.getElementById('chipFilter').style.display = 'none';
-}
-
-/* ======== Vista lista: render ejercicios con filtro de músculo ======== */
+/* ======== Render ======== */
 function card(x){
-  var nombre = escapeHtml(x.ejercicio || x.nombre || '');
-  var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
+  var esc = escapeHtml;
+  var nombre = esc(x.ejercicio || x.nombre || '');
+  var cat = x.categoria ? '<span class="chip">'+esc(x.categoria)+'</span>' : '';
   var indHtml = formatIndicaciones3(x.indicaciones || x.descripcion || '');
-  var musc = getMuscleName(x);
-  var muscHtml = musc ? ('<div class="section"><div>'+escapeHtml(musc)+'</div></div>') : '';
+  var musc = x.musculo || x["músculo"] || x.musculo_objetivo || x.musculoObjetivo || '';
+  var muscHtml = musc ? ('<div class="section"><div>'+esc(musc)+'</div></div>') : '';
   var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
-  return '<div class="card"><div class="card-body"><div class="title">'+nombre+'</div>'+(cat?'<div>'+cat+'</div>':'')+'<div class="section"><div class="desc">'+indHtml+'</div></div>'+muscHtml+'</div><div class="actions">'+btnVid+'<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button></div></div>';
+  return '<div class="card"><div class="card-body"><div class="title">'+nombre+'</div>'+(cat ? '<div>'+cat+'</div>' : '')+'<div class="section"><div class="desc">'+indHtml+'</div></div>'+muscHtml+'</div><div class="actions">'+btnVid+'<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button></div></div>';
 }
 function resetGrid(){ document.getElementById('grid').innerHTML = ''; state.rendered = 0; }
 function setMoreVisibility(){
-  var more = (state.rendered < filteredItems().length) || !!state.nextOffset;
+  var more = (state.rendered < state.items.length) || !!state.nextOffset;
   document.getElementById('more').style.display = more ? 'inline-block' : 'none';
 }
-function filteredItems(){
-  // aplica filtro por músculo en vista lista
-  if (state.view !== 'list') return state.items;
-  if (!state.muscle) return state.items;
-  const key = normStr(state.muscle);
-  return state.items.filter(x => normStr(getMuscleName(x)) === key);
-}
 function renderRange(from, to){
-  const arr = filteredItems();
   if (from >= to) return;
-  const slice = arr.slice(from, to);
+  const slice = state.items.slice(from, to);
   if (!slice.length) return;
   const html = slice.map(card).join('');
   document.getElementById('grid').insertAdjacentHTML('beforeend', html);
   state.rendered = to;
   setMoreVisibility();
 }
-function renderInitial(){ renderRange(0, Math.min(CHUNK, filteredItems().length)); }
-function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length)); }
+function renderInitial(){ renderRange(0, Math.min(CHUNK, state.items.length)); }
+function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, state.items.length)); }
 
 /* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
+
 async function apiList(opts){
   const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), {
@@ -367,12 +392,13 @@ async function apiDetail(id){
   return r.json();
 }
 
-/* ======== Carga y render segun vista ======== */
+/* ======== Control (NUEVO: reorden y repintado global) ======== */
 async function fetchData(opts){
   opts = opts || {};
   if (state.loading) return;
   state.loading = true; showErr('');
 
+  // guardamos contexto para conservar experiencia visual
   const prevRendered = state.rendered;
   const prevScrollY = window.scrollY;
 
@@ -391,75 +417,33 @@ async function fetchData(opts){
       state.nextOffset = res.nextOffset || '';
     }
 
-    sortItems(); // A→Z por ejercicio
-
-    // Render por vista
+    // Orden global y repintado manteniendo nº de tarjetas visibles
+    sortItems();
     resetGrid();
-    if (state.view === 'muscles') {
-      renderMuscles();
-    } else {
-      const target = Math.max(CHUNK, prevRendered);
-      renderRange(0, Math.min(target, filteredItems().length));
-      try { window.scrollTo(0, prevScrollY); } catch(_){}
-    }
+    const target = Math.max(CHUNK, prevRendered);
+    renderRange(0, Math.min(target, state.items.length));
+
+    // (opcional) intentar restaurar scroll
+    try { window.scrollTo(0, prevScrollY); } catch(_){}
 
   }catch(err){
-    if (String(err).includes('401')) return;
+    if (String(err).includes('401')) return; // kick() ya redirigió
     showErr('Error cargando datos: ' + String(err.message || err));
   }finally{
     state.loading = false;
   }
 }
 
-/* ======== UX: acciones ======== */
-function selectMuscle(name){
-  state.view = 'list';
-  state.muscle = name || '';
-  document.getElementById('chipLabel').textContent = 'Músculo: ' + (state.muscle || '—');
-  document.getElementById('chipFilter').style.display = state.muscle ? 'inline-flex' : 'none';
-  // pintar lista filtrada (sin tocar q)
-  resetGrid();
-  renderInitial();
-  setMoreVisibility();
-}
-function clearMuscle(){
-  state.muscle = '';
-  document.getElementById('chipFilter').style.display = 'none';
-  // si no hay búsqueda activa, volvemos a vista músculos
-  if (!state.q) {
-    state.view = 'muscles';
-    resetGrid();
-    renderMuscles();
-    return;
-  }
-  // si hay q, mantenemos lista pero sin filtro de músculo
-  resetGrid();
-  renderInitial();
-  setMoreVisibility();
-}
 function cargarMasUI(){
-  if (state.view === 'muscles') {
-    if (state.nextOffset && !state.loading) fetchData({ q: state.q, offset: state.nextOffset, append: true });
-  } else {
-    const arr = filteredItems();
-    if (state.rendered < arr.length) renderMore();
-    else if (state.nextOffset && !state.loading) fetchData({ q: state.q, offset: state.nextOffset, append: true });
+  if (state.rendered < state.items.length) {
+    renderMore();
+  } else if (state.nextOffset && !state.loading) {
+    fetchData({ q: state.q, offset: state.nextOffset, append: true });
   }
 }
-function buscar(){
-  state.q = document.getElementById('q').value.trim();
-  state.view = state.q ? 'list' : 'muscles'; // con texto → lista; vacío → músculos
-  // Cuando hay búsqueda, ignoramos filtro de músculo (o lo mantenemos si quieres)
-  fetchData({ q: state.q });
-}
-function limpiar(){
-  document.getElementById('q').value='';
-  state.q=''; state.view='muscles'; state.muscle='';
-  document.getElementById('chipFilter').style.display = 'none';
-  fetchData({ q:'' });
-}
+function buscar(){ state.q = document.getElementById('q').value.trim(); fetchData({ q: state.q }); }
+function limpiar(){ document.getElementById('q').value=''; state.q=''; fetchData({ q:'' }); }
 
-/* ======== Detalle ======== */
 async function detalle(id){
   try{
     const r = await apiDetail(id);
@@ -524,4 +508,3 @@ function kick(){
 </script>
 </body>
 </html>
-
