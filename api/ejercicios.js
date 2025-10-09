@@ -2,7 +2,7 @@
 import { atList, atGet } from './_lib/airtable.js';
 import { requireSession } from './_lib/session';
 
-/* ======== helpers ======== */
+/* ======== Helpers ======== */
 function norm(s) {
   return (s || '')
     .toString()
