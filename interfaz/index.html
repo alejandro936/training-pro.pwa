@@ -158,7 +158,18 @@
   }
   .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
   .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
-  .detail-body{ color:#d8d8d8; font-size:14.5px; line-height:1.8 }
+  /* Detalle: estilo de indicaciones */
+.detail-body{
+  font-style: italic;                 /* todo el bloque en cursiva */
+  line-height: 1.75;
+}
+.detail-body .line{
+  margin: .45em 0;                    /* espacio base entre líneas */
+}
+.detail-body .line.num{
+  margin-top: .85em;                  /* un pelín más si empieza por 1., 2., etc. */
+}
+
 </style>
 <!-- 👇 pega aquí el bloque nuevo -->
 <style id="video-tweaks">
