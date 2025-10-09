@@ -24,7 +24,7 @@
   *{ box-sizing:border-box }
   html,body{
     margin:0; color:var(--fg); background:var(--bg);
-    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial; /* >=16 para evitar auto-zoom */
+    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;
     height:100%; min-height:-webkit-fill-available; overflow-x:hidden;
     -webkit-touch-callout:none; -webkit-text-size-adjust:100%; touch-action:manipulation;
   }
@@ -41,7 +41,6 @@
 
   .top-spacer{ height:54px; }
 
-  /* ===== TÍTULO ===== */
   header{ margin:0 0 var(--gap-top); }
   h1{
     margin:0 auto;
@@ -51,158 +50,91 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* ===== Botón Volver (FIJO) ===== */
   .back-fab{
-    position: fixed;                 /* se queda fijo aunque haya scroll */
-    z-index: 10050;                  /* por encima del modal (9999) */
+    position: fixed; z-index: 10050;
     top: calc(env(safe-area-inset-top) + 2px);
     left: calc(env(safe-area-inset-left) + 4px);
-    padding: 7px 11px;
-    font-size: 12px;
-    line-height: 1;
-    color:#fff;
+    padding: 7px 11px; font-size: 12px; line-height: 1; color:#fff;
     background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
-    border:1px solid var(--accent);
-    border-radius: 9px;
-    box-shadow: 0 6px 14px rgba(0,0,0,.25);
-    cursor:pointer;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    border:1px solid var(--accent); border-radius: 9px; box-shadow: 0 6px 14px rgba(0,0,0,.25);
+    cursor:pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-      /* ===== Botón Cerrar sesión (FIJO) ===== */
-.logout-fab{
-  position: fixed;                 /* se queda fijo aunque haya scroll */
-  z-index: 10050;                  /* por encima del modal (9999) */
-  top: calc(env(safe-area-inset-top) + 2px);
-  right: calc(env(safe-area-inset-right) + 4px);
-  padding: 7px 11px;
-  font-size: 12px;
-  line-height: 1;
-  color:#fff;
-  background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
-  border:1px solid var(--accent);
-  border-radius: 9px;
-  box-shadow: 0 6px 14px rgba(0,0,0,.25);
-  cursor:pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
+  .logout-fab{
+    position: fixed; z-index: 10050;
+    top: calc(env(safe-area-inset-top) + 2px);
+    right: calc(env(safe-area-inset-right) + 4px);
+    padding: 7px 11px; font-size: 12px; line-height: 1; color:#fff;
+    background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
+    border:1px solid var(--accent); border-radius: 9px; box-shadow: 0 6px 14px rgba(0,0,0,.25);
+    cursor:pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
   .back-fab:hover{ border-color:rgba(230,192,110,.65); }
   .back-fab:active{ transform: translateY(1px); }
 
-  /* ===== BARRA (input grande, botones pequeños) ===== */
   .toolbar{
-    display:flex; gap:10px;
-    margin:0 auto calc(var(--gap-top) + 10px);
+    display:flex; gap:10px; margin:0 auto calc(var(--gap-top) + 10px);
     max-width:var(--content-max); width:100%;
   }
   .toolbar input{
-    flex:1 1 auto; min-width:0;
-    background:#121212; color:var(--fg);
-    border:1px solid #1d1d1d; border-radius:10px;
-    padding:13px 16px; font-size:16px;
+    flex:1 1 auto; min-width:0; background:#121212; color:var(--fg);
+    border:1px solid #1d1d1d; border-radius:10px; padding:13px 16px; font-size:16px;
     transition:box-shadow .18s ease,border-color .18s ease;
   }
   .toolbar input:focus{ outline:none; border-color:#2a2a2a; box-shadow:0 0 0 2px rgba(255,255,255,.12); }
   .toolbar button{
-    flex:0 0 auto;
-    background:#121212; color:#fff;
-    border:1px solid var(--line); border-radius:9px;
-    padding:6px 9px; font-size:13px; line-height:1;
+    flex:0 0 auto; background:#121212; color:#fff; border:1px solid var(--line);
+    border-radius:9px; padding:6px 9px; font-size:13px; line-height:1;
   }
   .toolbar .primary{
     background:linear-gradient(180deg,rgba(230,192,110,.16),rgba(230,192,110,.05));
     border-color:var(--accent)
   }
 
-  /* ===== GRID/TARJETAS ===== */
-  .grid{
-    display:grid; grid-template-columns:1fr;
-    gap:var(--gap-cards) 0; align-items:stretch;
-    max-width:var(--content-max); width:100%; margin:0 auto;
-  }
+  .grid{ display:grid; grid-template-columns:1fr; gap:var(--gap-cards) 0;
+    align-items:stretch; max-width:var(--content-max); width:100%; margin:0 auto; }
   .card{
-    background:var(--panel);
-    border:1px solid rgba(255,255,255,.14);
-    border-left:3px solid rgba(230,192,110,.85);
-    border-radius:var(--radius);
-    padding:var(--card-pad-y) var(--card-pad-x);
-    display:flex; flex-direction:column; gap:8px;
+    background:var(--panel); border:1px solid rgba(255,255,255,.14);
+    border-left:3px solid rgba(230,192,110,.85); border-radius:var(--radius);
+    padding:var(--card-pad-y) var(--card-pad-x); display:flex; flex-direction:column; gap:8px;
     box-shadow:0 1px 8px rgba(0,0,0,.22); position:relative;
   }
   .card-body{ max-width:78%; display:flex; flex-direction:column; gap:6px; }
-
-  .title{
-    font-family:var(--title-font); font-weight:800;
-    font-size:clamp(18px, 4.2vw, 22px);
-    line-height:1.2; letter-spacing:.2px; margin:0 0 2px;
-  }
-
-  .chip{
-    margin:4px 0 6px; display:inline-flex; align-items:center; justify-content:center;
-    padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
-    color:var(--chip); font-size:12px; letter-spacing:.2px; width:fit-content;
-  }
-
-  .desc{
-    color:#d0d0d0; text-align:left;
-    font-size:14.5px; font-style:italic; line-height:1.55;
+  .title{ font-family:var(--title-font); font-weight:800; font-size:clamp(18px, 4.2vw, 22px); line-height:1.2; letter-spacing:.2px; margin:0 0 2px; }
+  .chip{ margin:4px 0 6px; display:inline-flex; align-items:center; justify-content:center;
+    padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18); color:var(--chip); font-size:12px; width:fit-content; }
+  .desc{ color:#d0d0d0; text-align:left; font-size:14.5px; font-style:italic; line-height:1.55;
     margin-top:2px; min-height:calc(1.55em * 3); max-height:calc(1.55em * 3 + 8px);
-    overflow:hidden; position:relative;
-  }
+    overflow:hidden; position:relative; }
   .desc .line{ margin:.35em 0; }
-  .desc:after{
-    content:""; position:absolute; left:0; right:0; bottom:0;
-    height:2.4em; background:linear-gradient(180deg, rgba(18,18,18,0), var(--panel));
-    pointer-events:none;
-  }
+  .desc:after{ content:""; position:absolute; left:0; right:0; bottom:0; height:2.4em;
+    background:linear-gradient(180deg, rgba(18,18,18,0), var(--panel)); pointer-events:none; }
   .desc .line:nth-child(n+4){ display:none; }
 
   .actions{ display:flex; gap:8px; justify-content:flex-start; margin-top:6px; }
-  .btn{
-    background:#121212; border:1.5px solid rgba(230,192,110,.38);
-    padding:8px 10px; border-radius:9px; color:#e9e9e9; font-size:14.5px;
-  }
+  .btn{ background:#121212; border:1.5px solid rgba(230,192,110,.38); padding:8px 10px; border-radius:9px; color:#e9e9e9; font-size:14.5px; }
 
   .footer{ display:flex; justify-content:center; margin:22px 0 8px }
   .more{ padding:8px 10px; border-radius:9px; border:1px solid var(--accent); background:transparent; color:#fff; font-size:15px }
 
-  .error{
-    max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
-    padding:10px 12px; border-radius:10px; display:none
-  }
-
-  /* ===== Modal ===== */
+  .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
+    padding:10px 12px; border-radius:10px; display:none }
   .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.7); z-index:9999 }
-  .panel{
-    position:relative; background:var(--panel); border:1px solid rgba(230,192,110,.35);
-    border-radius:14px; max-width:860px; width:100%;
-    padding:12px 14px 14px; box-shadow:0 10px 40px rgba(0,0,0,.5); text-align:center;
-  }
+  .panel{ position:relative; background:var(--panel); border:1px solid rgba(230,192,110,.35);
+    border-radius:14px; max-width:860px; width:100%; padding:12px 14px 14px; box-shadow:0 10px 40px rgba(0,0,0,.5); text-align:center; }
   .panel .topbar{ display:flex; justify-content:flex-end; align-items:center; margin-bottom:4px; }
-  .panel .x{
-    border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff;
-    border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px;
-  }
+  .panel .x{ border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff; border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px; }
   .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
   .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
   .detail-body{ color:#d8d8d8; font-size:14.5px; line-height:1.8 }
-  .detail-body .line{ margin:.45em 0 }
-
-  /* Vídeo */
   .video{ width:100%; max-width:520px; margin:8px auto 6px; aspect-ratio:16/9; background:#000; border:1px solid #333; border-radius:12px; overflow:hidden }
   .video iframe,.video video{ width:100%; height:100%; display:block }
   .video-lite{ position:relative; cursor:pointer; width:100%; height:100% }
   .video-lite img{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(.9) contrast(1.05) }
-  .video-lite .play{
-    pointer-events:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  .video-lite .play{ pointer-events:none; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     width:54px; height:54px; border-radius:50%; background:rgba(0,0,0,.45); border:2px solid rgba(230,192,110,.7);
-    display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.4)
-  }
-  .video-lite .play:before{
-    content:""; width:0; height:0; border-left:13px solid var(--accent);
-    border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px
-  }
+    display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.4) }
+  .video-lite .play:before{ content:""; width:0; height:0; border-left:13px solid var(--accent);
+    border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px }
   .video-link{ margin-top:6px; font-size:13px }
   .video-link a{ color:var(--accent); text-decoration:none }
 </style>
@@ -213,61 +145,49 @@
   (function(){
     document.documentElement.classList.add('guard-hiding');
     try {
-      // 1) intenta cookie
       var m = document.cookie.match(/(?:^|;\s*)tp_token_v1=([^;]+)/);
       var tk = (m && m[1]) || '';
-      // 2) fallback a localStorage
       if (!tk) tk = localStorage.getItem('tp_token_v1') || '';
       if (tk && tk.length > 10) {
         document.documentElement.classList.remove('guard-hiding');
         return;
       }
     } catch (_) {}
-
-    // No hay token -> fuerza login y vuelve aquí después
     var back = location.pathname + location.search;
     var qs = '?redirect=' + encodeURIComponent(back) + '&force=1';
     location.replace('/door.html' + qs);
   })();
 </script>
-
-
 </head>
 <body>
 
-  <!-- Botones fijos arriba (izquierda/derecha) -->
 <button class="back-fab"   onclick="goHome(event)" aria-label="Volver a inicio">← Volver</button>
 <button class="logout-fab" onclick="logout()"      aria-label="Cerrar sesión">Cerrar sesión</button>
 
+<div class="wrap">
+  <div class="top-spacer" aria-hidden="true"></div>
+  <header><h1>TRAINING PRO</h1></header>
 
-  <div class="wrap">
-    <div class="top-spacer" aria-hidden="true"></div>
-
-    <header>
-      <h1>TRAINING PRO</h1>
-    </header>
-
-    <div class="toolbar">
-      <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
-      <button class="primary" onclick="buscar()">Buscar</button>
-      <button onclick="limpiar()">Limpiar</button>
-    </div>
-
-    <div id="err" class="error"></div>
-    <div id="grid" class="grid"></div>
-
-    <div class="footer">
-      <button id="more" class="more" style="display:none" onclick="cargarMasUI()">Cargar más</button>
-    </div>
+  <div class="toolbar">
+    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
+    <button class="primary" onclick="buscar()">Buscar</button>
+    <button onclick="limpiar()">Limpiar</button>
   </div>
 
-  <!-- Modal detalle -->
-  <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
-    <div class="panel">
-      <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
-      <div id="detail"></div>
-    </div>
+  <div id="err" class="error"></div>
+  <div id="grid" class="grid"></div>
+
+  <div class="footer">
+    <button id="more" class="more" style="display:none" onclick="cargarMasUI()">Cargar más</button>
   </div>
+</div>
+
+<div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="panel">
+    <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
+    <div id="detail"></div>
+  </div>
+</div>
 
 <script>
 /* ======== Utilidades ======== */
@@ -287,51 +207,28 @@ function goHome(e){
 }
 function deleteCookie(name){
   try{
-    document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+    document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite:Lax; Secure';
   }catch(_){}
 }
 
 async function logout(){
   try {
     const email = localStorage.getItem('tp_email');
-
-    // Llama al backend para eliminar la sesión por email
     if (email) {
       const res = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-
       const result = await res.json();
-      if (!result.ok) {
-        console.error('Error desde backend:', result.error);
-      } else {
-        console.log('Sesión eliminada correctamente');
-      }
-    } else {
-      console.warn('No se encontró el email en localStorage');
+      if (!result.ok) console.error('Error desde backend:', result.error);
     }
-
-    // Elimina datos locales
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_redirect');
     localStorage.removeItem('tp_email');
     localStorage.removeItem('deviceId');
-
-    // Elimina cookies
-    deleteCookie('tp_token_v1');
-    deleteCookie('tp_redirect');
-    deleteCookie('tp_email');
-
-    // Elimina caché
-    if ('caches' in self){
-      try { await caches.delete('tp-session'); } catch(_){}
-    }
-
-    // Redirige al login
+    deleteCookie('tp_token_v1'); deleteCookie('tp_redirect'); deleteCookie('tp_email');
+    if ('caches' in self){ try { await caches.delete('tp-session'); } catch(_){} }
     location.replace('/door.html?force=1');
-
   } catch (err) {
     console.error('Error al cerrar sesión:', err);
   }
@@ -342,7 +239,7 @@ function showErr(msg){
   if(!msg){ box.style.display='none'; box.textContent=''; return; }
   box.textContent = msg; box.style.display='block';
 }
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&quot;'}[m]); }); }
 
 /* ======== Indicaciones ======== */
 function formatIndicaciones(text){
@@ -354,120 +251,61 @@ function formatIndicaciones(text){
 function formatIndicaciones3(text){
   if(!text) return '';
   var raw = String(text).trim();
-  raw = raw.replace(/\r/g,'\n')
-           .replace(/[•\u2022\u2023\u25E6]/g,'\n')
-           .replace(/[;·]/g,'\n')
-           .replace(/\s*[-–—]\s+/g,'\n');
-  raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2');
-  raw = raw.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
-
+  raw = raw.replace(/\r/g,'\n').replace(/[•\u2022\u2023\u25E6]/g,'\n').replace(/[;·]/g,'\n').replace(/\s*[-–—]\s+/g,'\n');
+  raw = raw.replace(/(^|\s)(\d+[.)]\s+)/g,'\n$2').replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g,'$1\n$2');
   var parts = raw.split(/\n+/).map(function(p){ return p.trim(); }).filter(Boolean);
-
   var merged = [], i;
   for(i=0;i<parts.length;i++){
     var cur = parts[i];
     if(/^\d+[.)]$/.test(cur) && i+1<parts.length){ merged.push(cur + ' ' + parts[i+1]); i++; }
     else { merged.push(cur); }
   }
-  function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]); }); }
+  function esc(s){ return (s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&gt;','>':'&quot;'}[m]); }); }
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
 
-/* ======== Vídeo: YouTube + Drive ======== */
+/* ======== Vídeo ======== */
 function driveIdFromAny(url){
   try{
     var clean = String(url).split('#')[0];
     clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=[^&#]*/gi,'');
-    var m =
-      /\/file\/d\/([^/]+)\//.exec(clean) ||
-      /\/d\/([^/]+)\//.exec(clean) ||
-      /[?&]id=([^&]+)/.exec(clean) ||
-      /\/preview\?id=([^&]+)/.exec(clean) ||
-      /\/uc\?export=download&id=([^&]+)/.exec(clean);
+    var m = /\/file\/d\/([^/]+)\//.exec(clean) || /\/d\/([^/]+)\//.exec(clean) ||
+            /[?&]id=([^&]+)/.exec(clean) || /\/preview\?id=([^&]+)/.exec(clean) ||
+            /\/uc\?export=download&id=([^&]+)/.exec(clean);
     return m && m[1] ? m[1] : '';
   }catch(_){ return ''; }
 }
 function drivePreviewUrlFromId(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
 function driveThumbUrlFromId(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
-
 function embedVideo(url){
   if(!url) return '';
-
-  // YouTube
   var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
   if(yt){
-    var id = yt[1];
-    var thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
-    return ''+
-      '<div class="video">'+
-        '<div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo">'+
-          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
-          '<div class="play"></div>'+
-        '</div>'+
-        '<div class="video-link"><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v='+id+'">Abrir en pestaña ↗</a></div>'+
-      '</div>';
+    var id = yt[1], thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
+    return '<div class="video"><div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v='+id+'">Abrir en pestaña ↗</a></div></div>';
   }
-
-  // Google Drive
   var gid = driveIdFromAny(url);
   if(gid){
-    var thumb = driveThumbUrlFromId(gid);
-    var pv    = drivePreviewUrlFromId(gid);
-    return ''+
-      '<div class="video">'+
-        '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
-          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
-          '<div class="play"></div>'+
-        '</div>'+
-        '<div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div>'+
-      '</div>';
+    var thumb = driveThumbUrlFromId(gid), pv = drivePreviewUrlFromId(gid);
+    return '<div class="video"><div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div></div>';
   }
-
-  // Fallback
-  return ''+
-    '<div class="video"><video controls src="'+url+'"></video></div>'+
-    '<div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
+  return '<div class="video"><video controls src="'+url+'"></video></div><div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
 }
-function ytPlay(el){
-  var id = el.getAttribute('data-yt'); if(!id) return;
-  el.outerHTML =
-    '<div class="video">'+
-      '<iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>'+
-    '</div>';
-}
-function drivePlay(el){
-  var src = el.getAttribute('data-drive'); if(!src) return;
-  el.outerHTML =
-    '<div class="video">'+
-      '<iframe src="'+src+'" allow="autoplay; fullscreen"></iframe>'+
-    '</div>';
-}
+function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
+  el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
+function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
+  el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>'; }
 
 /* ======== Render ======== */
 function card(x){
   var esc = escapeHtml;
   var nombre = esc(x.ejercicio || x.nombre || '');
   var cat = x.categoria ? '<span class="chip">'+esc(x.categoria)+'</span>' : '';
-  var indRaw  = (x.indicaciones || x.descripcion || '');
-  var indHtml = formatIndicaciones3(indRaw);
+  var indHtml = formatIndicaciones3(x.indicaciones || x.descripcion || '');
   var musc = x.musculo || x["músculo"] || x.musculo_objetivo || x.musculoObjetivo || '';
   var muscHtml = musc ? ('<div class="section"><div>'+esc(musc)+'</div></div>') : '';
   var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
-
-  return (
-    '<div class="card">'+
-      '<div class="card-body">'+
-        '<div class="title">'+nombre+'</div>'+
-        (cat ? '<div>'+cat+'</div>' : '')+
-        '<div class="section"><div class="desc">'+indHtml+'</div></div>'+
-        muscHtml+
-      '</div>'+
-      '<div class="actions">'+
-        btnVid+
-        '<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button>'+
-      '</div>'+
-    '</div>'
-  );
+  return '<div class="card"><div class="card-body"><div class="title">'+nombre+'</div>'+(cat ? '<div>'+cat+'</div>' : '')+'<div class="section"><div class="desc">'+indHtml+'</div></div>'+muscHtml+'</div><div class="actions">'+btnVid+'<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button></div></div>';
 }
 function renderAppend(rows){ document.getElementById('grid').insertAdjacentHTML('beforeend', rows.map(card).join('')); }
 function setMoreVisibility(){ var show=(state.buffer.length>0)||!!state.nextOffset; document.getElementById('more').style.display = show ? 'inline-block' : 'none'; }
@@ -475,14 +313,26 @@ function renderChunk(){ var take=Math.min(CHUNK,state.buffer.length); if(take>0)
 function resetGrid(){ document.getElementById('grid').innerHTML = ''; }
 
 /* ======== API ======== */
+/* ➕ NUEVO: helper para el token */
+function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
+
+/* 🔐 Enviar Authorization y expulsar si 401 */
 async function apiList(opts){
   const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
-  const r  = await fetch('/api/ejercicios?' + qs.toString(), { credentials:'include' });
+  const r  = await fetch('/api/ejercicios?' + qs.toString(), {
+    headers: { 'Authorization': 'Bearer ' + getToken() },
+    credentials:'include'
+  });
+  if (r.status === 401) { kick(); throw new Error('HTTP 401'); }
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
 async function apiDetail(id){
-  const r = await fetch('/api/ejercicios?id=' + encodeURIComponent(id), { credentials:'include' });
+  const r = await fetch('/api/ejercicios?id=' + encodeURIComponent(id), {
+    headers: { 'Authorization': 'Bearer ' + getToken() },
+    credentials:'include'
+  });
+  if (r.status === 401) { kick(); throw new Error('HTTP 401'); }
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
@@ -504,6 +354,7 @@ async function fetchData(opts){
     }
     renderChunk();
   }catch(err){
+    if (String(err).includes('401')) return; // kick() ya redirigió
     showErr('Error cargando datos: ' + String(err.message || err));
   }finally{
     state.loading = false;
@@ -530,6 +381,7 @@ async function detalle(id){
     document.getElementById('detail').innerHTML = html;
     document.getElementById('modal').style.display = 'flex';
   }catch(err){
+    if (String(err).includes('401')) return;
     showErr('Error detalle: ' + String(err.message || err));
   }
 }
@@ -539,20 +391,24 @@ document.addEventListener('DOMContentLoaded', function(){ fetchData(); });
 window.addEventListener('pageshow', function(e){ if (e.persisted) fetchData(); });
 </script>
 
+<!-- Guard “online”: invalida si borras SESSIONS -->
 <script>
-// Valida sesión al entrar y cada 5 minutos
 (async function guard(){
   const token = localStorage.getItem('tp_token_v1') || '';
   if (!token) { kick(); return; }
   const ok = await check(token);
   if (!ok) { kick(); return; }
-  // Revalida cada 5 min por si el admin borra la sesión
   setInterval(async ()=>{
     const tok = localStorage.getItem('tp_token_v1') || '';
     if (!tok || !(await check(tok))) kick();
   }, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      const tok = localStorage.getItem('tp_token_v1') || '';
+      if (!tok || !(await check(tok))) kick();
+    }
+  });
 })();
-
 async function check(token){
   try{
     const r = await fetch('/api/auth/check', {
@@ -568,8 +424,9 @@ function kick(){
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_sessionId');
   }catch{}
-  window.location.assign('/'); // a la portada
+  window.location.assign('/'); // portada
 }
 </script>
 </body>
 </html>
+
