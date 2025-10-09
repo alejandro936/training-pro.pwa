@@ -210,6 +210,28 @@ function deleteCookie(name){
     document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite:Lax; Secure';
   }catch(_){}
 }
+async function kick(){
+  try{
+    // Local
+    localStorage.removeItem('tp_token_v1');
+    localStorage.removeItem('tp_sessionId');
+    localStorage.removeItem('tp_redirect');
+    localStorage.removeItem('tp_email');
+
+    // Cookies que usa door.html para auto-login
+    deleteCookie('tp_token_v1');
+    deleteCookie('tp_redirect');
+    deleteCookie('tp_email');
+
+    // Cache usada por door.html (restoreFromCache)
+    if ('caches' in self){
+      try { await caches.delete('tp-session'); } catch(_){}
+    }
+  }finally{
+    // Portada
+    window.location.assign('/');
+  }
+}
 
 async function logout(){
   try {
