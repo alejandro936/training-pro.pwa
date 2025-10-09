@@ -535,18 +535,39 @@ function drivePreviewUrlFromId(id){ return 'https://drive.google.com/file/d/'+id
 function driveThumbUrlFromId(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
 function embedVideo(url){
   if(!url) return '';
+
+  // YouTube → miniatura + play (sin enlace externo)
   var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
   if(yt){
-    var id = yt[1], thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
-    return '<div class="video"><div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v='+id+'">Abrir en pestaña ↗</a></div></div>';
+    var id = yt[1];
+    var thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
+    return ''+
+      '<div class="video">'+
+        '<div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo">'+
+          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
+          '<div class="play"></div>'+
+        '</div>'+
+      '</div>';
   }
+
+  // Google Drive → miniatura + play (sin enlace externo)
   var gid = driveIdFromAny(url);
   if(gid){
-    var thumb = driveThumbUrlFromId(gid), pv = drivePreviewUrlFromId(gid);
-    return '<div class="video"><div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo"><img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo"><div class="play"></div></div><div class="video-link"><a target="_blank" rel="noopener" href="'+pv+'">Abrir en pestaña ↗</a></div></div>';
+    var thumb = driveThumbUrlFromId(gid);
+    var pv    = drivePreviewUrlFromId(gid);
+    return ''+
+      '<div class="video">'+
+        '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
+          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
+          '<div class="play"></div>'+
+        '</div>'+
+      '</div>';
   }
-  return '<div class="video"><video controls src="'+url+'"></video></div><div class="video-link"><a target="_blank" rel="noopener" href="'+url+'">Abrir en pestaña ↗</a></div>';
+
+  // Fallback
+  return '<div class="video"><video controls src="'+url+'"></video></div>';
 }
+
 function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
   el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
 function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
