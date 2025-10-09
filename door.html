@@ -71,6 +71,9 @@ function setCookie(name, value, maxAgeSec){
   const exp = new Date(Date.now()+maxAgeSec*1000).toUTCString();
   document.cookie = name+'='+encodeURIComponent(value)+'; Path=/; Max-Age='+maxAgeSec+'; Expires='+exp+'; SameSite=Lax; Secure';
 }
+function delCookie(name){
+  document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+}
 function showForm(){ $('#checking').classList.add('hide'); $('#form').classList.remove('hide'); }
 function showChecking(){ $('#form').classList.add('hide'); $('#checking').classList.remove('hide'); }
 function showError(msg, detail){
@@ -116,6 +119,29 @@ async function restoreFromCache(){
   }catch{ return null; }
 }
 
+/* ====== NUEVO: validación online del token y limpieza dura ====== */
+async function validateTokenOnline(token){
+  try{
+    const r = await fetch('/api/auth/check', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ token })
+    });
+    return r.ok;
+  }catch{ return false; }
+}
+async function hardClearSessionResidue(){
+  try{
+    localStorage.removeItem('tp_token_v1');
+    localStorage.removeItem('tp_redirect');
+    localStorage.removeItem('tp_email');
+  }catch{}
+  delCookie('tp_token_v1'); delCookie('tp_redirect'); delCookie('tp_email');
+  if ('caches' in self){
+    try { await caches.delete('tp-session'); } catch(_){}
+  }
+}
+
 /* ================== init (autologin si hay sesión) ================== */
 (async function init(){
   const force = usp.has('force');
@@ -136,11 +162,18 @@ async function restoreFromCache(){
   const finalRedir = (redirectPref || redir || '').trim();
 
   if (tk && finalRedir && finalRedir !== '/') {
-    // ← volvemos a replace para que /door no quede en el historial
-    location.replace(finalRedir);
-  } else {
-    showForm();
+    // ✅ Comprobar que el token sigue siendo válido (no borrado en SESSIONS)
+    const ok = await validateTokenOnline(tk);
+    if (ok) {
+      location.replace(finalRedir); // pasa directo si sigue válido
+      return;
+    } else {
+      // ❌ Token inválido → limpia residuos y muestra el form
+      await hardClearSessionResidue();
+    }
   }
+
+  showForm();
 })();
 
 /* ================== login (1 sesión por email) ================== */
@@ -178,7 +211,6 @@ async function doLogin(){
     const redirectPref = new URLSearchParams(location.search).get('redirect') || '';
     const finalRedir = redirectPref || data.redirect || DEFAULT_REDIR;
     const p = new URLSearchParams({ tk:data.token, redir:finalRedir, email });
-    // ← volvemos a replace para que /door no quede en el historial
     location.replace('/save.html?'+p.toString());
 
   }catch(e){
