@@ -195,7 +195,15 @@ var CHUNK = 9;
 ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
-var state = { q:'', buffer:[], nextOffset:'', loading:false };
+
+// ======== NUEVO estado global de lista/render ========
+var state = {
+  q: '',
+  items: [],      // TODOS los ejercicios cargados (sin duplicados)
+  rendered: 0,    // cuántos hay pintados en el grid
+  nextOffset: '',
+  loading: false
+};
 
 function goHome(e){
   e.preventDefault();
@@ -317,24 +325,22 @@ function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
   el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
 function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
   el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>'; }
-      
-// === helpers de orden ===
+
+/* ======== NUEVO: helpers de orden y merge ======== */
 function normStr(s){
-  return String(s||'')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, ''); // quita acentos
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 function compareByName(a,b){
   const A = normStr(a.ejercicio || a.nombre || '');
   const B = normStr(b.ejercicio || b.nombre || '');
-  if (A < B) return -1;
-  if (A > B) return 1;
-  return 0;
+  if (A < B) return -1; if (A > B) return 1; return 0;
 }
-function sortRowsInPlace(arr){
-  try { arr.sort(compareByName); } catch (_){}
+function sortItems(){ try { state.items.sort(compareByName); } catch(_){} }
+function mergeUnique(existing, incoming){
+  const seen = new Map(existing.map(x => [x.id, true]));
+  for (const x of incoming) if (!seen.has(x.id)) { existing.push(x); seen.set(x.id,true); }
 }
+
 /* ======== Render ======== */
 function card(x){
   var esc = escapeHtml;
@@ -346,16 +352,26 @@ function card(x){
   var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
   return '<div class="card"><div class="card-body"><div class="title">'+nombre+'</div>'+(cat ? '<div>'+cat+'</div>' : '')+'<div class="section"><div class="desc">'+indHtml+'</div></div>'+muscHtml+'</div><div class="actions">'+btnVid+'<button class="btn" onclick="detalle(\''+x.id+'\')">Detalle</button></div></div>';
 }
-function renderAppend(rows){ document.getElementById('grid').insertAdjacentHTML('beforeend', rows.map(card).join('')); }
-function setMoreVisibility(){ var show=(state.buffer.length>0)||!!state.nextOffset; document.getElementById('more').style.display = show ? 'inline-block' : 'none'; }
-function renderChunk(){ var take=Math.min(CHUNK,state.buffer.length); if(take>0){ var slice=state.buffer.splice(0,take); renderAppend(slice); } setMoreVisibility(); }
-function resetGrid(){ document.getElementById('grid').innerHTML = ''; }
+function resetGrid(){ document.getElementById('grid').innerHTML = ''; state.rendered = 0; }
+function setMoreVisibility(){
+  var more = (state.rendered < state.items.length) || !!state.nextOffset;
+  document.getElementById('more').style.display = more ? 'inline-block' : 'none';
+}
+function renderRange(from, to){
+  if (from >= to) return;
+  const slice = state.items.slice(from, to);
+  if (!slice.length) return;
+  const html = slice.map(card).join('');
+  document.getElementById('grid').insertAdjacentHTML('beforeend', html);
+  state.rendered = to;
+  setMoreVisibility();
+}
+function renderInitial(){ renderRange(0, Math.min(CHUNK, state.items.length)); }
+function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, state.items.length)); }
 
 /* ======== API ======== */
-/* ➕ NUEVO: helper para el token */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
 
-/* 🔐 Enviar Authorization y expulsar si 401 */
 async function apiList(opts){
   const qs = new URLSearchParams({ q: opts.q || '', offset: opts.offset || '' });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), {
@@ -376,24 +392,40 @@ async function apiDetail(id){
   return r.json();
 }
 
-/* ======== Control ======== */
+/* ======== Control (NUEVO: reorden y repintado global) ======== */
 async function fetchData(opts){
   opts = opts || {};
-  if (state.loading) return; state.loading = true; showErr('');
+  if (state.loading) return;
+  state.loading = true; showErr('');
+
+  // guardamos contexto para conservar experiencia visual
+  const prevRendered = state.rendered;
+  const prevScrollY = window.scrollY;
+
   try{
-    const res = await apiList({ q: (typeof opts.q!=='undefined' ? opts.q : state.q), offset: (opts.offset || '') });
+    const res = await apiList({
+      q: (typeof opts.q!=='undefined' ? opts.q : state.q),
+      offset: (opts.offset || '')
+    });
     const rows = (res && Array.isArray(res.rows)) ? res.rows : [];
+
     if (!opts.append){
-      state.buffer = rows.slice();
+      state.items = rows.slice();
       state.nextOffset = res.nextOffset || '';
-          sortRowsInPlace(state.buffer);      // 👈 ORDENAR AQUÍ
-      resetGrid();
     } else {
-      state.buffer = state.buffer.concat(rows);
+      mergeUnique(state.items, rows);
       state.nextOffset = res.nextOffset || '';
-          sortRowsInPlace(state.buffer);      // 👈 ORDENAR AQUÍ
     }
-    renderChunk();
+
+    // Orden global y repintado manteniendo nº de tarjetas visibles
+    sortItems();
+    resetGrid();
+    const target = Math.max(CHUNK, prevRendered);
+    renderRange(0, Math.min(target, state.items.length));
+
+    // (opcional) intentar restaurar scroll
+    try { window.scrollTo(0, prevScrollY); } catch(_){}
+
   }catch(err){
     if (String(err).includes('401')) return; // kick() ya redirigió
     showErr('Error cargando datos: ' + String(err.message || err));
@@ -402,7 +434,13 @@ async function fetchData(opts){
   }
 }
 
-function cargarMasUI(){ if (state.buffer.length > 0) renderChunk(); else if (state.nextOffset) fetchData({ q: state.q, offset: state.nextOffset, append: true }); }
+function cargarMasUI(){
+  if (state.rendered < state.items.length) {
+    renderMore();
+  } else if (state.nextOffset && !state.loading) {
+    fetchData({ q: state.q, offset: state.nextOffset, append: true });
+  }
+}
 function buscar(){ state.q = document.getElementById('q').value.trim(); fetchData({ q: state.q }); }
 function limpiar(){ document.getElementById('q').value=''; state.q=''; fetchData({ q:'' }); }
 
