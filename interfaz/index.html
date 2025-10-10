@@ -333,9 +333,18 @@ function compareByName(a,b){
   if (A < B) return -1; if (A > B) return 1; return 0;
 }
 function sortItems(){ try { state.items.sort(compareByName); } catch(_){} }
+
+/* === mergeUnique que ACTUALIZA por ID si ya existe === */
 function mergeUnique(existing, incoming){
-  const seen = new Map(existing.map(x => [x.id, true]));
-  for (const x of incoming) if (!seen.has(x.id)) { existing.push(x); seen.set(x.id,true); }
+  const indexById = new Map();
+  existing.forEach((x, i) => indexById.set(x.id, i));
+  for (const x of incoming){
+    if (indexById.has(x.id)) {
+      existing[indexById.get(x.id)] = x;          // reemplaza con la versión nueva
+    } else {
+      indexById.set(x.id, existing.push(x) - 1);   // inserta y guarda índice
+    }
+  }
 }
 
 function getCategoryName(x){ return (x.categoria || '').trim(); }
@@ -510,19 +519,16 @@ function navBack(){
   const atRoot = (state.view === 'cats' && !state.q && !state.category);
 
   if (idx > 0) {
-    // Hay historial interno: retrocede dentro de la interfaz
-    history.back();
+    history.back(); // navegar dentro de la interfaz
     return;
   }
 
   if (!atRoot) {
-    // No hay historial, pero no estamos en la raíz: vuelve a categorías dentro de la interfaz
-    goRootInside();
+    goRootInside(); // volver a categorías dentro de la interfaz
     return;
   }
 
-  // No hay historial y ya estás en la raíz → salir a la portada
-  window.location.assign('/index.html');
+  window.location.assign('/index.html'); // ya en raíz → salir a portada
 }
 
 function navForward(){ history.forward(); }
@@ -689,8 +695,23 @@ document.addEventListener('DOMContentLoaded', async function(){
   if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
 
   updateNavButtons();
+
+  /* === Auto-refresco cada 5 min === */
+  setInterval(() => {
+    fetchData({ q: state.q });
+    if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
+  }, 5 * 60 * 1000);
 });
-window.addEventListener('pageshow', function(e){ if (e.persisted) { fetchData(); updateNavButtons(); }});
+
+/* === Auto-refresco al volver la pestaña a visible === */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    fetchData({ q: state.q });
+    if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
+  }
+});
+
+window.addEventListener('pageshow', function(e){ if (e.persisted) { fetchData({ q: state.q }); updateNavButtons(); }});
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 </script>
 
