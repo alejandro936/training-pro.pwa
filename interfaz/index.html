@@ -19,6 +19,7 @@
     --gap-top: 30px;
     --gap-cards: 22px;
     --card-pad-x: 14px; --card-pad-y: 14px; --radius: 12px;
+    --nav-h: 56px;                 /* altura compacta de la barra */
   }
 
   *{ box-sizing:border-box }
@@ -33,8 +34,8 @@
     max-width:1200px; margin:0 auto;
     padding:max(24px, env(safe-area-inset-top))
             max(var(--side-pad), env(safe-area-inset-right))
-            max(64px, env(safe-area-inset-bottom))      /* + espacio para barra inferior */
-            max(var(--side-pad), env(safe-area-inset-left));
+            calc(var(--nav-h) + 16px + env(safe-area-inset-bottom))
+            max(var(--side-pad), env(safe-area-inset-left)); /* deja hueco para la barra fija */
     min-height:100vh;
   }
   @supports (min-height:100dvh){ .wrap{ min-height:100dvh; } }
@@ -50,7 +51,7 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* FAB solo Cerrar sesión (arriba dcha) */
+  /* FAB: solo Cerrar sesión (arriba derecha, fijo) */
   .logout-fab{
     position: fixed; z-index: 10050;
     top: calc(env(safe-area-inset-top) + 2px);
@@ -133,7 +134,7 @@
   .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none }
 
-  /* CATEGORÍAS: tarjetas tipo “carpeta” */
+  /* CATEGORÍAS */
   .folder{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     background:var(--panel); border:1px solid rgba(255,255,255,.14);
@@ -179,30 +180,33 @@
   .detail-body .line{ margin: .45em 0; }
   .detail-body .line.num{ margin-top: .85em; }
 
-  /* ===== Barra inferior de navegación ===== */
+  /* ===== Barra inferior de navegación (compacta, opaca y fija) ===== */
   .nav-bottom{
     position: fixed; z-index: 15000;
     left:0; right:0; bottom:0;
-    padding: 8px max(10px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-    background: linear-gradient(180deg, rgba(11,11,11,.1), rgba(11,11,11,.7));
-    backdrop-filter: blur(6px);
+    height: var(--nav-h);
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+    background: var(--panel);                /* opaco, sin transparencia */
     border-top: 1px solid rgba(255,255,255,.08);
-    display:flex; justify-content:center; gap:12px;
+    box-shadow: 0 -6px 18px rgba(0,0,0,.35);
   }
   .nav-btn{
-    min-width:120px;
+    min-width: 104px;
+    height: 36px;
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    padding:10px 14px; border-radius:12px; font-size:14px; line-height:1;
+    padding:0 12px; border-radius:10px; font-size:13px; line-height:1;
     cursor:pointer; -webkit-tap-highlight-color:transparent;
+    user-select:none;
+  }
+  .nav-btn.primary{
     background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
-    border:1px solid var(--accent); color:#fff; box-shadow:0 6px 14px rgba(0,0,0,.25);
+    border:1px solid var(--accent); color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.25);
   }
   .nav-btn.secondary{
-    background:#121212; border:1px solid rgba(255,255,255,.18); color:#e9e9e9; box-shadow:none;
+    background:#191919; border:1px solid rgba(255,255,255,.18); color:#e9e9e9;
   }
-  .nav-btn[disabled]{
-    opacity:.5; cursor:not-allowed; filter:saturate(.6);
-  }
+  .nav-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:saturate(.6); }
 </style>
 
 <!-- Guard de sesión (redirige a /door si no hay token) -->
@@ -227,7 +231,7 @@
 </head>
 <body>
 
-<!-- FAB: solo cerrar sesión -->
+<!-- FAB: solo cerrar sesión, fijo -->
 <button class="logout-fab" onclick="logout()" aria-label="Cerrar sesión">Cerrar sesión</button>
 
 <div class="wrap">
@@ -265,7 +269,8 @@
 <!-- Barra inferior navegación -->
 <div class="nav-bottom" role="navigation" aria-label="Navegación">
   <button id="navBack" class="nav-btn secondary" onclick="navBack()" aria-label="Atrás">← Atrás</button>
-  <button id="navFwd"  class="nav-btn"          onclick="navForward()" aria-label="Adelante">Adelante →</button>
+  <button id="navHome" class="nav-btn secondary" onclick="navHome()" aria-label="Inicio">Inicio</button>
+  <button id="navFwd"  class="nav-btn primary"  onclick="navForward()" aria-label="Adelante">Adelante →</button>
 </div>
 
 <script>
@@ -278,12 +283,12 @@ var CHUNK = 9;
 // === Estado global ===
 var state = {
   q: '',
-  items: [],       // todos los ejercicios cargados
-  rendered: 0,     // cuántas tarjetas están pintadas
+  items: [],
+  rendered: 0,
   nextOffset: '',
   loading: false,
   view: 'cats',    // 'cats' | 'list'
-  category: ''     // categoría activa en vista list
+  category: ''
 };
 
 /* ======== Sesión / logout ======== */
@@ -330,7 +335,7 @@ function showErr(msg){
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&gt;','>':'&quot;'}[m])); }
 
-/* ======== Normalizadores y orden ======== */
+/* ======== Normalizadores / orden ======== */
 function normStr(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function compareByName(a,b){
   const A = normStr(a.ejercicio || a.nombre || '');
@@ -498,6 +503,16 @@ function updateNavButtons(){
 }
 function navBack(){ history.back(); }
 function navForward(){ history.forward(); }
+function navHome(){
+  // Ir a categorías (inicio), limpiar búsqueda/filtro
+  state.q = '';
+  state.view = 'cats';
+  state.category = '';
+  try { document.getElementById('q').value = ''; } catch(_){}
+  document.getElementById('chipFilter').style.display = 'none';
+  resetGrid(); renderCategories();
+  pushHistory();
+}
 
 /* ======== Carga y render ======== */
 async function fetchData(opts){
@@ -551,7 +566,7 @@ function selectCategory(name){
   document.getElementById('chipFilter').style.display = state.category ? 'inline-flex' : 'none';
   document.getElementById('chipLabel').textContent = 'Categoría: ' + (state.category || '—');
   resetGrid(); renderInitial(); setMoreVisibility();
-  pushHistory();  // << historial
+  pushHistory();
 }
 function clearCategory(){
   state.category = '';
@@ -561,7 +576,7 @@ function clearCategory(){
   } else {
     resetGrid(); renderInitial(); setMoreVisibility();
   }
-  pushHistory();  // << historial
+  pushHistory();
 }
 function cargarMasUI(){
   if (state.view === 'cats') {
@@ -578,7 +593,7 @@ function buscar(){
   state.view = state.q ? 'list' : 'cats';
   fetchData({ q: state.q }).then(()=>{
     if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
-    pushHistory(); // << historial
+    pushHistory();
   });
 }
 function limpiar(){
@@ -588,7 +603,7 @@ function limpiar(){
   document.getElementById('chipFilter').style.display = 'none';
   fetchData({ q:'' }).then(()=>{
     if (state.nextOffset) prefetchAllPagesInBackground();
-    pushHistory(); // << historial
+    pushHistory();
   });
 }
 
@@ -642,12 +657,11 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 
 /* ======== Bootstrap ======== */
 document.addEventListener('DOMContentLoaded', async function(){
-  // Estado por defecto + replace en historial base
+  // Estado por defecto + snapshot base
   try { document.getElementById('q').value = ''; } catch(_){}
   state.q = ''; state.view = 'cats'; state.category = '';
   document.getElementById('chipFilter').style.display = 'none';
 
-  // Inicializa índices de historial si no existen
   if (sessionStorage.getItem('tp_nav_idx') === null){
     sessionStorage.setItem('tp_nav_idx','0');
     sessionStorage.setItem('tp_nav_max','0');
