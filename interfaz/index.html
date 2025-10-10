@@ -102,7 +102,7 @@
   .card-body{ max-width:78%; display:flex; flex-direction:column; gap:6px; }
   .title{ font-family:var(--title-font); font-weight:800; font-size:clamp(18px, 4.2vw, 22px); line-height:1.2; letter-spacing:.2px; margin:0 0 2px; }
   .chip{ margin:4px 0 6px; display:inline-flex; align-items:center; justify-content:center;
-    padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18); color:var(--chip); font-size:12px; width:fit-content; }
+    padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18); color:#e0e0e0; font-size:12px; width:fit-content; }
   .desc{ color:#d0d0d0; text-align:left; font-size:14.5px; font-style:italic; line-height:1.55;
     margin-top:2px; min-height:calc(1.55em * 3); max-height:calc(1.55em * 3 + 8px);
     overflow:hidden; position:relative; }
@@ -296,7 +296,7 @@ async function kick(){
     localStorage.removeItem('tp_email');
     deleteCookie('tp_token_v1'); deleteCookie('tp_redirect'); deleteCookie('tp_email');
     if ('caches' in self){ try { await caches.delete('tp-session'); } catch(_){ } }
-  }finally{ window.location.assign('/'); }
+  }finally{ window.location.assign('/index.html'); }
 }
 async function logout(){
   try {
@@ -479,45 +479,50 @@ window.addEventListener('popstate', (ev)=>{
   updateNavButtons();
 });
 
-/* === IMPORTANTE: nunca deshabilitamos Atrás para permitir salir a portada === */
 function updateNavButtons(){
   const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
   const max = parseInt(sessionStorage.getItem('tp_nav_max')||'0',10) || 0;
   const backBtn = document.getElementById('navBack');
   const fwdBtn  = document.getElementById('navFwd');
-  if (backBtn) backBtn.disabled = false;             // ← siempre activo
+  if (backBtn) backBtn.disabled = false; // siempre activo para poder retroceder o salir
   if (fwdBtn)  fwdBtn.disabled  = (idx >= max);
 }
 
-/* === Atrás con fallback a portada si no hay navegación real === */
+/* === Helper: ir a la raíz (categorías) sin añadir entrada de historial === */
+function goRootInside(){
+  state.q = '';
+  state.category = '';
+  state.view = 'cats';
+  try { document.getElementById('q').value = ''; } catch(_){}
+  document.getElementById('chipFilter').style.display = 'none';
+  resetGrid(); renderCategories();
+  replaceHistory(); // sustituye el estado actual, no suma historial
+  updateNavButtons();
+}
+
+/* === Atrás con prioridad a la navegación interna; si no, salir a /index.html === */
 function navBack(){
   // 0) Si el modal está abierto, lo cerramos primero
   var modal = document.getElementById('modal');
   if (modal && modal.style.display === 'flex'){ closeModal(); return; }
 
-  const beforeIdx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
-  let popped = false;
+  const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+  const atRoot = (state.view === 'cats' && !state.q && !state.category);
 
-  const onPop = () => { popped = true; window.removeEventListener('popstate', onPop); };
-  window.addEventListener('popstate', onPop, { once:true });
-
-  if (beforeIdx > 0) {
+  if (idx > 0) {
+    // Hay historial interno: retrocede dentro de la interfaz
     history.back();
-  } else {
-    // Sin historial interno → salimos ya
-    window.location.assign('/');
     return;
   }
 
-  // Fallback: si en ~350ms no “pasa nada”, vamos a portada
-  setTimeout(function(){
-    const curIdx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
-    const atRootView = (state.view === 'cats' && !state.q && !state.category);
-    const noProgress = (!popped || curIdx >= beforeIdx);
-    if (noProgress || (atRootView && curIdx === 0)) {
-      window.location.assign('/');
-    }
-  }, 350);
+  if (!atRoot) {
+    // No hay historial, pero no estamos en la raíz: vuelve a categorías dentro de la interfaz
+    goRootInside();
+    return;
+  }
+
+  // No hay historial y ya estás en la raíz → salir a la portada
+  window.location.assign('/index.html');
 }
 
 function navForward(){ history.forward(); }
@@ -721,7 +726,7 @@ function kick(){
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_sessionId');
   }catch{}
-  window.location.assign('/'); // portada
+  window.location.assign('/index.html'); // portada
 }
 </script>
 </body>
