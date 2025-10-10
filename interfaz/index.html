@@ -490,24 +490,43 @@ function updateNavButtons(){
 }
 
 /* === Atrás con fallback a portada si no hay navegación real === */
+// Helper: ir a raíz de la interfaz sin añadir entrada de historial
+function goRootInside(){
+  state.q = '';
+  state.category = '';
+  state.view = 'cats';
+  try { document.getElementById('q').value = ''; } catch(_){}
+  document.getElementById('chipFilter').style.display = 'none';
+  resetGrid(); renderCategories();
+  // No creamos nueva entrada; sustituimos el estado actual
+  replaceHistory();
+  updateNavButtons();
+}
+
+/* Atrás con la lógica pedida */
 function navBack(){
-  // 0) Si el modal está abierto, lo cerramos primero
+  // 0) Si hay modal abierto, lo cerramos primero
   var modal = document.getElementById('modal');
   if (modal && modal.style.display === 'flex'){ closeModal(); return; }
 
-  const beforeIdx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
-  let popped = false;
+  const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+  const atRoot = (state.view === 'cats' && !state.q && !state.category);
 
-  const onPop = () => { popped = true; window.removeEventListener('popstate', onPop); };
-  window.addEventListener('popstate', onPop, { once:true });
-
-  if (beforeIdx > 0) {
+  if (idx > 0) {
+    // Hay historial interno: retrocede dentro de la interfaz
     history.back();
-  } else {
-    // Sin historial interno → salimos ya
-    window.location.assign('/');
     return;
   }
+
+  if (!atRoot) {
+    // No hay historial, pero no estamos en la raíz: volvemos a categorías dentro de la interfaz
+    goRootInside();
+    return;
+  }
+
+  // No hay historial y estamos en la raíz → salir a la portada
+  window.location.assign('/index.html');
+}
 
   // Fallback: si en ~350ms no “pasa nada”, vamos a portada
   setTimeout(function(){
