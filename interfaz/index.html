@@ -242,7 +242,8 @@
   <header><h1>TRAINING PRO</h1></header>
 
   <div class="toolbar">
-    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…">
+    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…" 
+           autocomplete="off" autocapitalize="none" spellcheck="false"><!-- 👈 NEW -->
     <button class="primary" onclick="buscar()">Buscar</button>
     <button onclick="limpiar()">Limpiar</button>
 
@@ -482,6 +483,12 @@ async function fetchData(opts){
 
     sortItems(); // A→Z por ejercicio
 
+    // 👇 NEW: si no hay búsqueda activa, fuerza vista categorías
+    if (!state.q) {
+      state.view = 'cats';
+      state.category = '';
+    }
+
     resetGrid();
     if (state.view === 'cats') {
       renderCategories();
@@ -532,15 +539,19 @@ function cargarMasUI(){
   }
 }
 function buscar(){
-  state.q = document.getElementById('q').value.trim();
-  state.view = state.q ? 'list' : 'cats';
+  const input = document.getElementById('q');
+  state.q = (input.value || '').trim();
+  state.view = state.q ? 'list' : 'cats'; // 👈 NEW: decide vista según hay búsqueda o no
   fetchData({ q: state.q }).then(()=>{
     if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
   });
 }
 function limpiar(){
-  document.getElementById('q').value='';
-  state.q=''; state.view='cats'; state.category='';
+  const input = document.getElementById('q');
+  input.value='';
+  state.q=''; 
+  state.view='cats'; 
+  state.category='';
   document.getElementById('chipFilter').style.display = 'none';
   fetchData({ q:'' }).then(()=>{
     if (state.nextOffset) prefetchAllPagesInBackground();
@@ -657,6 +668,14 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 
 document.addEventListener('DOMContentLoaded', async function(){
+  // 👇 NEW: evitar que el navegador “recuerde” el valor del input y nos ponga en vista lista
+  const qInput = document.getElementById('q');
+  try { qInput.value = ''; } catch(_) {}
+  state.q = '';
+  state.view = 'cats';
+  state.category = '';
+  document.getElementById('chipFilter').style.display = 'none';
+
   await fetchData();                                // primera página
   if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
 });
