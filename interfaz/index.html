@@ -207,6 +207,7 @@
   .nav-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:saturate(.6); }
 </style>
 
+<!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
   (function(){
@@ -254,6 +255,7 @@
   </div>
 </div>
 
+<!-- Modal detalle -->
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
   <div class="panel">
     <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
@@ -261,6 +263,7 @@
   </div>
 </div>
 
+<!-- Barra inferior navegación -->
 <div class="nav-bottom" role="navigation" aria-label="Navegación">
   <button id="navBack" class="nav-btn secondary" onclick="navBack()" aria-label="Atrás">← Atrás</button>
   <button id="navHome" class="nav-btn secondary" onclick="navHome()" aria-label="Inicio">Inicio</button>
@@ -268,11 +271,13 @@
 </div>
 
 <script>
+/* ======== Utilidades ======== */
 var CHUNK = 9;
 ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
 
+// === Estado global ===
 var state = {
   q: '',
   items: [],
@@ -283,6 +288,7 @@ var state = {
   category: ''
 };
 
+/* ======== Sesión / logout ======== */
 function deleteCookie(name){
   try{
     document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite:Lax; Secure';
@@ -326,6 +332,7 @@ function showErr(msg){
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&gt;','>':'&quot;'}[m])); }
 
+/* ======== Normalizadores / orden ======== */
 function normStr(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function compareByName(a,b){
   const A = normStr(a.ejercicio || a.nombre || '');
@@ -347,6 +354,7 @@ function mergeUnique(existing, incoming){
   }
 }
 
+/* ======== CATEGORÍAS ======== */
 function getCategoryName(x){ return (x.categoria || '').trim(); }
 function buildCategoryIndex(){
   const map = new Map();
@@ -374,6 +382,7 @@ function renderCategories(){
   if (state.nextOffset) prefetchAllPagesInBackground();
 }
 
+/* ======== Vista lista ======== */
 function card(x){
   var nombre = escapeHtml(x.ejercicio || x.nombre || '');
   var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
@@ -418,31 +427,37 @@ function renderRange(from, to){
 function renderInitial(){ renderRange(0, Math.min(CHUNK, filteredItems().length)); }
 function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length)); }
 
+/* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
 async function apiList(opts){
   const qs = new URLSearchParams({
     q: opts.q || '',
     offset: opts.offset || '',
-    pageSize: '100'
+    pageSize: '100',
+    ts: String(Date.now()) // cache-busting
   });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), {
     headers: { 'Authorization': 'Bearer ' + getToken() },
-    credentials:'include'
+    credentials:'include',
+    cache:'no-store'
   });
   if (r.status === 401) { kick(); throw new Error('HTTP 401'); }
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
 async function apiDetail(id){
-  const r = await fetch('/api/ejercicios?id=' + encodeURIComponent(id), {
+  const qs = new URLSearchParams({ id: id, ts: String(Date.now()) });
+  const r = await fetch('/api/ejercicios?' + qs.toString(), {
     headers: { 'Authorization': 'Bearer ' + getToken() },
-    credentials:'include'
+    credentials:'include',
+    cache:'no-store'
   });
   if (r.status === 401) { kick(); throw new Error('HTTP 401'); }
   if (!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
 
+/* ======== Prefetch ======== */
 let prefetchingAll = false;
 async function prefetchAllPagesInBackground(){
   if (prefetchingAll) return;
@@ -458,6 +473,7 @@ async function prefetchAllPagesInBackground(){
   }
 }
 
+/* ======== Historial interno ======== */
 function pushHistory(){
   const idx = (parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0) + 1;
   const snap = { idx, view: state.view, category: state.category, q: state.q };
@@ -487,7 +503,6 @@ window.addEventListener('popstate', (ev)=>{
   else { renderInitial(); setMoreVisibility(); }
   updateNavButtons();
 });
-
 function updateNavButtons(){
   const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
   const max = parseInt(sessionStorage.getItem('tp_nav_max')||'0',10) || 0;
@@ -524,7 +539,7 @@ function navBack(){
   }
 
   if (!atRoot) {
-    goRootInside(); // volver a categorías dentro de la interfaz
+    goRootInside(); // volver a categorías
     return;
   }
 
@@ -542,6 +557,7 @@ function navHome(){
   pushHistory();
 }
 
+/* ======== Carga y render ======== */
 async function fetchData(opts){
   opts = opts || {};
   if (state.loading) return;
@@ -586,6 +602,7 @@ async function fetchData(opts){
   }
 }
 
+/* ======== UX: acciones ======== */
 function selectCategory(name){
   state.view = 'list';
   state.category = name || '';
@@ -633,6 +650,7 @@ function limpiar(){
   });
 }
 
+/* ======== Detalle ======== */
 function formatIndicaciones(text){
   if(!text) return '';
   var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
@@ -680,6 +698,7 @@ async function loadDetail(id){
 }
 function closeModal(){ document.getElementById('modal').style.display = 'none'; }
 
+/* ======== Bootstrap ======== */
 document.addEventListener('DOMContentLoaded', async function(){
   try { document.getElementById('q').value = ''; } catch(_){}
   state.q = ''; state.view = 'cats'; state.category = '';
@@ -711,10 +730,17 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+/* === Refresco adicional al recuperar foco de la ventana (home screen/iOS) === */
+window.addEventListener('focus', () => {
+  fetchData({ q: state.q });
+  if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
+});
+
 window.addEventListener('pageshow', function(e){ if (e.persisted) { fetchData({ q: state.q }); updateNavButtons(); }});
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 </script>
 
+<!-- Guard “online” -->
 <script>
 (async function guard(){
   const token = localStorage.getItem('tp_token_v1') || '';
@@ -737,7 +763,8 @@ async function check(token){
     const r = await fetch('/api/auth/check', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ token })
+      body: JSON.stringify({ token }),
+      cache: 'no-store' // evita respuestas cacheadas
     });
     return r.ok;
   }catch{ return false; }
