@@ -119,7 +119,22 @@
   .desc .line:nth-child(n+4){ display:none; }
 
   .actions{ display:flex; gap:8px; justify-content:flex-start; margin-top:6px; }
-  .btn{ background:#121212; border:1.5px solid rgba(230,192,110,.38); padding:8px 10px; border-radius:9px; color:#e9e9e9; font-size:14.5px; }
+  .btn{
+    background:#121212; border:1.5px solid rgba(230,192,110,.38);
+    padding:9px 12px; border-radius:10px; color:#e9e9e9; font-size:14.5px;
+    text-decoration:none; display:inline-block;
+  }
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(230,192,110,.22), rgba(230,192,110,.06));
+    border-color: var(--accent);
+    color:#fff;
+    box-shadow: 0 6px 14px rgba(0,0,0,.25);
+  }
+  .btn.ghost{
+    background:#121212;
+    border-color: rgba(255,255,255,.18);
+    color:#e9e9e9;
+  }
 
   .footer{ display:flex; justify-content:center; margin:22px 0 8px }
   .more{ padding:8px 10px; border-radius:9px; border:1px solid var(--accent); background:transparent; color:#fff; font-size:15px }
@@ -156,62 +171,26 @@
     border:1px solid rgba(230,192,110,.45); background:#181818; color:#fff;
     border-radius:8px; padding:3px 7px; cursor:pointer; font-size:11px;
   }
-  .detail-title{ margin:4px 0 10px; font-weight:900; font-size:clamp(19px,4.2vw,26px); letter-spacing:.02em; }
-  .detail-chip{ display:inline-block; margin:0 auto 10px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px; }
-  /* Detalle: estilo de indicaciones */
-.detail-body{
-  font-style: italic;                 /* todo el bloque en cursiva */
-  line-height: 1.75;
-}
-.detail-body .line{
-  margin: .45em 0;                    /* espacio base entre líneas */
-}
-.detail-body .line.num{
-  margin-top: .85em;                  /* un pelín más si empieza por 1., 2., etc. */
-}
 
+  /* 👇 Ajustes visuales solicitados en el detalle */
+  .detail-title{
+    margin:4px 0 10px; font-weight:900;
+    font-size:clamp(21px,4.6vw,28px); /* +1–2 pt vs antes */
+    letter-spacing:.02em;
+  }
+  .detail-chip{
+    display:inline-block; margin:0 auto 10px; padding:6px 10px;
+    border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px;
+  }
+  .detail-body{
+    font-style: italic;
+    line-height: 1.75;
+    font-size: 15px;           /* ligeramente más pequeño que 16px */
+  }
+  .detail-body .line{ margin: .45em 0; }
+  .detail-body .line.num{ margin-top: .85em; }
 </style>
-<!-- 👇 pega aquí el bloque nuevo -->
-<style id="video-tweaks">
-  .video{
-    width:100%;
-    max-width:640px;      /* ajusta si quieres 520px */
-    margin:8px auto 6px;
-    aspect-ratio:16/9;
-    background:#000;
-    border:1px solid #333;
-    border-radius:12px;
-    overflow:hidden;
-  }
-  .video iframe,
-  .video video,
-  .video-lite{ width:100%; height:100%; display:block; }
 
-  .video-lite{ position:relative; cursor:pointer; }
-  .video-lite img{
-    width:100%; height:100%;
-    object-fit:contain;          /* ← evita recortes */
-    object-position:center;
-    background:#000;
-    filter:none;
-  }
-  .video-lite .play{
-    pointer-events:none; position:absolute; left:50%; top:50%;
-    transform:translate(-50%,-50%);
-    width:54px; height:54px; border-radius:50%;
-    background:rgba(0,0,0,.45);
-    border:2px solid rgba(230,192,110,.7);
-    display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.4);
-  }
-  .video-lite .play:before{
-    content:""; width:0; height:0;
-    border-left:13px solid var(--accent);
-    border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:3px;
-  }
-
-  /* modal un pelín más flexible en móvil */
-  .modal .panel{ max-width:860px; width:calc(100% - 24px); }
-</style>
 <!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
@@ -242,8 +221,8 @@
   <header><h1>TRAINING PRO</h1></header>
 
   <div class="toolbar">
-    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…" 
-           autocomplete="off" autocapitalize="none" spellcheck="false"><!-- 👈 NEW -->
+    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…"
+           autocomplete="off" autocapitalize="none" spellcheck="false">
     <button class="primary" onclick="buscar()">Buscar</button>
     <button onclick="limpiar()">Limpiar</button>
 
@@ -262,7 +241,7 @@
   </div>
 </div>
 
-<!-- Modal detalle -->
+<!-- Modal detalle (sin vídeo embebido) -->
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
   <div class="panel">
     <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
@@ -388,8 +367,21 @@ function card(x){
   var nombre = escapeHtml(x.ejercicio || x.nombre || '');
   var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
   var indHtml = formatIndicaciones3(x.indicaciones || x.descripcion || '');
-  var btnVid = x.video ? '<a class="btn link" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>' : '<span class="btn" style="opacity:.6">Sin vídeo</span>';
-  return '<div class="card"><div class="card-body"><div class="title">'+nombre+'</div>'+(cat?'<div>'+cat+'</div>':'')+'<div class="section"><div class="desc">'+indHtml+'</div></div></div><div class="actions">'+btnVid+'<button class="btn" type="button" onclick="openDetail(\''+x.id+'\')">Detalle</button></div></div>';
+  var btnVid = x.video
+    ? '<a class="btn primary" href="'+x.video+'" target="_blank" rel="noopener">Abrir vídeo ↗</a>'
+    : '<span class="btn ghost" style="opacity:.7;cursor:not-allowed">Sin vídeo</span>';
+  return ''+
+    '<div class="card">'+
+      '<div class="card-body">'+
+        '<div class="title">'+nombre+'</div>'+
+        (cat?'<div>'+cat+'</div>':'')+
+        '<div class="section"><div class="desc">'+indHtml+'</div></div>'+
+      '</div>'+
+      '<div class="actions">'+
+        btnVid+
+        '<button class="btn ghost" type="button" onclick="openDetail(\''+x.id+'\')">Detalle</button>'+
+      '</div>'+
+    '</div>';
 }
 function resetGrid(){ document.getElementById('grid').innerHTML = ''; state.rendered = 0; }
 function setMoreVisibility(){
@@ -421,7 +413,7 @@ async function apiList(opts){
   const qs = new URLSearchParams({
     q: opts.q || '',
     offset: opts.offset || '',
-    pageSize: '100'   // pide 100 por página al backend
+    pageSize: '100'
   });
   const r  = await fetch('/api/ejercicios?' + qs.toString(), {
     headers: { 'Authorization': 'Bearer ' + getToken() },
@@ -483,11 +475,7 @@ async function fetchData(opts){
 
     sortItems(); // A→Z por ejercicio
 
-    // 👇 NEW: si no hay búsqueda activa, fuerza vista categorías
-    if (!state.q) {
-      state.view = 'cats';
-      state.category = '';
-    }
+    if (!state.q) { state.view = 'cats'; state.category = ''; }
 
     resetGrid();
     if (state.view === 'cats') {
@@ -541,7 +529,7 @@ function cargarMasUI(){
 function buscar(){
   const input = document.getElementById('q');
   state.q = (input.value || '').trim();
-  state.view = state.q ? 'list' : 'cats'; // 👈 NEW: decide vista según hay búsqueda o no
+  state.view = state.q ? 'list' : 'cats';
   fetchData({ q: state.q }).then(()=>{
     if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
   });
@@ -582,60 +570,7 @@ function formatIndicaciones3(text){
   return merged.slice(0,3).map(function(p){ return '<div class="line">'+esc(p)+'</div>'; }).join('');
 }
 
-// Vídeo helpers
-function driveIdFromAny(url){
-  try{
-    var clean = String(url).split('#')[0];
-    clean = clean.replace(/[?&](usp|resourcekey|pli|authuser|ts|export|rt|fbclid|gxids)=[^&#]*/gi,'');
-    var m = /\/file\/d\/([^/]+)\//.exec(clean) || /\/d\/([^/]+)\//.exec(clean) ||
-            /[?&]id=([^&]+)/.exec(clean) || /\/preview\?id=([^&]+)/.exec(clean) ||
-            /\/uc\?export=download&id=([^&]+)/.exec(clean);
-    return m && m[1] ? m[1] : '';
-  }catch(_){ return ''; }
-}
-function drivePreviewUrlFromId(id){ return 'https://drive.google.com/file/d/'+id+'/preview'; }
-function driveThumbUrlFromId(id){ return 'https://drive.google.com/thumbnail?id='+id+'&sz=w1280'; }
-function embedVideo(url){
-  if(!url) return '';
-
-  // YouTube → miniatura + play (sin enlace externo)
-  var yt = url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i);
-  if(yt){
-    var id = yt[1];
-    var thumb = 'https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
-    return ''+
-      '<div class="video">'+
-        '<div class="video-lite" data-yt="'+id+'" onclick="ytPlay(this)" role="button" aria-label="Reproducir vídeo">'+
-          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
-          '<div class="play"></div>'+
-        '</div>'+
-      '</div>';
-  }
-
-  // Google Drive → miniatura + play (sin enlace externo)
-  var gid = driveIdFromAny(url);
-  if(gid){
-    var thumb = driveThumbUrlFromId(gid);
-    var pv    = drivePreviewUrlFromId(gid);
-    return ''+
-      '<div class="video">'+
-        '<div class="video-lite" data-drive="'+pv+'" onclick="drivePlay(this)" role="button" aria-label="Reproducir vídeo">'+
-          '<img loading="lazy" src="'+thumb+'" alt="Miniatura del vídeo">'+
-          '<div class="play"></div>'+
-        '</div>'+
-      '</div>';
-  }
-
-  // Fallback
-  return '<div class="video"><video controls src="'+url+'"></video></div>';
-}
-
-function ytPlay(el){ var id = el.getAttribute('data-yt'); if(!id) return;
-  el.outerHTML = '<div class="video"><iframe src="https://www.youtube.com/embed/'+id+'?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>'; }
-function drivePlay(el){ var src = el.getAttribute('data-drive'); if(!src) return;
-  el.outerHTML = '<div class="video"><iframe src="'+src+'" allow="autoplay; fullscreen"></iframe></div>'; }
-
-/* 🔄 NUEVO: abrir modal al instante y luego cargar contenido */
+/* 🔄 Modal de detalle SIN vídeo embebido */
 function openDetail(id){
   const modal = document.getElementById('modal');
   const box   = document.getElementById('detail');
@@ -653,12 +588,10 @@ async function loadDetail(id){
   const nombre = (d && (d.nombre || d.ejercicio)) || 'Ejercicio';
   const cat    = (d && d.categoria) ? d.categoria : '';
   const ind    = (d && (d.descripcion || d.indicaciones)) || '';
-  const vid    = (d && d.video) || '';
 
   const html =
     '<div class="detail-title">'+escapeHtml(nombre)+'</div>'+
     (cat ? '<div class="detail-chip">'+escapeHtml(cat)+'</div>' : '')+
-    (vid ? embedVideo(vid) : '')+
     '<div class="detail-body">'+formatIndicaciones(ind)+'</div>';
 
   document.getElementById('detail').innerHTML = html;
@@ -668,7 +601,7 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 
 document.addEventListener('DOMContentLoaded', async function(){
-  // 👇 NEW: evitar que el navegador “recuerde” el valor del input y nos ponga en vista lista
+  // aseguramos vista inicial por categorías
   const qInput = document.getElementById('q');
   try { qInput.value = ''; } catch(_) {}
   state.q = '';
