@@ -505,7 +505,22 @@ function updateNavButtons(){
   if (backBtn) backBtn.disabled = (idx <= 0);
   if (fwdBtn)  fwdBtn.disabled  = (idx >= max);
 }
-function navBack(){ history.back(); }
+
+/* <-- CAMBIO AQUÍ: botón Atrás con escape a portada si no hay historial interno --> */
+function navBack(){
+  // 1) Si hay modal abierto, lo cerramos primero (UX amable)
+  var modal = document.getElementById('modal');
+  if (modal && modal.style.display === 'flex'){ closeModal(); return; }
+
+  // 2) Si hay historial interno, retrocede
+  const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+  if (idx > 0) { history.back(); return; }
+
+  // 3) Sin historial interno: salir de la interfaz a la portada
+  window.location.assign('/');
+}
+/* <-- FIN DEL CAMBIO --> */
+
 function navForward(){ history.forward(); }
 function navHome(){
   state.q = '';
