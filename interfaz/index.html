@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport"
-      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TRAINING PRO</title>
@@ -20,8 +20,8 @@
     --gap-cards: 22px;
     --card-pad-x: 14px; --card-pad-y: 14px; --radius: 12px;
 
-    --nav-h: 56px;     /* altura base de la barra */
-    --nav-gap: 12px;   /* separación extra entre botones y borde inferior */
+    --nav-h: 56px;
+    --nav-gap: 12px;
   }
 
   *{ box-sizing:border-box }
@@ -36,7 +36,6 @@
     max-width:1200px; margin:0 auto;
     padding:max(24px, env(safe-area-inset-top))
             max(var(--side-pad), env(safe-area-inset-right))
-            /* más espacio por la barra full-width + safe-area + aire extra */
             calc(var(--nav-h) + var(--nav-gap) + 28px + env(safe-area-inset-bottom))
             max(var(--side-pad), env(safe-area-inset-left));
     min-height:100vh;
@@ -54,7 +53,6 @@
     font-size:clamp(36px, 8vw, 52px);
   }
 
-  /* FAB: solo Cerrar sesión (arriba derecha, fijo) */
   .logout-fab{
     position: fixed; z-index: 10050;
     top: calc(env(safe-area-inset-top) + 2px);
@@ -137,7 +135,6 @@
   .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none }
 
-  /* CATEGORÍAS */
   .folder{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     background:var(--panel); border:1px solid rgba(255,255,255,.14);
@@ -147,7 +144,6 @@
   .folder .name{ font-family:var(--title-font); font-weight:800; font-size:18px; }
   .folder .count{ font-size:12px; color:#cfcfcf; border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:4px 8px; }
 
-  /* ===== Modal ===== */
   .modal{
     position:fixed; inset:0; display:none;
     align-items:center; justify-content:center; padding:18px;
@@ -183,14 +179,12 @@
   .detail-body .line{ margin: .45em 0; }
   .detail-body .line.num{ margin-top: .85em; }
 
-  /* ===== Barra inferior (full-width al fondo; botones un poco más arriba) ===== */
   .nav-bottom{
     position: fixed; z-index: 15000;
-    left:0; right:0; bottom:0;                 /* ocupa todo el ancho y arranca desde el borde */
-    /* altura automática; los botones se elevan con padding-bottom extra */
+    left:0; right:0; bottom:0;
     padding: 8px 12px calc(env(safe-area-inset-bottom) + var(--nav-gap));
     background: var(--panel);
-    border-top: 1px solid rgba(255,255,255,.8); /* borde superior blanco para diferenciar */
+    border-top: 1px solid rgba(255,255,255,.8);
     box-shadow: 0 -6px 18px rgba(0,0,0,.35);
     border-radius: 0;
     display:flex; align-items:center; justify-content:center; gap:10px;
@@ -213,7 +207,6 @@
   .nav-btn[disabled]{ opacity:.5; cursor:not-allowed; filter:saturate(.6); }
 </style>
 
-<!-- Guard de sesión (redirige a /door si no hay token) -->
 <style>html.guard-hiding{visibility:hidden}</style>
 <script>
   (function(){
@@ -235,7 +228,6 @@
 </head>
 <body>
 
-<!-- FAB: solo cerrar sesión, fijo -->
 <button class="logout-fab" onclick="logout()" aria-label="Cerrar sesión">Cerrar sesión</button>
 
 <div class="wrap">
@@ -262,7 +254,6 @@
   </div>
 </div>
 
-<!-- Modal detalle -->
 <div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()">
   <div class="panel">
     <div class="topbar"><button class="x" onclick="closeModal()">Cerrar ✕</button></div>
@@ -270,7 +261,6 @@
   </div>
 </div>
 
-<!-- Barra inferior navegación -->
 <div class="nav-bottom" role="navigation" aria-label="Navegación">
   <button id="navBack" class="nav-btn secondary" onclick="navBack()" aria-label="Atrás">← Atrás</button>
   <button id="navHome" class="nav-btn secondary" onclick="navHome()" aria-label="Inicio">Inicio</button>
@@ -278,13 +268,11 @@
 </div>
 
 <script>
-/* ======== Utilidades ======== */
 var CHUNK = 9;
 ['gesturestart','gesturechange','gestureend'].forEach(function(evt){
   document.addEventListener(evt, function(e){ e.preventDefault(); }, { passive:false });
 });
 
-// === Estado global ===
 var state = {
   q: '',
   items: [],
@@ -295,7 +283,6 @@ var state = {
   category: ''
 };
 
-/* ======== Sesión / logout ======== */
 function deleteCookie(name){
   try{
     document.cookie = name + '=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite:Lax; Secure';
@@ -339,7 +326,6 @@ function showErr(msg){
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&gt;','>':'&quot;'}[m])); }
 
-/* ======== Normalizadores / orden ======== */
 function normStr(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function compareByName(a,b){
   const A = normStr(a.ejercicio || a.nombre || '');
@@ -352,7 +338,6 @@ function mergeUnique(existing, incoming){
   for (const x of incoming) if (!seen.has(x.id)) { existing.push(x); seen.set(x.id,true); }
 }
 
-/* ======== CATEGORÍAS ======== */
 function getCategoryName(x){ return (x.categoria || '').trim(); }
 function buildCategoryIndex(){
   const map = new Map();
@@ -380,7 +365,6 @@ function renderCategories(){
   if (state.nextOffset) prefetchAllPagesInBackground();
 }
 
-/* ======== Vista lista ======== */
 function card(x){
   var nombre = escapeHtml(x.ejercicio || x.nombre || '');
   var cat = x.categoria ? '<span class="chip">'+escapeHtml(x.categoria)+'</span>' : '';
@@ -425,7 +409,6 @@ function renderRange(from, to){
 function renderInitial(){ renderRange(0, Math.min(CHUNK, filteredItems().length)); }
 function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length)); }
 
-/* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
 async function apiList(opts){
   const qs = new URLSearchParams({
@@ -451,7 +434,6 @@ async function apiDetail(id){
   return r.json();
 }
 
-/* ======== Prefetch ======== */
 let prefetchingAll = false;
 async function prefetchAllPagesInBackground(){
   if (prefetchingAll) return;
@@ -467,7 +449,6 @@ async function prefetchAllPagesInBackground(){
   }
 }
 
-/* ======== Historial interno ======== */
 function pushHistory(){
   const idx = (parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0) + 1;
   const snap = { idx, view: state.view, category: state.category, q: state.q };
@@ -497,29 +478,47 @@ window.addEventListener('popstate', (ev)=>{
   else { renderInitial(); setMoreVisibility(); }
   updateNavButtons();
 });
+
+/* === IMPORTANTE: nunca deshabilitamos Atrás para permitir salir a portada === */
 function updateNavButtons(){
   const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
   const max = parseInt(sessionStorage.getItem('tp_nav_max')||'0',10) || 0;
   const backBtn = document.getElementById('navBack');
   const fwdBtn  = document.getElementById('navFwd');
-  if (backBtn) backBtn.disabled = (idx <= 0);
+  if (backBtn) backBtn.disabled = false;             // ← siempre activo
   if (fwdBtn)  fwdBtn.disabled  = (idx >= max);
 }
 
-/* <-- CAMBIO AQUÍ: botón Atrás con escape a portada si no hay historial interno --> */
+/* === Atrás con fallback a portada si no hay navegación real === */
 function navBack(){
-  // 1) Si hay modal abierto, lo cerramos primero (UX amable)
+  // 0) Si el modal está abierto, lo cerramos primero
   var modal = document.getElementById('modal');
   if (modal && modal.style.display === 'flex'){ closeModal(); return; }
 
-  // 2) Si hay historial interno, retrocede
-  const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
-  if (idx > 0) { history.back(); return; }
+  const beforeIdx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+  let popped = false;
 
-  // 3) Sin historial interno: salir de la interfaz a la portada
-  window.location.assign('/');
+  const onPop = () => { popped = true; window.removeEventListener('popstate', onPop); };
+  window.addEventListener('popstate', onPop, { once:true });
+
+  if (beforeIdx > 0) {
+    history.back();
+  } else {
+    // Sin historial interno → salimos ya
+    window.location.assign('/');
+    return;
+  }
+
+  // Fallback: si en ~350ms no “pasa nada”, vamos a portada
+  setTimeout(function(){
+    const curIdx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+    const atRootView = (state.view === 'cats' && !state.q && !state.category);
+    const noProgress = (!popped || curIdx >= beforeIdx);
+    if (noProgress || (atRootView && curIdx === 0)) {
+      window.location.assign('/');
+    }
+  }, 350);
 }
-/* <-- FIN DEL CAMBIO --> */
 
 function navForward(){ history.forward(); }
 function navHome(){
@@ -532,7 +531,6 @@ function navHome(){
   pushHistory();
 }
 
-/* ======== Carga y render ======== */
 async function fetchData(opts){
   opts = opts || {};
   if (state.loading) return;
@@ -577,7 +575,6 @@ async function fetchData(opts){
   }
 }
 
-/* ======== UX: acciones ======== */
 function selectCategory(name){
   state.view = 'list';
   state.category = name || '';
@@ -625,7 +622,6 @@ function limpiar(){
   });
 }
 
-/* ======== Detalle ======== */
 function formatIndicaciones(text){
   if(!text) return '';
   var parts = String(text).split(/(?=\d+\.\s)/g).map(function(x){ return x.trim(); }).filter(Boolean);
@@ -673,7 +669,6 @@ async function loadDetail(id){
 }
 function closeModal(){ document.getElementById('modal').style.display = 'none'; }
 
-/* ======== Bootstrap ======== */
 document.addEventListener('DOMContentLoaded', async function(){
   try { document.getElementById('q').value = ''; } catch(_){}
   state.q = ''; state.view = 'cats'; state.category = '';
@@ -694,7 +689,6 @@ window.addEventListener('pageshow', function(e){ if (e.persisted) { fetchData();
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 </script>
 
-<!-- Guard “online” -->
 <script>
 (async function guard(){
   const token = localStorage.getItem('tp_token_v1') || '';
@@ -727,7 +721,7 @@ function kick(){
     localStorage.removeItem('tp_token_v1');
     localStorage.removeItem('tp_sessionId');
   }catch{}
-  window.location.assign('/'); // portada
+  window.location.assign('/index.html'); // portada
 }
 </script>
 </body>
