@@ -36,7 +36,7 @@
     max-width:1200px; margin:0 auto;
     padding:max(24px, env(safe-area-inset-top))
             max(var(--side-pad), env(safe-area-inset-right))
-            /* más espacio por la barra full-width + safe-area + aire extra */
+            /* espacio por la barra full-width + safe-area + aire extra */
             calc(var(--nav-h) + var(--nav-gap) + 28px + env(safe-area-inset-bottom))
             max(var(--side-pad), env(safe-area-inset-left));
     min-height:100vh;
@@ -394,7 +394,7 @@ function card(x){
         '<div class="title">'+nombre+'</div>'+
         (cat?'<div>'+cat+'</div>':'')+
         '<div class="section"><div class="desc">'+indHtml+'</div></div>'+
-      '</div>'+
+      </div>'+
       '<div class="actions">'+
         btnVid+
         '<button class="btn ghost" type="button" onclick="openDetail(\''+x.id+'\')">Detalle</button>'+
@@ -467,7 +467,13 @@ async function prefetchAllPagesInBackground(){
   }
 }
 
-/* ======== Historial interno ======== */
+/* ======== Historial interno (pushState) y navegación ======== */
+function canExitExternally(){
+  try{
+    if (document.referrer && history.length > 1) return true;
+  }catch(_){}
+  return true; // siempre podemos ir a "/"
+}
 function pushHistory(){
   const idx = (parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0) + 1;
   const snap = { idx, view: state.view, category: state.category, q: state.q };
@@ -502,10 +508,17 @@ function updateNavButtons(){
   const max = parseInt(sessionStorage.getItem('tp_nav_max')||'0',10) || 0;
   const backBtn = document.getElementById('navBack');
   const fwdBtn  = document.getElementById('navFwd');
-  if (backBtn) backBtn.disabled = (idx <= 0);
+  if (backBtn) backBtn.disabled = (idx <= 0 && !canExitExternally());
   if (fwdBtn)  fwdBtn.disabled  = (idx >= max);
 }
-function navBack(){ history.back(); }
+function navBack(){
+  const idx = parseInt(sessionStorage.getItem('tp_nav_idx')||'0',10) || 0;
+  if (idx > 0) { history.back(); return; }               // 1) interno
+  try{
+    if (document.referrer && history.length > 1){ history.back(); return; } // 2) navegador
+  }catch(_){}
+  location.assign('/');                                   // 3) fallback a portada
+}
 function navForward(){ history.forward(); }
 function navHome(){
   state.q = '';
