@@ -14,7 +14,7 @@
 <style>
   :root{
     --bg:#0b0b0b; --panel:#121212; --line:#272727; --fg:#f7f7f7; --accent:#E6C06E; --chip:#e0e0e0;
-    --title-font:"Sora","Space Grotesk",Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    --title-font:"Libre Baskerville",serif;
     --content-max: 860px;
     --side-pad: 28px;
     --gap-top: 30px;
@@ -27,11 +27,20 @@
 
   *{ box-sizing:border-box }
   html,body{
-    margin:0; color:var(--fg); background:var(--bg);
-    font:16px/1.55 "Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;
-    height:100%; min-height:-webkit-fill-available; overflow-x:hidden;
-    -webkit-touch-callout:none; -webkit-text-size-adjust:100%; touch-action:manipulation;
-  }
+  margin:0;
+  color:var(--fg);
+  background:var(--bg);
+  font-family:"Libre Baskerville",serif;   /* ← ahora todo el texto usa esta fuente */
+  font-size:15px;
+  line-height:1.6;
+  height:100%;
+  min-height:-webkit-fill-available;
+  overflow-x:hidden;
+  -webkit-touch-callout:none;
+  -webkit-text-size-adjust:100%;
+  touch-action:manipulation;
+}
+
 
   .wrap{
     max-width:1200px; margin:0 auto;
@@ -107,7 +116,7 @@
  .desc{
   color:#d0d0d0;
   font-family:"Libre Baskerville",serif;  /* misma fuente que la clase */
-  font-size:14.5px;
+  font-size:13.2px;
   line-height:1.6;
   font-style:normal;                      /* sin cursiva */
   text-align:justify;                     /* justificado */
@@ -119,7 +128,7 @@
   position:relative;
 }
 
-  .desc .line{ margin:.35em 0; }
+  .desc .line{ margin:.55em 0; }
   .desc:after{ content:""; position:absolute; left:0; right:0; bottom:0; height:2.4em;
     background:linear-gradient(180deg, rgba(18,18,18,0), var(--panel)); pointer-events:none; }
   .desc .line:nth-child(n+4){ display:none; }
@@ -188,12 +197,12 @@
   font-family:"Libre Baskerville",serif;
   font-style:normal;
   line-height:1.7;
-  font-size:15px;
+  font-size:14,5px;
   text-align:justify;
   text-justify:inter-word;
 }
 
-  .detail-body .line{ margin: .45em 0; }
+  .detail-body .line{ margin: .6em 0; }
   .detail-body .line.num{ margin-top: .85em; }
 
   .nav-bottom{
