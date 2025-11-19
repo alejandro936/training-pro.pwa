@@ -32,7 +32,26 @@ p,
   font-family:"Libre Baskerville",serif;
 }
 
-input,
+input{
+  flex:1 1 auto;
+  min-width:0;
+  display:block;
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid #dcdcdc;              /* borde gris clarito */
+  background:#ffffff;                     /* fondo blanco */
+  color:#000000;                          /* texto negro */
+  font-size:16px;
+  font-family:"Libre Baskerville",serif;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+input::placeholder{
+  color:#777;
+}
+
 button{
   flex:0 0 auto;
   padding:10px 16px;
