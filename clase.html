@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>Training Pro – Clase de programación</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Training Pro">
+
+  <!-- ICONOS iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+  <meta name="description" content="Clase de programación de Training Pro y material complementario.">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0;
+      background:#000;
+      color:#fff;
+      font-family:"Libre Baskerville",serif;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+    .page{
+      max-width:820px;
+      width:100%;
+    }
+    .title{
+      font-weight:700;
+      letter-spacing:.6px;
+      font-size:clamp(24px,3.6vw,38px);
+      margin:0 0 10px;
+      text-align:center;
+    }
+    .subtitle{
+      font-size:clamp(14px,1.7vw,18px);
+      opacity:.95;
+      margin:0 0 22px;
+      line-height:1.4;
+      text-align:center;
+    }
+    .card{
+      background:radial-gradient(circle at top,#151515 0%,#020202 55%,#000 100%);
+      border-radius:var(--radius);
+      padding:20px 18px 22px;
+      border:1px solid rgba(230,192,110,.32);
+      box-shadow:0 18px 40px rgba(0,0,0,.7);
+    }
+    .card-title{
+      font-size:18px;
+      margin:0 0 8px;
+    }
+    .card-text{
+      font-size:14px;
+      opacity:.9;
+      margin:0 0 16px;
+    }
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-start;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 18px;
+      border-radius:999px;
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .btn-gold{
+      background:linear-gradient(180deg,#f0d9a1 0%,var(--gold) 45%,#d3ab5c 100%);
+      color:#000;
+      border:1px solid #d8b46a;
+      box-shadow:0 10px 22px rgba(0,0,0,.25);
+    }
+    .btn-outline{
+      color:#fff;
+      border:1px solid #fff;
+      background:transparent;
+    }
+    .back{
+      display:inline-block;
+      margin-bottom:14px;
+      font-size:13px;
+      text-decoration:none;
+      color:#ccc;
+    }
+  </style>
+</head>
+<body>
+  <main class="page" aria-label="Clase Training Pro">
+    <a href="/" class="back">← Volver al inicio</a>
+
+    <h1 class="title">Clase de programación<br>Training Pro</h1>
+    <p class="subtitle">
+      Accede a la clase completa y descarga el material complementario en PDF.
+      Recuerda que ambos están protegidos por tu acceso a Training Pro.
+    </p>
+
+    <section class="card">
+      <h2 class="card-title">Accesos</h2>
+      <p class="card-text">
+        Abre la clase en una pestaña nueva o descárgala, y utiliza el PDF como guía mientras ves el vídeo.
+      </p>
+
+      <div class="actions">
+        <!-- ENLACE AL VÍDEO (Drive) -->
+        <a
+          class="btn btn-gold"
+          href="https://drive.google.com/file/d/1_38fe9Ae8bIWyM0fk5JzIZ4bWETIj_4P/view?usp=drive_link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Ver la clase
+        </a>
+
+        <!-- ENLACE AL PDF (Drive) -->
+        <a
+          class="btn btn-outline"
+          href="https://drive.google.com/file/d/1B6hQ_vT6o5xau2j5FphmlhL35JkzFflr/view?usp=drive_link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Descargar PDF complementario
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Service Worker -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js?v=7')
+      .then(reg => console.log('✅ SW registrado:', reg))
+      .catch(err => console.error('❌ SW error:', err));
+  }
+  </script>
+</body>
+</html>
