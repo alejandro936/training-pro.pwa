@@ -9,6 +9,7 @@
 <title>TRAINING PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -103,9 +104,21 @@
   .title{ font-family:var(--title-font); font-weight:800; font-size:clamp(18px, 4.2vw, 22px); line-height:1.2; letter-spacing:.2px; margin:0 0 2px; }
   .chip{ margin:4px 0 6px; display:inline-flex; align-items:center; justify-content:center;
     padding:5px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18); color:#e0e0e0; font-size:12px; width:fit-content; }
-  .desc{ color:#d0d0d0; text-align:left; font-size:14.5px; font-style:italic; line-height:1.55;
-    margin-top:2px; min-height:calc(1.55em * 3); max-height:calc(1.55em * 3 + 8px);
-    overflow:hidden; position:relative; }
+ .desc{
+  color:#d0d0d0;
+  font-family:"Libre Baskerville",serif;  /* misma fuente que la clase */
+  font-size:14.5px;
+  line-height:1.6;
+  font-style:normal;                      /* sin cursiva */
+  text-align:justify;                     /* justificado */
+  text-justify:inter-word;
+  margin-top:4px;
+  min-height:calc(1.6em * 3);
+  max-height:calc(1.6em * 3 + 10px);
+  overflow:hidden;
+  position:relative;
+}
+
   .desc .line{ margin:.35em 0; }
   .desc:after{ content:""; position:absolute; left:0; right:0; bottom:0; height:2.4em;
     background:linear-gradient(180deg, rgba(18,18,18,0), var(--panel)); pointer-events:none; }
@@ -172,10 +185,14 @@
     border-radius:999px; border:1px solid rgba(255,255,255,.22); color:#ddd; font-size:12px;
   }
   .detail-body{
-    font-style: italic;
-    line-height: 1.75;
-    font-size: 15px;
-  }
+  font-family:"Libre Baskerville",serif;
+  font-style:normal;
+  line-height:1.7;
+  font-size:15px;
+  text-align:justify;
+  text-justify:inter-word;
+}
+
   .detail-body .line{ margin: .45em 0; }
   .detail-body .line.num{ margin-top: .85em; }
 
