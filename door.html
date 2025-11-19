@@ -34,7 +34,23 @@ p,
 
 input,
 button{
+  flex:0 0 auto;
+  padding:10px 16px;
+  border-radius:12px;
+  border:1px solid var(--gold);
+  background:linear-gradient(180deg, #f0d9a1 0%, var(--gold) 45%, #d3ab5c 100%);
+  color:#000;
+  cursor:pointer;
+  font-weight:700;
+  font-size:14px;
   font-family:"Libre Baskerville",serif;
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+button:active{
+  transform:translateY(1px);
+  box-shadow:0 2px 6px rgba(0,0,0,.4) inset;
 }
 
   .msg{margin-top:10px; min-height:18px; white-space:pre-wrap}
