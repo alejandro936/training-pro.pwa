@@ -4,26 +4,39 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Acceso a Biblioteca</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{ --bg:#000; --panel:#0c0c0c; --line:#1c1c1c; --fg:#fff; --gold:#E6C06E; --muted:#bdbdbd; }
   *{box-sizing:border-box}
-  html,body{ margin:0;background:var(--bg);color:var(--fg);
-    font:16px/1.5 system-ui,Segoe UI,Roboto; -webkit-text-size-adjust:100%; }
+ html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:"Libre Baskerville",serif;
+  font-size:15px;
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+}
   .wrap{max-width:720px;margin:0 auto;padding:28px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px; box-shadow:0 8px 28px rgba(0,0,0,.25)}
-  h1{margin:0 0 10px;font-weight:800;font-size:22px}
-  p{color:var(--muted);margin:6px 0 12px}
-  .row{display:flex; gap:10px; align-items:center}
-  input{
-    flex:1 1 auto; min-width:0; display:block; width:100%;
-    padding:12px 14px; border-radius:12px; border:1px solid #2a2a2a;
-    background:#101010; color:#fff; font-size:16px;
-  }
-  button{
-    flex:0 0 auto; padding:10px 14px; border-radius:12px; border:1px solid var(--gold);
-    background:linear-gradient(180deg, rgba(230,192,110,.25), rgba(230,192,110,.05));
-    color:#fff; cursor:pointer; font-weight:700; font-size:14px
-  }
+  h1{
+  margin:0 0 10px;
+  font-weight:700;
+  font-size:22px;
+  font-family:"Libre Baskerville",serif;
+}
+
+p,
+.muted,
+.detail{
+  font-family:"Libre Baskerville",serif;
+}
+
+input,
+button{
+  font-family:"Libre Baskerville",serif;
+}
+
   .msg{margin-top:10px; min-height:18px; white-space:pre-wrap}
   .muted{color:var(--muted);font-size:13px}
   .hide{display:none}
