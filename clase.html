@@ -25,98 +25,100 @@
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{
-      margin:0;
-      background:#000;
-      color:#fff;
-      font-family:"Libre Baskerville",serif;
-      display:grid;
-      place-items:center;
-      padding:24px;
-    }
-    .page{
-      max-width:820px;
-      width:100%;
-    }
-    .title{
-      font-weight:700;
-      letter-spacing:.6px;
-      font-size:clamp(24px,3.6vw,38px);
-      margin:0 0 10px;
-      text-align:center;
-    }
-    .subtitle{
-      font-size:clamp(14px,1.7vw,18px);
-      opacity:.95;
-      margin:0 0 22px;
-      line-height:1.4;
-      text-align:center;
-    }
-    .card{
-      background:radial-gradient(circle at top,#151515 0%,#020202 55%,#000 100%);
-      border-radius:var(--radius);
-      padding:20px 18px 22px;
-      border:1px solid rgba(230,192,110,.32);
-      box-shadow:0 18px 40px rgba(0,0,0,.7);
-    }
-    .card-title{
-      font-size:18px;
-      margin:0 0 8px;
-    }
-    .card-text{
-      font-size:14px;
-      opacity:.9;
-      margin:0 0 16px;
-    }
-    .actions{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:flex-start;
-    }
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:10px 18px;
-      border-radius:999px;
-      text-decoration:none;
-      font-weight:700;
-      font-size:14px;
-      cursor:pointer;
-    }
-    .btn-gold{
-      background:linear-gradient(180deg,#f0d9a1 0%,var(--gold) 45%,#d3ab5c 100%);
-      color:#000;
-      border:1px solid #d8b46a;
-      box-shadow:0 10px 22px rgba(0,0,0,.25);
-    }
-    .btn-outline{
-      color:#fff;
-      border:1px solid #fff;
-      background:transparent;
-    }
-    .back{
-      position:fixed;      /* ← fija el botón */
-      top:16px;            /* separación desde arriba */
-      left:16px;           /* separación desde la izquierda */
-      font-size:13px;
-      text-decoration:none;
-      color:#ccc;
-      z-index:10;
-    }
-  </style>
+  :root{ --gold:#E6C06E; --white:#fff; --black:#000; --radius:16px; }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{
+    margin:0;
+    background:#000;
+    color:#fff;
+    font-family:"Libre Baskerville",serif;
+    display:grid;
+    place-items:center;
+    padding:24px;
+  }
+  .page{
+    max-width:820px;
+    width:100%;
+  }
+  .title{
+    font-weight:700;
+    letter-spacing:.6px;
+    font-size:clamp(24px,3.6vw,38px);
+    margin:0 0 10px;
+    text-align:center;
+  }
+  .subtitle{
+    font-size:clamp(14px,1.7vw,18px);
+    opacity:.95;
+    margin:0 0 22px;
+    line-height:1.4;
+    text-align:center;
+  }
+  .card{
+    background:radial-gradient(circle at top,#151515 0%,#020202 55%,#000 100%);
+    border-radius:var(--radius);
+    padding:28px 24px 28px;
+    border:1px solid rgba(230,192,110,.32);
+    box-shadow:0 18px 40px rgba(0,0,0,.7);
+  }
+  .card-title{
+    font-size:18px;
+    margin:0 0 18px;        /* + espacio título → texto */
+    text-align:left;
+  }
+  .card-text{
+    font-size:14px;
+    opacity:.9;
+    margin:0 0 26px;        /* + espacio texto → botones */
+    text-align:center;      /* centrado izquierda/derecha */
+  }
+  .actions{
+    display:flex;
+    gap:18px;               /* + espacio entre botones */
+    flex-wrap:wrap;
+    justify-content:flex-start;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 18px;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .btn-gold{
+    background:linear-gradient(180deg,#f0d9a1 0%,var(--gold) 45%,#d3ab5c 100%);
+    color:#000;
+    border:1px solid #d8b46a;
+    box-shadow:0 10px 22px rgba(0,0,0,.25);
+  }
+  .btn-outline{
+    color:#fff;
+    border:1px solid #fff;
+    background:transparent;
+  }
+  .back{
+    position:fixed;
+    top:16px;
+    left:16px;
+    font-size:13px;
+    text-decoration:none;
+    color:#ccc;
+    z-index:10;
+  }
+</style>
+
 </head>
 <body>
   <main class="page" aria-label="Clase Training Pro">
     <a href="/" class="back">← Volver al inicio</a>
 
-    <h1 class="title">Clase de programación<br>Training Pro</h1>
+    <h1 class="title">TRAINING PRO<br></h1>
     <p class="subtitle">
-      Accede a la clase completa y descarga el material complementario en PDF.
-      Recuerda que ambos están protegidos por tu acceso a Training Pro.
+      
     </p>
 
     <section class="card">
