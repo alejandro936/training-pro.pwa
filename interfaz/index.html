@@ -671,12 +671,25 @@ function cargarMasUI(){
 function buscar(){
   const input = document.getElementById('q');
   state.q = (input.value || '').trim();
-  state.view = state.q ? 'list' : 'cats';
+
+  if (state.q) {
+    // Siempre que hay texto: vista de lista global, sin categoría fija
+    state.view = 'list';
+    state.category = '';
+    const chip = document.getElementById('chipFilter');
+    if (chip) chip.style.display = 'none';
+  } else {
+    // Si borras el texto y le das a buscar → vuelves a categorías
+    state.view = 'cats';
+    state.category = '';
+  }
+
   fetchData({ q: state.q }).then(()=>{
     if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
     pushHistory();
   });
 }
+
 function limpiar(){
   const input = document.getElementById('q');
   input.value='';
