@@ -623,8 +623,6 @@ async function fetchData(opts){
 
     sortItems();
 
-    if (!state.q) { state.view = 'cats'; state.category = ''; }
-
     resetGrid();
     if (state.view === 'cats') {
       renderCategories();
