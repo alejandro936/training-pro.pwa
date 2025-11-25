@@ -754,7 +754,18 @@ document.addEventListener('DOMContentLoaded', async function(){
   try { document.getElementById('q').value = ''; } catch(_){}
   state.q = ''; state.view = 'cats'; state.category = '';
   document.getElementById('chipFilter').style.display = 'none';
-
+      
+     // Permitir buscar al pulsar ENTER en la barra de búsqueda
+  const qInput = document.getElementById('q');
+  if (qInput) {
+    qInput.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        buscar();
+      }
+    });
+  }
+   
   if (sessionStorage.getItem('tp_nav_idx') === null){
     sessionStorage.setItem('tp_nav_idx','0');
     sessionStorage.setItem('tp_nav_max','0');
