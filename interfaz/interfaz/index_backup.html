@@ -610,9 +610,68 @@ function renderCategories(){
       '<div class="count">'+g.count+'</div>'+
     '</div>'
   )).join('');
-  document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
-  document.getElementById('chipFilter').style.display = 'none';
-  if (state.nextOffset) prefetchAllPagesInBackground();
+document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
+document.getElementById('chipFilter').style.display = 'none';
+showMuscleExplorer(true);
+clearMuscleHighlight();
+if (state.nextOffset) prefetchAllPagesInBackground();
+}
+function getExplorerEl(){
+  return document.getElementById('muscleExplorer');
+}
+
+function showMuscleExplorer(show){
+  var el = getExplorerEl();
+  if (!el) return;
+  el.style.display = show ? 'block' : 'none';
+}
+
+function clearMuscleHighlight(){
+  document.querySelectorAll('.muscle-zone').forEach(function(el){
+    el.classList.remove('active');
+  });
+}
+
+function highlightMuscle(category){
+  clearMuscleHighlight();
+  if (!category) return;
+  document.querySelectorAll('.muscle-zone').forEach(function(el){
+    if (normStr(el.getAttribute('data-category')) === normStr(category)) {
+      el.classList.add('active');
+    }
+  });
+}
+
+function bindMuscleExplorer(){
+  document.querySelectorAll('.muscle-zone').forEach(function(zone){
+    zone.addEventListener('click', function(){
+      var category = zone.getAttribute('data-category') || '';
+      if (!category) return;
+      highlightMuscle(category);
+      selectCategory(category);
+    });
+  });
+
+  var frontBtn = document.getElementById('frontBtn');
+  var backBtn  = document.getElementById('backBtn');
+  var frontView = document.getElementById('frontView');
+  var backView  = document.getElementById('backView');
+
+  if (frontBtn && backBtn && frontView && backView){
+    frontBtn.addEventListener('click', function(){
+      frontBtn.classList.add('active');
+      backBtn.classList.remove('active');
+      frontView.classList.add('active');
+      backView.classList.remove('active');
+    });
+
+    backBtn.addEventListener('click', function(){
+      backBtn.classList.add('active');
+      frontBtn.classList.remove('active');
+      backView.classList.add('active');
+      frontView.classList.remove('active');
+    });
+  }
 }
 
 /* ======== Vista lista ======== */
