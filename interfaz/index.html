@@ -908,24 +908,31 @@ function filteredItems(){
   return state.items.filter(x => normStr(getCategoryName(x)) === key);
 }
 function renderRange(from, to){
+  const grid = document.getElementById('grid');
+  grid.className = 'grid';
+
   const arr = filteredItems();
   if (from >= to) return;
   const slice = arr.slice(from, to);
   if (!slice.length) return;
   const html = slice.map(card).join('');
-  document.getElementById('grid').insertAdjacentHTML('beforeend', html);
+  grid.insertAdjacentHTML('beforeend', html);
   state.rendered = to;
   setMoreVisibility();
 }
 function renderInitial(){
+  const grid = document.getElementById('grid');
+  grid.className = 'grid';
   showMuscleExplorer(false);
   renderRange(0, Math.min(CHUNK, filteredItems().length));
 }
+
 function renderMore(){
+  const grid = document.getElementById('grid');
+  grid.className = 'grid';
   showMuscleExplorer(false);
   renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length));
 }
-
 /* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
 async function apiList(opts){
