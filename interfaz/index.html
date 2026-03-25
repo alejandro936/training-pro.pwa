@@ -169,21 +169,23 @@
   .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none }
 
-  .folder{
+ .folder{
   display:flex;
-  flex-direction:column;
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
-  gap:6px;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.14);
-  border-left:3px solid rgba(230,192,110,.85);
-  border-radius:var(--radius);
   padding:12px;
-  min-height:72px;
-  cursor:pointer;
+  min-height:56px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#121212;
+  text-align:center;
+  transition: all .15s ease;
 }
 
+.folder:hover{
+  border-color: rgba(230,192,110,.5);
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
 .folder .name{
   font-family:var(--title-font);
   font-weight:800;
