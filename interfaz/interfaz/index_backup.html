@@ -918,8 +918,14 @@ function renderRange(from, to){
   state.rendered = to;
   setMoreVisibility();
 }
-function renderInitial(){ renderRange(0, Math.min(CHUNK, filteredItems().length)); }
-function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length)); }
+function renderInitial(){
+  showMuscleExplorer(false);
+  renderRange(0, Math.min(CHUNK, filteredItems().length));
+}
+function renderMore(){
+  showMuscleExplorer(false);
+  renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length));
+}
 
 /* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
