@@ -1147,13 +1147,12 @@ function buscar(){
   state.q = (input.value || '').trim();
 
   if (state.q) {
-    // Siempre que hay texto: vista de lista global, sin categoría fija
     state.view = 'list';
     state.category = '';
     const chip = document.getElementById('chipFilter');
     if (chip) chip.style.display = 'none';
+    showMuscleExplorer(false);
   } else {
-    // Si borras el texto y le das a buscar → vuelves a categorías
     state.view = 'cats';
     state.category = '';
   }
