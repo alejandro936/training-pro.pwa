@@ -240,7 +240,7 @@
   display:flex;
   justify-content:center;
   align-items:center;
-  min-height:260px;
+  min-height:420px;
 }
 
 .body-view{
@@ -253,29 +253,190 @@
   display:flex;
 }
 
-.body-svg{
+.body-map{
+  position:relative;
   width:100%;
-  max-width:280px;
-  height:auto;
+  max-width:340px;
+  aspect-ratio: 768 / 1024;
+}
+
+.body-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
   display:block;
+  border-radius:12px;
 }
 
-.muscle-zone{
-  fill: rgba(255,255,255,.05);
-  stroke: rgba(255,255,255,.24);
-  stroke-width: 1.6;
+.body-map-back{
+  /* muestra la mitad derecha de la imagen */
+}
+
+.hotspot{
+  position:absolute;
+  border:none;
+  background: rgba(230,192,110,0.0);
   cursor:pointer;
-  transition: fill .18s ease, stroke .18s ease, opacity .18s ease;
+  padding:0;
+  border-radius:999px;
+  transition: background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.muscle-zone:hover{
-  fill: rgba(230,192,110,.34);
-  stroke: var(--accent);
+.hotspot:hover{
+  background: rgba(230,192,110,.18);
+  box-shadow: inset 0 0 0 1px rgba(230,192,110,.55);
 }
 
-.muscle-zone.active{
-  fill: rgba(230,192,110,.55);
-  stroke: var(--accent);
+.hotspot.active{
+  background: rgba(230,192,110,.28);
+  box-shadow: inset 0 0 0 1px rgba(230,192,110,.85);
+}
+
+/* ---------- FRONTAL ----------
+   La imagen tiene frontal a la izquierda.
+   Estas posiciones son relativas a toda la imagen.
+*/
+
+.hs-front.hs-empuje{
+  top: 20%;
+  left: 10%;
+  width: 28%;
+  height: 11%;
+  border-radius: 28px;
+}
+
+.hs-front.hs-del-ant-l{
+  top: 18%;
+  left: 2.5%;
+  width: 12%;
+  height: 10%;
+}
+
+.hs-front.hs-del-ant-r{
+  top: 18%;
+  left: 33.5%;
+  width: 12%;
+  height: 10%;
+}
+
+.hs-front.hs-biceps-l{
+  top: 25%;
+  left: 1.5%;
+  width: 11%;
+  height: 14%;
+}
+
+.hs-front.hs-biceps-r{
+  top: 25%;
+  left: 35.5%;
+  width: 11%;
+  height: 14%;
+}
+
+.hs-front.hs-core{
+  top: 28%;
+  left: 14%;
+  width: 20%;
+  height: 24%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-aductor{
+  top: 53%;
+  left: 19%;
+  width: 7%;
+  height: 20%;
+  border-radius: 16px;
+}
+
+.hs-front.hs-dom-rodilla-l{
+  top: 54%;
+  left: 9%;
+  width: 13%;
+  height: 24%;
+  border-radius: 20px;
+}
+
+.hs-front.hs-dom-rodilla-r{
+  top: 54%;
+  left: 23.5%;
+  width: 13%;
+  height: 24%;
+  border-radius: 20px;
+}
+
+/* ---------- POSTERIOR ----------
+   La espalda está en la mitad derecha de la imagen
+*/
+
+.hs-back.hs-traccion{
+  top: 19%;
+  left: 57%;
+  width: 28%;
+  height: 16%;
+  border-radius: 28px;
+}
+
+.hs-back.hs-triceps-l{
+  top: 27%;
+  left: 52%;
+  width: 10%;
+  height: 14%;
+}
+
+.hs-back.hs-triceps-r{
+  top: 27%;
+  left: 81%;
+  width: 10%;
+  height: 14%;
+}
+
+.hs-back.hs-gluteo-l{
+  top: 46%;
+  left: 60%;
+  width: 12%;
+  height: 11%;
+  border-radius: 20px;
+}
+
+.hs-back.hs-gluteo-r{
+  top: 46%;
+  left: 72%;
+  width: 12%;
+  height: 11%;
+  border-radius: 20px;
+}
+
+.hs-back.hs-isquio-l{
+  top: 56%;
+  left: 59%;
+  width: 13%;
+  height: 20%;
+  border-radius: 20px;
+}
+
+.hs-back.hs-isquio-r{
+  top: 56%;
+  left: 73%;
+  width: 13%;
+  height: 20%;
+  border-radius: 20px;
+}
+
+.hs-back.hs-gemelo-l{
+  top: 76%;
+  left: 61%;
+  width: 11%;
+  height: 16%;
+  border-radius: 20px;
+}
+
+.hs-back.hs-gemelo-r{
+  top: 76%;
+  left: 73%;
+  width: 11%;
+  height: 16%;
+  border-radius: 20px;
 }
 
 @media (max-width: 640px){
