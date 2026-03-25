@@ -431,276 +431,338 @@
 
   <div class="body-wrap">
     <div id="frontView" class="body-view active">
-  <svg class="body-svg" viewBox="0 0 220 420" aria-label="Cuerpo frontal">
+  <svg class="body-svg" viewBox="0 0 260 460" aria-label="Cuerpo frontal">
 
-    <!-- SILUETA FRONTAL -->
-    <g fill="none" stroke="rgba(255,255,255,.30)" stroke-width="2">
-      <circle cx="110" cy="34" r="20"/>
-      <path d="M92 56
-               Q110 48 128 56
-               Q134 66 132 80
-               L128 104
-               Q126 118 126 132
-               L126 172
-               Q126 186 130 206
-               L138 250
-               Q141 266 142 284
-               L144 340
-               L132 340
-               L126 286
-               Q124 268 120 250
-               L112 210
-               L108 210
-               L100 250
-               Q96 268 94 286
-               L88 340
-               L76 340
-               L78 284
-               Q79 266 82 250
-               L90 206
-               Q94 186 94 172
-               L94 132
-               Q94 118 92 104
-               L88 80
-               Q86 66 92 56 Z"/>
+    <!-- SILUETA FRONTAL BASE -->
+    <g fill="#050505" stroke="rgba(255,255,255,.22)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+      <!-- cabeza -->
+      <ellipse cx="130" cy="38" rx="26" ry="32"/>
 
-      <!-- brazos contorno -->
-      <path d="M88 72
-               Q70 82 66 100
-               L64 132
-               Q64 144 70 154
-               Q74 160 78 160
-               L84 142
-               Q78 126 80 112
-               Z"/>
-      <path d="M132 72
-               Q150 82 154 100
-               L156 132
-               Q156 144 150 154
-               Q146 160 142 160
-               L136 142
-               Q142 126 140 112
+      <!-- cuello -->
+      <path d="M116 66 L122 92 L138 92 L144 66"/>
+
+      <!-- torso exterior -->
+      <path d="M96 92
+               L78 104
+               L66 126
+               L70 178
+               L82 240
+               L94 308
+               L100 382
+               L112 382
+               L118 314
+               L124 246
+               L136 246
+               L142 314
+               L148 382
+               L160 382
+               L166 308
+               L178 240
+               L190 178
+               L194 126
+               L182 104
+               L164 92
                Z"/>
 
-      <!-- antebrazos -->
-      <path d="M78 160
-               Q72 178 72 198
-               L74 226
-               Q75 236 82 238
-               L88 220
-               Q84 198 86 178
+      <!-- brazos exteriores -->
+      <path d="M78 104
+               L58 122
+               L48 162
+               L50 214
+               L58 270
+               L70 332
+               L82 332
+               L82 286
+               L74 224
+               L74 166
+               L84 126
                Z"/>
-      <path d="M142 160
-               Q148 178 148 198
-               L146 226
-               Q145 236 138 238
-               L132 220
-               Q136 198 134 178
+
+      <path d="M182 104
+               L202 122
+               L212 162
+               L210 214
+               L202 270
+               L190 332
+               L178 332
+               L178 286
+               L186 224
+               L186 166
+               L176 126
+               Z"/>
+
+      <!-- piernas exteriores -->
+      <path d="M98 308
+               L88 400
+               L86 444
+               L100 444
+               L110 400
+               L118 330
+               Z"/>
+
+      <path d="M162 308
+               L172 400
+               L174 444
+               L160 444
+               L150 400
+               L142 330
+               Z"/>
+
+      <!-- pelvis -->
+      <path d="M108 246
+               L100 282
+               L112 314
+               L148 314
+               L160 282
+               L152 246
                Z"/>
     </g>
 
-    <!-- ZONAS FRONTALES -->
-    <!-- EMPUJE / pecho -->
+    <!-- LÍNEAS ANATÓMICAS SUAVES -->
+    <g fill="none" stroke="rgba(255,255,255,.92)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity=".95">
+      <!-- clavículas -->
+      <path d="M122 92 L98 112"/>
+      <path d="M138 92 L162 112"/>
+
+      <!-- pecho -->
+      <path d="M96 112 Q112 102 126 112 Q118 132 100 138"/>
+      <path d="M164 112 Q148 102 134 112 Q142 132 160 138"/>
+
+      <!-- abdomen -->
+      <path d="M124 118 L124 230"/>
+      <path d="M136 118 L136 230"/>
+      <path d="M112 132 Q130 126 148 132"/>
+      <path d="M110 158 Q130 152 150 158"/>
+      <path d="M108 184 Q130 178 152 184"/>
+      <path d="M106 210 Q130 204 154 210"/>
+
+      <!-- hombros -->
+      <path d="M96 92 Q78 100 70 118"/>
+      <path d="M164 92 Q182 100 190 118"/>
+
+      <!-- brazos -->
+      <path d="M76 126 Q66 154 72 184"/>
+      <path d="M184 126 Q194 154 188 184"/>
+
+      <!-- muslos -->
+      <path d="M112 314 Q100 346 92 392"/>
+      <path d="M148 314 Q160 346 168 392"/>
+
+      <!-- aductores -->
+      <path d="M124 314 Q116 346 112 382"/>
+      <path d="M136 314 Q144 346 148 382"/>
+
+      <!-- tibias -->
+      <path d="M96 392 Q102 420 100 444"/>
+      <path d="M164 392 Q158 420 160 444"/>
+    </g>
+
+    <!-- ZONAS CLICABLES -->
+    <!-- EMPUJE -->
     <path class="muscle-zone" data-category="EMPUJE"
-          d="M90 86
-             Q100 78 110 86
-             Q120 78 130 86
-             L128 110
-             Q119 116 110 112
-             Q101 116 92 110 Z"/>
+          d="M96 114
+             Q112 102 128 112
+             Q122 138 100 140
+             Q94 128 96 114 Z"/>
+    <path class="muscle-zone" data-category="EMPUJE"
+          d="M164 114
+             Q148 102 132 112
+             Q138 138 160 140
+             Q166 128 164 114 Z"/>
 
-    <!-- DELTOIDE ANTERIOR -->
+    <!-- DEL. ANTERIOR -->
     <path class="muscle-zone" data-category="DEL. ANTERIOR"
-          d="M80 74
-             Q88 66 94 76
-             Q92 90 82 94
-             Q74 86 80 74 Z"/>
+          d="M88 100 Q76 106 72 120 Q82 130 96 124 Q98 110 88 100 Z"/>
     <path class="muscle-zone" data-category="DEL. ANTERIOR"
-          d="M140 74
-             Q132 66 126 76
-             Q128 90 138 94
-             Q146 86 140 74 Z"/>
+          d="M172 100 Q184 106 188 120 Q178 130 164 124 Q162 110 172 100 Z"/>
 
-    <!-- DELTOIDE LATERAL -->
+    <!-- DEL. LATERAL -->
     <path class="muscle-zone" data-category="DEL. LATERAL"
-          d="M72 92
-             Q82 86 86 98
-             L84 120
-             Q74 122 68 110 Z"/>
+          d="M72 124 Q62 144 66 166 Q76 172 84 166 Q84 144 78 128 Z"/>
     <path class="muscle-zone" data-category="DEL. LATERAL"
-          d="M148 92
-             Q138 86 134 98
-             L136 120
-             Q146 122 152 110 Z"/>
+          d="M188 124 Q198 144 194 166 Q184 172 176 166 Q176 144 182 128 Z"/>
 
     <!-- BICEPS -->
     <path class="muscle-zone" data-category="BICEPS"
-          d="M72 116
-             Q80 108 86 118
-             L84 148
-             Q76 152 70 142 Z"/>
+          d="M70 166 Q64 192 70 220 Q80 224 86 216 Q84 190 78 168 Z"/>
     <path class="muscle-zone" data-category="BICEPS"
-          d="M148 116
-             Q140 108 134 118
-             L136 148
-             Q144 152 150 142 Z"/>
+          d="M190 166 Q196 192 190 220 Q180 224 174 216 Q176 190 182 168 Z"/>
 
     <!-- CORE -->
     <path class="muscle-zone" data-category="CORE"
-          d="M98 112
-             L122 112
-             L126 154
-             Q120 166 110 164
-             Q100 166 94 154 Z"/>
+          d="M112 128
+             L148 128
+             L154 228
+             Q130 238 106 228 Z"/>
 
-    <!-- DOMINANCIA RODILLA -->
+    <!-- DOM. RODILLA -->
     <path class="muscle-zone" data-category="DOM. RODILLA"
-          d="M90 178
-             L104 178
-             L100 250
-             Q92 254 86 246 Z"/>
+          d="M108 314 Q96 342 92 390 Q102 400 114 392 Q118 350 124 314 Z"/>
     <path class="muscle-zone" data-category="DOM. RODILLA"
-          d="M116 178
-             L130 178
-             L134 246
-             Q128 254 120 250 Z"/>
+          d="M152 314 Q164 342 168 390 Q158 400 146 392 Q142 350 136 314 Z"/>
 
     <!-- ADUCTOR -->
     <path class="muscle-zone" data-category="ADUCTOR"
-          d="M104 178
-             L116 178
-             L118 236
-             Q110 244 102 236 Z"/>
-
+          d="M124 314 Q116 344 114 382 Q126 390 130 378 L130 314 Z"/>
+    <path class="muscle-zone" data-category="ADUCTOR"
+          d="M136 314 Q144 344 146 382 Q134 390 130 378 L130 314 Z"/>
   </svg>
 </div>
 <div id="backView" class="body-view">
-  <svg class="body-svg" viewBox="0 0 220 420" aria-label="Cuerpo posterior">
+  <svg class="body-svg" viewBox="0 0 260 460" aria-label="Cuerpo posterior">
 
-    <!-- SILUETA POSTERIOR -->
-    <g fill="none" stroke="rgba(255,255,255,.30)" stroke-width="2">
-      <circle cx="110" cy="34" r="20"/>
-      <path d="M92 56
-               Q110 48 128 56
-               Q134 66 132 80
-               L128 104
-               Q126 118 126 132
-               L126 172
-               Q126 186 130 206
-               L138 250
-               Q141 266 142 284
-               L144 340
-               L132 340
-               L126 286
-               Q124 268 120 250
-               L112 210
-               L108 210
-               L100 250
-               Q96 268 94 286
-               L88 340
-               L76 340
-               L78 284
-               Q79 266 82 250
-               L90 206
-               Q94 186 94 172
-               L94 132
-               Q94 118 92 104
-               L88 80
-               Q86 66 92 56 Z"/>
+    <!-- SILUETA POSTERIOR BASE -->
+    <g fill="#050505" stroke="rgba(255,255,255,.22)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+      <!-- cabeza -->
+      <ellipse cx="130" cy="38" rx="26" ry="32"/>
 
-      <!-- brazos contorno -->
-      <path d="M88 72
-               Q70 82 66 100
-               L64 132
-               Q64 144 70 154
-               Q74 160 78 160
-               L84 142
-               Q78 126 80 112
-               Z"/>
-      <path d="M132 72
-               Q150 82 154 100
-               L156 132
-               Q156 144 150 154
-               Q146 160 142 160
-               L136 142
-               Q142 126 140 112
+      <!-- cuello -->
+      <path d="M116 66 L122 92 L138 92 L144 66"/>
+
+      <!-- torso exterior -->
+      <path d="M96 92
+               L78 104
+               L66 126
+               L70 178
+               L82 240
+               L94 308
+               L100 382
+               L112 382
+               L118 314
+               L124 246
+               L136 246
+               L142 314
+               L148 382
+               L160 382
+               L166 308
+               L178 240
+               L190 178
+               L194 126
+               L182 104
+               L164 92
                Z"/>
 
-      <!-- antebrazos -->
-      <path d="M78 160
-               Q72 178 72 198
-               L74 226
-               Q75 236 82 238
-               L88 220
-               Q84 198 86 178
+      <!-- brazos exteriores -->
+      <path d="M78 104
+               L58 122
+               L48 162
+               L50 214
+               L58 270
+               L70 332
+               L82 332
+               L82 286
+               L74 224
+               L74 166
+               L84 126
                Z"/>
-      <path d="M142 160
-               Q148 178 148 198
-               L146 226
-               Q145 236 138 238
-               L132 220
-               Q136 198 134 178
+
+      <path d="M182 104
+               L202 122
+               L212 162
+               L210 214
+               L202 270
+               L190 332
+               L178 332
+               L178 286
+               L186 224
+               L186 166
+               L176 126
+               Z"/>
+
+      <!-- piernas exteriores -->
+      <path d="M98 308
+               L88 400
+               L86 444
+               L100 444
+               L110 400
+               L118 330
+               Z"/>
+
+      <path d="M162 308
+               L172 400
+               L174 444
+               L160 444
+               L150 400
+               L142 330
+               Z"/>
+
+      <!-- pelvis -->
+      <path d="M108 246
+               L100 282
+               L112 314
+               L148 314
+               L160 282
+               L152 246
                Z"/>
     </g>
 
-    <!-- ZONAS POSTERIORES -->
-    <!-- TRACCIÓN / espalda -->
-    <path class="muscle-zone" data-category="TRACCIÓN"
-          d="M92 82
-             Q101 74 110 82
-             Q119 74 128 82
-             L124 138
-             Q118 148 110 146
-             Q102 148 96 138 Z"/>
+    <!-- LÍNEAS ANATÓMICAS SUAVES -->
+    <g fill="none" stroke="rgba(255,255,255,.92)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity=".95">
+      <!-- trapecio / espalda alta -->
+      <path d="M130 92 L104 124"/>
+      <path d="M130 92 L156 124"/>
+      <path d="M104 124 Q130 114 156 124"/>
 
-    <!-- TRÍCEPS -->
+      <!-- dorsales -->
+      <path d="M104 124 Q88 156 92 224"/>
+      <path d="M156 124 Q172 156 168 224"/>
+
+      <!-- línea central -->
+      <path d="M130 92 L130 246"/>
+
+      <!-- glúteos -->
+      <path d="M108 246 Q118 232 130 246 Q118 268 100 276"/>
+      <path d="M152 246 Q142 232 130 246 Q142 268 160 276"/>
+
+      <!-- hombros -->
+      <path d="M96 92 Q78 100 70 118"/>
+      <path d="M164 92 Q182 100 190 118"/>
+
+      <!-- brazos -->
+      <path d="M76 126 Q66 154 72 184"/>
+      <path d="M184 126 Q194 154 188 184"/>
+
+      <!-- isquios -->
+      <path d="M112 314 Q102 342 96 392"/>
+      <path d="M148 314 Q158 342 164 392"/>
+
+      <!-- gemelos -->
+      <path d="M96 392 Q102 420 100 444"/>
+      <path d="M164 392 Q158 420 160 444"/>
+    </g>
+
+    <!-- ZONAS CLICABLES -->
+    <!-- TRACCIÓN -->
+    <path class="muscle-zone" data-category="TRACCIÓN"
+          d="M104 120
+             Q130 108 156 120
+             Q166 162 160 230
+             Q130 242 100 230
+             Q94 162 104 120 Z"/>
+
+    <!-- TRICEPS -->
     <path class="muscle-zone" data-category="TRICEPS"
-          d="M72 118
-             Q80 110 86 120
-             L84 150
-             Q76 154 70 144 Z"/>
+          d="M70 166 Q64 192 70 220 Q80 224 86 216 Q84 190 78 168 Z"/>
     <path class="muscle-zone" data-category="TRICEPS"
-          d="M148 118
-             Q140 110 134 120
-             L136 150
-             Q144 154 150 144 Z"/>
+          d="M190 166 Q196 192 190 220 Q180 224 174 216 Q176 190 182 168 Z"/>
 
     <!-- GLÚTEO -->
     <path class="muscle-zone" data-category="GLÚTEO"
-          d="M94 170
-             Q102 164 110 174
-             Q102 190 90 192
-             Q86 180 94 170 Z"/>
+          d="M104 248 Q118 236 130 248 Q120 274 98 278 Q94 262 104 248 Z"/>
     <path class="muscle-zone" data-category="GLÚTEO"
-          d="M126 170
-             Q118 164 110 174
-             Q118 190 130 192
-             Q134 180 126 170 Z"/>
+          d="M156 248 Q142 236 130 248 Q140 274 162 278 Q166 262 156 248 Z"/>
 
     <!-- ISQUIO -->
     <path class="muscle-zone" data-category="ISQUIO"
-          d="M90 190
-             L102 190
-             L100 252
-             Q92 256 86 246 Z"/>
+          d="M112 314 Q102 342 96 392 Q106 402 118 394 Q120 350 126 314 Z"/>
     <path class="muscle-zone" data-category="ISQUIO"
-          d="M118 190
-             L130 190
-             L134 246
-             Q128 256 120 252 Z"/>
+          d="M148 314 Q158 342 164 392 Q154 402 142 394 Q140 350 134 314 Z"/>
 
     <!-- GEMELO -->
     <path class="muscle-zone" data-category="GEMELO"
-          d="M86 262
-             Q94 256 100 264
-             L98 318
-             Q90 322 84 312 Z"/>
+          d="M96 392 Q102 418 100 444 Q90 444 88 420 Q90 400 96 392 Z"/>
     <path class="muscle-zone" data-category="GEMELO"
-          d="M134 262
-             Q126 256 120 264
-             L122 318
-             Q130 322 136 312 Z"/>
-
+          d="M164 392 Q158 418 160 444 Q170 444 172 420 Q170 400 164 392 Z"/>
   </svg>
 </div>
   </div>
