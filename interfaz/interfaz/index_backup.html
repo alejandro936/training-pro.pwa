@@ -255,32 +255,39 @@
 
 .body-svg{
   width:100%;
-  max-width:220px;
+  max-width:280px;
   height:auto;
+  display:block;
 }
 
 .muscle-zone{
-  fill: rgba(255,255,255,.08);
-  stroke: rgba(255,255,255,.16);
-  stroke-width: 2;
-  cursor: pointer;
-  transition: fill .18s ease, stroke .18s ease, transform .18s ease;
+  fill: rgba(255,255,255,.05);
+  stroke: rgba(255,255,255,.24);
+  stroke-width: 1.6;
+  cursor:pointer;
+  transition: fill .18s ease, stroke .18s ease, opacity .18s ease;
 }
 
 .muscle-zone:hover{
-  fill: rgba(230,192,110,.24);
+  fill: rgba(230,192,110,.34);
   stroke: var(--accent);
 }
 
 .muscle-zone.active{
-  fill: rgba(230,192,110,.42);
+  fill: rgba(230,192,110,.55);
   stroke: var(--accent);
 }
 
 @media (max-width: 640px){
   .muscle-explorer{
-    padding: 14px 12px 10px;
-  }
+  margin: 24px auto 0;
+  max-width: var(--content-max);
+  width: 100%;
+  padding: 18px 16px 14px;
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+}
   .muscle-title{
     font-size: 18px;
   }
