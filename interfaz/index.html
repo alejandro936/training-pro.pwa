@@ -168,7 +168,7 @@
   .error{ max-width:900px; margin:0 auto 12px; background:#1a0000; border:1px solid #4a0000; color:#ffb3b3;
     padding:10px 12px; border-radius:10px; display:none }
 
- .folder{
+.folder{
   display:flex;
   align-items:center;
   justify-content:center;
@@ -176,19 +176,23 @@
   min-height:56px;
   border-radius:12px;
   border:1px solid rgba(255,255,255,.12);
+  border-left:3px solid rgba(230,192,110,.75);
   background:#121212;
   text-align:center;
   transition: all .15s ease;
 }
 
 .folder:hover{
-  border-color: rgba(230,192,110,.5);
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  border-color: rgba(230,192,110,.35);
+  border-left-color: rgba(230,192,110,.95);
+  box-shadow: 0 4px 12px rgba(0,0,0,.28);
 }
 .folder .name{
+  font-family:var(--title-font);
   font-size:13.5px;
-  font-weight:600;
-  letter-spacing:.3px;
+  font-weight:700;
+  letter-spacing:.2px;
+  line-height:1.2;
 }
 
 .folder .count{
@@ -205,7 +209,7 @@
   padding:0 8px;
 }
 .muscle-explorer{
-  margin: 10px auto 0;
+  margin: 22px auto 0;
   max-width: var(--content-max);
   width: 100%;
   padding: 16px 14px 12px;
