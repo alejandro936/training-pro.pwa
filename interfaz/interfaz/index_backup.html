@@ -898,16 +898,24 @@ function selectCategory(name){
   state.category = name || '';
   document.getElementById('chipFilter').style.display = state.category ? 'inline-flex' : 'none';
   document.getElementById('chipLabel').textContent = 'Categoría: ' + (state.category || '—');
+  showMuscleExplorer(false);
+  highlightMuscle(state.category);
   resetGrid(); renderInitial(); setMoreVisibility();
   pushHistory();
 }
 function clearCategory(){
   state.category = '';
   document.getElementById('chipFilter').style.display = 'none';
+  clearMuscleHighlight();
   if (!state.q) {
-    state.view = 'cats'; resetGrid(); renderCategories();
+    state.view = 'cats';
+    resetGrid();
+    renderCategories();
   } else {
-    resetGrid(); renderInitial(); setMoreVisibility();
+    showMuscleExplorer(false);
+    resetGrid();
+    renderInitial();
+    setMoreVisibility();
   }
   pushHistory();
 }
