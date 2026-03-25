@@ -796,11 +796,10 @@ function renderCategories(){
 
   const groups = buildCategoryIndex();
   grid.innerHTML = groups.map(g => (
-    '<div class="folder" onclick="selectCategory(\''+escapeHtml(g.name).replace(/'/g,"&#39;")+'\')">'+
-      '<div class="name">'+escapeHtml(g.name)+'</div>'+
-      '<div class="count">'+g.count+'</div>'+
-    '</div>'
-  )).join('');
+  '<div class="folder" onclick="selectCategory(\''+escapeHtml(g.name).replace(/'/g,"&#39;")+'\')">'+
+    '<div class="name">'+escapeHtml(g.name)+'</div>'+
+  '</div>'
+)).join('');
   document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
   document.getElementById('chipFilter').style.display = 'none';
   showMuscleExplorer(true);
