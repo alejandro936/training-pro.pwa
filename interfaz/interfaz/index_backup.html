@@ -423,89 +423,279 @@
   </div>
 
   <div class="body-wrap">
-    <svg class="body-svg" viewBox="0 0 200 360">
+    <div id="frontView" class="body-view active">
+  <svg class="body-svg" viewBox="0 0 220 420" aria-label="Cuerpo frontal">
 
-  <!-- silueta -->
-  <path d="M100 20 
-           C120 20 130 40 130 55 
-           C130 70 120 85 120 100 
-           L120 150 
-           C120 180 110 210 110 250 
-           L110 300 
-           L90 300 
-           L90 250 
-           C90 210 80 180 80 150 
-           L80 100 
-           C80 85 70 70 70 55 
-           C70 40 80 20 100 20 Z"
-        fill="none"
-        stroke="rgba(255,255,255,.25)"
-        stroke-width="2"/>
+    <!-- SILUETA FRONTAL -->
+    <g fill="none" stroke="rgba(255,255,255,.30)" stroke-width="2">
+      <circle cx="110" cy="34" r="20"/>
+      <path d="M92 56
+               Q110 48 128 56
+               Q134 66 132 80
+               L128 104
+               Q126 118 126 132
+               L126 172
+               Q126 186 130 206
+               L138 250
+               Q141 266 142 284
+               L144 340
+               L132 340
+               L126 286
+               Q124 268 120 250
+               L112 210
+               L108 210
+               L100 250
+               Q96 268 94 286
+               L88 340
+               L76 340
+               L78 284
+               Q79 266 82 250
+               L90 206
+               Q94 186 94 172
+               L94 132
+               Q94 118 92 104
+               L88 80
+               Q86 66 92 56 Z"/>
 
-  <!-- PECHO -->
-  <ellipse class="muscle-zone" data-category="EMPUJE"
-           cx="100" cy="95" rx="28" ry="18"/>
+      <!-- brazos contorno -->
+      <path d="M88 72
+               Q70 82 66 100
+               L64 132
+               Q64 144 70 154
+               Q74 160 78 160
+               L84 142
+               Q78 126 80 112
+               Z"/>
+      <path d="M132 72
+               Q150 82 154 100
+               L156 132
+               Q156 144 150 154
+               Q146 160 142 160
+               L136 142
+               Q142 126 140 112
+               Z"/>
 
-  <!-- HOMBROS -->
-  <ellipse class="muscle-zone" data-category="DEL. ANTERIOR"
-           cx="70" cy="85" rx="12" ry="14"/>
-  <ellipse class="muscle-zone" data-category="DEL. ANTERIOR"
-           cx="130" cy="85" rx="12" ry="14"/>
+      <!-- antebrazos -->
+      <path d="M78 160
+               Q72 178 72 198
+               L74 226
+               Q75 236 82 238
+               L88 220
+               Q84 198 86 178
+               Z"/>
+      <path d="M142 160
+               Q148 178 148 198
+               L146 226
+               Q145 236 138 238
+               L132 220
+               Q136 198 134 178
+               Z"/>
+    </g>
 
-  <!-- LATERAL -->
-  <ellipse class="muscle-zone" data-category="DEL. LATERAL"
-           cx="60" cy="110" rx="10" ry="16"/>
-  <ellipse class="muscle-zone" data-category="DEL. LATERAL"
-           cx="140" cy="110" rx="10" ry="16"/>
+    <!-- ZONAS FRONTALES -->
+    <!-- EMPUJE / pecho -->
+    <path class="muscle-zone" data-category="EMPUJE"
+          d="M90 86
+             Q100 78 110 86
+             Q120 78 130 86
+             L128 110
+             Q119 116 110 112
+             Q101 116 92 110 Z"/>
 
-  <!-- BICEPS -->
-  <ellipse class="muscle-zone" data-category="BICEPS"
-           cx="60" cy="140" rx="10" ry="20"/>
-  <ellipse class="muscle-zone" data-category="BICEPS"
-           cx="140" cy="140" rx="10" ry="20"/>
+    <!-- DELTOIDE ANTERIOR -->
+    <path class="muscle-zone" data-category="DEL. ANTERIOR"
+          d="M80 74
+             Q88 66 94 76
+             Q92 90 82 94
+             Q74 86 80 74 Z"/>
+    <path class="muscle-zone" data-category="DEL. ANTERIOR"
+          d="M140 74
+             Q132 66 126 76
+             Q128 90 138 94
+             Q146 86 140 74 Z"/>
 
-  <!-- CORE -->
-  <rect class="muscle-zone" data-category="CORE"
-        x="80" y="120" width="40" height="70" rx="12"/>
+    <!-- DELTOIDE LATERAL -->
+    <path class="muscle-zone" data-category="DEL. LATERAL"
+          d="M72 92
+             Q82 86 86 98
+             L84 120
+             Q74 122 68 110 Z"/>
+    <path class="muscle-zone" data-category="DEL. LATERAL"
+          d="M148 92
+             Q138 86 134 98
+             L136 120
+             Q146 122 152 110 Z"/>
 
-  <!-- CUÁDRICEPS -->
-  <rect class="muscle-zone" data-category="DOM. RODILLA"
-        x="75" y="190" width="18" height="80" rx="10"/>
-  <rect class="muscle-zone" data-category="DOM. RODILLA"
-        x="107" y="190" width="18" height="80" rx="10"/>
+    <!-- BICEPS -->
+    <path class="muscle-zone" data-category="BICEPS"
+          d="M72 116
+             Q80 108 86 118
+             L84 148
+             Q76 152 70 142 Z"/>
+    <path class="muscle-zone" data-category="BICEPS"
+          d="M148 116
+             Q140 108 134 118
+             L136 148
+             Q144 152 150 142 Z"/>
 
-  <!-- ADUCTOR -->
-  <rect class="muscle-zone" data-category="ADUCTOR"
-        x="92" y="190" width="16" height="80" rx="8"/>
+    <!-- CORE -->
+    <path class="muscle-zone" data-category="CORE"
+          d="M98 112
+             L122 112
+             L126 154
+             Q120 166 110 164
+             Q100 166 94 154 Z"/>
 
-</svg>
-    </div>
+    <!-- DOMINANCIA RODILLA -->
+    <path class="muscle-zone" data-category="DOM. RODILLA"
+          d="M90 178
+             L104 178
+             L100 250
+             Q92 254 86 246 Z"/>
+    <path class="muscle-zone" data-category="DOM. RODILLA"
+          d="M116 178
+             L130 178
+             L134 246
+             Q128 254 120 250 Z"/>
 
-    <div id="backView" class="body-view">
-      <svg class="body-svg" viewBox="0 0 220 420" aria-label="Cuerpo posterior">
-        <circle cx="110" cy="34" r="22" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+    <!-- ADUCTOR -->
+    <path class="muscle-zone" data-category="ADUCTOR"
+          d="M104 178
+             L116 178
+             L118 236
+             Q110 244 102 236 Z"/>
 
-        <rect x="87" y="58" width="46" height="42" rx="18" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
-        <rect x="76" y="100" width="68" height="86" rx="22" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+  </svg>
+</div>
+<div id="backView" class="body-view">
+  <svg class="body-svg" viewBox="0 0 220 420" aria-label="Cuerpo posterior">
 
-        <rect class="muscle-zone" data-category="ESPALDA" x="86" y="94" width="48" height="62" rx="12"/>
+    <!-- SILUETA POSTERIOR -->
+    <g fill="none" stroke="rgba(255,255,255,.30)" stroke-width="2">
+      <circle cx="110" cy="34" r="20"/>
+      <path d="M92 56
+               Q110 48 128 56
+               Q134 66 132 80
+               L128 104
+               Q126 118 126 132
+               L126 172
+               Q126 186 130 206
+               L138 250
+               Q141 266 142 284
+               L144 340
+               L132 340
+               L126 286
+               Q124 268 120 250
+               L112 210
+               L108 210
+               L100 250
+               Q96 268 94 286
+               L88 340
+               L76 340
+               L78 284
+               Q79 266 82 250
+               L90 206
+               Q94 186 94 172
+               L94 132
+               Q94 118 92 104
+               L88 80
+               Q86 66 92 56 Z"/>
 
-        <rect class="muscle-zone" data-category="TRICEPS" x="58" y="126" width="16" height="48" rx="8"/>
-        <rect class="muscle-zone" data-category="TRICEPS" x="146" y="126" width="16" height="48" rx="8"/>
+      <!-- brazos contorno -->
+      <path d="M88 72
+               Q70 82 66 100
+               L64 132
+               Q64 144 70 154
+               Q74 160 78 160
+               L84 142
+               Q78 126 80 112
+               Z"/>
+      <path d="M132 72
+               Q150 82 154 100
+               L156 132
+               Q156 144 150 154
+               Q146 160 142 160
+               L136 142
+               Q142 126 140 112
+               Z"/>
 
-        <rect class="muscle-zone" data-category="GLÚTEO" x="88" y="176" width="20" height="22" rx="8"/>
-        <rect class="muscle-zone" data-category="GLÚTEO" x="112" y="176" width="20" height="22" rx="8"/>
+      <!-- antebrazos -->
+      <path d="M78 160
+               Q72 178 72 198
+               L74 226
+               Q75 236 82 238
+               L88 220
+               Q84 198 86 178
+               Z"/>
+      <path d="M142 160
+               Q148 178 148 198
+               L146 226
+               Q145 236 138 238
+               L132 220
+               Q136 198 134 178
+               Z"/>
+    </g>
 
-        <rect x="68" y="186" width="28" height="92" rx="16" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
-        <rect x="124" y="186" width="28" height="92" rx="16" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+    <!-- ZONAS POSTERIORES -->
+    <!-- TRACCIÓN / espalda -->
+    <path class="muscle-zone" data-category="TRACCIÓN"
+          d="M92 82
+             Q101 74 110 82
+             Q119 74 128 82
+             L124 138
+             Q118 148 110 146
+             Q102 148 96 138 Z"/>
 
-        <rect class="muscle-zone" data-category="ISQUIO" x="72" y="196" width="20" height="60" rx="8"/>
-        <rect class="muscle-zone" data-category="ISQUIO" x="128" y="196" width="20" height="60" rx="8"/>
+    <!-- TRÍCEPS -->
+    <path class="muscle-zone" data-category="TRICEPS"
+          d="M72 118
+             Q80 110 86 120
+             L84 150
+             Q76 154 70 144 Z"/>
+    <path class="muscle-zone" data-category="TRICEPS"
+          d="M148 118
+             Q140 110 134 120
+             L136 150
+             Q144 154 150 144 Z"/>
 
-        <rect class="muscle-zone" data-category="GEMELO" x="72" y="278" width="18" height="46" rx="8"/>
-        <rect class="muscle-zone" data-category="GEMELO" x="130" y="278" width="18" height="46" rx="8"/>
-      </svg>
-    </div>
+    <!-- GLÚTEO -->
+    <path class="muscle-zone" data-category="GLÚTEO"
+          d="M94 170
+             Q102 164 110 174
+             Q102 190 90 192
+             Q86 180 94 170 Z"/>
+    <path class="muscle-zone" data-category="GLÚTEO"
+          d="M126 170
+             Q118 164 110 174
+             Q118 190 130 192
+             Q134 180 126 170 Z"/>
+
+    <!-- ISQUIO -->
+    <path class="muscle-zone" data-category="ISQUIO"
+          d="M90 190
+             L102 190
+             L100 252
+             Q92 256 86 246 Z"/>
+    <path class="muscle-zone" data-category="ISQUIO"
+          d="M118 190
+             L130 190
+             L134 246
+             Q128 256 120 252 Z"/>
+
+    <!-- GEMELO -->
+    <path class="muscle-zone" data-category="GEMELO"
+          d="M86 262
+             Q94 256 100 264
+             L98 318
+             Q90 322 84 312 Z"/>
+    <path class="muscle-zone" data-category="GEMELO"
+          d="M134 262
+             Q126 256 120 264
+             L122 318
+             Q130 322 136 312 Z"/>
+
+  </svg>
+</div>
   </div>
 </div>
 
