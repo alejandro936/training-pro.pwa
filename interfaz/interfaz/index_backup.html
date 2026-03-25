@@ -775,7 +775,7 @@ function buildCategoryIndex(){
 }
 function renderCategories(){
   const grid = document.getElementById('grid');
-  grid.className = 'grid cats'; // 👈 importante
+  grid.className = 'grid cats';
 
   const groups = buildCategoryIndex();
   grid.innerHTML = groups.map(g => (
@@ -784,12 +784,12 @@ function renderCategories(){
       '<div class="count">'+g.count+'</div>'+
     '</div>'
   )).join('');
-}
-document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
-document.getElementById('chipFilter').style.display = 'none';
-showMuscleExplorer(true);
-clearMuscleHighlight();
-if (state.nextOffset) prefetchAllPagesInBackground();
+
+  document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
+  document.getElementById('chipFilter').style.display = 'none';
+  showMuscleExplorer(true);
+  clearMuscleHighlight();
+  if (state.nextOffset) prefetchAllPagesInBackground();
 }
 function getExplorerEl(){
   return document.getElementById('muscleExplorer');
