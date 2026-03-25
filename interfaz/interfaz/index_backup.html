@@ -791,8 +791,14 @@ window.addEventListener('popstate', (ev)=>{
   state.q = s.q || '';
   const qInput = document.getElementById('q'); if (qInput) qInput.value = state.q;
   resetGrid();
-  if (state.view === 'cats'){ renderCategories(); }
-  else { renderInitial(); setMoreVisibility(); }
+  if (state.view === 'cats'){
+  renderCategories();
+} else {
+  showMuscleExplorer(false);
+  renderInitial();
+  setMoreVisibility();
+  highlightMuscle(state.category);
+}
   updateNavButtons();
 });
 function updateNavButtons(){
