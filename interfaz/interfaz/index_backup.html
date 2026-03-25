@@ -773,7 +773,7 @@ function showMuscleExplorer(show){
 }
 
 function clearMuscleHighlight(){
-  document.querySelectorAll('.muscle-zone').forEach(function(el){
+  document.querySelectorAll('.hotspot').forEach(function(el){
     el.classList.remove('active');
   });
 }
@@ -781,10 +781,30 @@ function clearMuscleHighlight(){
 function highlightMuscle(category){
   clearMuscleHighlight();
   if (!category) return;
-  document.querySelectorAll('.muscle-zone').forEach(function(el){
-    if (normStr(el.getAttribute('data-category')) === normStr(category)) {
+
+  var key = normStr(category);
+
+  var map = {
+    'empuje': ['.hs-empuje'],
+    'del. anterior': ['.hs-del-ant-l', '.hs-del-ant-r'],
+    'del. lateral': [],
+    'biceps': ['.hs-biceps-l', '.hs-biceps-r'],
+    'core': ['.hs-core'],
+    'aductor': ['.hs-aductor'],
+    'dom. rodilla': ['.hs-dom-rodilla-l', '.hs-dom-rodilla-r'],
+    'traccion': ['.hs-traccion'],
+    'triceps': ['.hs-triceps-l', '.hs-triceps-r'],
+    'gluteo': ['.hs-gluteo-l', '.hs-gluteo-r'],
+    'glúteo': ['.hs-gluteo-l', '.hs-gluteo-r'],
+    'isquio': ['.hs-isquio-l', '.hs-isquio-r'],
+    'gemelo': ['.hs-gemelo-l', '.hs-gemelo-r']
+  };
+
+  var selectors = map[key] || [];
+  selectors.forEach(function(sel){
+    document.querySelectorAll(sel).forEach(function(el){
       el.classList.add('active');
-    }
+    });
   });
 }
 
