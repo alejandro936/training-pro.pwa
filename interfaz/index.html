@@ -101,8 +101,11 @@
     background:#181818; border:1px solid rgba(230,192,110,.45); border-radius:8px; padding:2px 6px; font-size:11px;
   }
 
-  .grid{ display:grid; grid-template-columns:1fr; gap:var(--gap-cards) 0;
-    align-items:stretch; max-width:var(--content-max); width:100%; margin:0 auto; }
+.grid.cats{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
   .card{
     background:var(--panel); border:1px solid rgba(255,255,255,.14);
     border-left:3px solid rgba(230,192,110,.85); border-radius:var(--radius);
@@ -158,13 +161,336 @@
     padding:10px 12px; border-radius:10px; display:none }
 
   .folder{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    background:var(--panel); border:1px solid rgba(255,255,255,.14);
-    border-left:3px solid rgba(230,192,110,.85); border-radius:var(--radius);
-    padding:14px; cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:6px;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.14);
+  border-left:3px solid rgba(230,192,110,.85);
+  border-radius:var(--radius);
+  padding:12px;
+  min-height:72px;
+  cursor:pointer;
+}
+
+.folder .name{
+  font-family:var(--title-font);
+  font-weight:800;
+  font-size:14px;
+  line-height:1.15;
+}
+
+.folder .count{
+  align-self:flex-end;
+  min-width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  color:#cfcfcf;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  padding:0 8px;
+}
+.muscle-explorer{
+  margin: 10px auto 0;
+  max-width: var(--content-max);
+  width: 100%;
+  padding: 16px 14px 12px;
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+}
+
+.muscle-title{
+  margin: 0 0 4px;
+  font-family: var(--title-font);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.muscle-subtitle{
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #cfcfcf;
+  line-height: 1.5;
+}
+
+.body-toggle{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.body-toggle button{
+  background:#121212;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+}
+
+.body-toggle button.active{
+  border-color: var(--accent);
+  color: var(--accent);
+  background: linear-gradient(180deg, rgba(230,192,110,.16), rgba(230,192,110,.04));
+}
+
+.body-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:420px;
+}
+
+.body-view{
+  display:none;
+  width:100%;
+  justify-content:center;
+}
+
+.body-view.active{
+  display:flex;
+}
+
+.body-map{
+  position:relative;
+  width:100%;
+  max-width:260px;
+  aspect-ratio: 768 / 1024;
+}
+
+@media (min-width: 768px){
+  .body-map{
+    max-width:320px;
   }
-  .folder .name{ font-family:var(--title-font); font-weight:800; font-size:18px; }
-  .folder .count{ font-size:12px; color:#cfcfcf; border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:4px 8px; }
+}
+
+.body-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  border-radius:12px;
+}
+
+.body-map-back{
+  /* muestra la mitad derecha de la imagen */
+}
+
+.hotspot{
+  position:absolute;
+  border:none;
+  background: transparent;
+  cursor:pointer;
+  padding:0;
+  border-radius:999px;
+  transition: all .18s ease;
+}
+
+/* Hover suave */
+.hotspot:hover{
+  background: rgba(230,192,110,.12);
+  box-shadow: inset 0 0 0 1px rgba(230,192,110,.35);
+}
+
+/* Selección */
+.hotspot.active{
+  background: rgba(230,192,110,.22);
+  box-shadow: inset 0 0 0 1px rgba(230,192,110,.8);
+}
+/* ---------- FRONTAL ----------
+   La imagen tiene frontal a la izquierda.
+   Estas posiciones son relativas a toda la imagen.
+*/
+
+/* ---------- FRONTAL AJUSTE FINO ---------- */
+
+.hs-front.hs-empuje{
+  top: 22.5%;
+  left: 41%;
+  width: 21%;
+  height: 8.5%;
+  border-radius: 22px;
+}
+
+.hs-front.hs-del-ant-l{
+  top: 22%;
+  left: 35%;
+  width: 6.2%;
+  height: 5.2%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-del-ant-r{
+  top: 22%;
+  left: 58.2%;
+  width: 6.2%;
+  height: 5.2%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-del-lat-l{
+  top: 22.8%;
+  left: 32.8%;
+  width: 4.8%;
+  height: 6%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-del-lat-r{
+  top: 22.8%;
+  left: 62%;
+  width: 4.8%;
+  height: 6.5%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-biceps-l{
+  top: 27%;
+  left: 34%;
+  width: 6.5%;
+  height: 8%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-biceps-r{
+  top: 27%;
+  left: 60%;
+  width: 6.5%;
+  height: 8%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-core{
+  top: 30%;
+  left: 43%;
+  width: 16%;
+  height: 15%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-aductor{
+  top: 45%;
+  left: 47.5%;
+  width: 6.5%;
+  height: 12%;
+  border-radius: 16px;
+}
+
+.hs-front.hs-dom-rodilla-l{
+  top: 44%;
+  left: 38.5%;
+  width: 7.5%;
+  height: 17%;
+  border-radius: 18px;
+}
+
+.hs-front.hs-dom-rodilla-r{
+  top: 44%;
+  left: 52.8%;
+  width: 7.5%;
+  height: 17%;
+  border-radius: 18px;
+}
+/* ---------- POSTERIOR AJUSTE FINAL ---------- */
+
+.hs-back.hs-traccion{
+  top: 18.8%;
+  left: 39.5%;
+  width: 22%;
+  height: 24%;
+  clip-path: polygon(
+    40% 0%,   /* arriba estrecho */
+    60% 0%,
+    85% 45%,  /* expansión dorsal */
+    65% 100%, /* cierre abajo */
+    35% 100%,
+    15% 45%
+  );
+  border-radius: 0;
+}
+.hs-back.hs-triceps-l{
+  top: 27%;
+  left: 35.5%;
+  width: 5%;
+  height: 7%;
+  border-radius: 16px;
+}
+
+.hs-back.hs-triceps-r{
+  top: 27%;
+  left: 59.2%;
+  width: 5%;
+  height: 7%;
+  border-radius: 16px;
+}
+
+.hs-back.hs-gluteo-l{
+  top: 41.3%;
+  left: 42.2%;
+  width: 6.8%;
+  height: 6.8%;
+  border-radius: 18px;
+}
+
+.hs-back.hs-gluteo-r{
+  top: 41.3%;
+  left: 50.3%;
+  width: 6.8%;
+  height: 6.8%;
+  border-radius: 18px;
+}
+
+.hs-back.hs-isquio-l{
+  top: 48.7%;
+  left: 40%;
+  width: 7%;
+  height: 12.2%;
+  border-radius: 18px;
+}
+
+.hs-back.hs-isquio-r{
+  top: 48.7%;
+  left: 51.5%;
+  width: 7%;
+  height: 12.2%;
+  border-radius: 18px;
+}
+
+.hs-back.hs-gemelo-l{
+  top: 62%;
+  left: 42.5%;
+  width: 5%;
+  height: 8.5%;
+  border-radius: 18px;
+}
+
+.hs-back.hs-gemelo-r{
+  top: 62%;
+  left: 52.2%;
+  width: 6%;
+  height: 8.5%;
+  border-radius: 18px;
+}
+@media (max-width: 640px){
+  .grid.cats{
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .muscle-title{
+    font-size: 18px;
+  }
+
+  .body-map{
+    max-width: 300px;
+  }
+}
 
   .modal{
     position:fixed; inset:0; display:none;
@@ -287,12 +613,58 @@
     </div>
   </div>
 
-  <div id="err" class="error"></div>
-  <div id="grid" class="grid"></div>
+ <div id="err" class="error"></div>
+<div id="grid" class="grid"></div>
 
-  <div class="footer">
-    <button id="more" class="more" style="display:none" onclick="cargarMasUI()">Cargar más</button>
+<div id="muscleExplorer" class="muscle-explorer" style="display:none;">
+  <h2 class="muscle-title">Explorar por músculo</h2>
+  <p class="muscle-subtitle">Selecciona una zona para ver ejercicios relacionados</p>
+
+  <div class="body-toggle">
+    <button id="frontBtn" class="active" type="button">Frontal</button>
+    <button id="backBtn" type="button">Posterior</button>
   </div>
+
+  <div class="body-wrap">
+    <!-- FRONTAL -->
+    <div id="frontView" class="body-view active">
+  <div class="body-map">
+    <img src="/interfaz/body-front.png" alt="Mapa muscular frontal" class="body-img">
+
+    <button class="hotspot hs-front hs-empuje" type="button" onclick="selectCategory('EMPUJE')" aria-label="Empuje"></button>
+    <button class="hotspot hs-front hs-del-ant-l" type="button" onclick="selectCategory('DEL. ANTERIOR')" aria-label="Deltoide anterior izquierdo"></button>
+    <button class="hotspot hs-front hs-del-ant-r" type="button" onclick="selectCategory('DEL. ANTERIOR')" aria-label="Deltoide anterior derecho"></button>
+      <button class="hotspot hs-front hs-del-lat-l" type="button" onclick="selectCategory('DEL. LATERAL')" aria-label="Deltoide lateral izquierdo"></button>
+<button class="hotspot hs-front hs-del-lat-r" type="button" onclick="selectCategory('DEL. LATERAL')" aria-label="Deltoide lateral derecho"></button>
+    <button class="hotspot hs-front hs-biceps-l" type="button" onclick="selectCategory('BICEPS')" aria-label="Bíceps izquierdo"></button>
+    <button class="hotspot hs-front hs-biceps-r" type="button" onclick="selectCategory('BICEPS')" aria-label="Bíceps derecho"></button>
+    <button class="hotspot hs-front hs-core" type="button" onclick="selectCategory('CORE')" aria-label="Core"></button>
+    <button class="hotspot hs-front hs-aductor" type="button" onclick="selectCategory('ADUCTOR')" aria-label="Aductor"></button>
+    <button class="hotspot hs-front hs-dom-rodilla-l" type="button" onclick="selectCategory('DOM. RODILLA')" aria-label="Dominancia de rodilla izquierda"></button>
+    <button class="hotspot hs-front hs-dom-rodilla-r" type="button" onclick="selectCategory('DOM. RODILLA')" aria-label="Dominancia de rodilla derecha"></button>
+  </div>
+</div>
+    <!-- POSTERIOR -->
+   <div id="backView" class="body-view">
+  <div class="body-map">
+    <img src="/interfaz/body-back.png" alt="Mapa muscular posterior" class="body-img">
+
+    <button class="hotspot hs-back hs-traccion" type="button" onclick="selectCategory('TRACCIÓN')" aria-label="Tracción"></button>
+    <button class="hotspot hs-back hs-triceps-l" type="button" onclick="selectCategory('TRICEPS')" aria-label="Tríceps izquierdo"></button>
+    <button class="hotspot hs-back hs-triceps-r" type="button" onclick="selectCategory('TRICEPS')" aria-label="Tríceps derecho"></button>
+    <button class="hotspot hs-back hs-gluteo-l" type="button" onclick="selectCategory('GLÚTEO')" aria-label="Glúteo izquierdo"></button>
+    <button class="hotspot hs-back hs-gluteo-r" type="button" onclick="selectCategory('GLÚTEO')" aria-label="Glúteo derecho"></button>
+    <button class="hotspot hs-back hs-isquio-l" type="button" onclick="selectCategory('ISQUIO')" aria-label="Isquio izquierdo"></button>
+    <button class="hotspot hs-back hs-isquio-r" type="button" onclick="selectCategory('ISQUIO')" aria-label="Isquio derecho"></button>
+    <button class="hotspot hs-back hs-gemelo-l" type="button" onclick="selectCategory('GEMELO')" aria-label="Gemelo izquierdo"></button>
+    <button class="hotspot hs-back hs-gemelo-r" type="button" onclick="selectCategory('GEMELO')" aria-label="Gemelo derecho"></button>
+  </div>
+</div>
+
+
+<div class="footer">
+  <button id="more" class="more" style="display:none" onclick="cargarMasUI()">Cargar más</button>
+</div>
 </div>
 
 <!-- Modal detalle -->
@@ -410,6 +782,8 @@ function buildCategoryIndex(){
 }
 function renderCategories(){
   const grid = document.getElementById('grid');
+  grid.className = 'grid cats';
+
   const groups = buildCategoryIndex();
   grid.innerHTML = groups.map(g => (
     '<div class="folder" onclick="selectCategory(\''+escapeHtml(g.name).replace(/'/g,"&#39;")+'\')">'+
@@ -419,7 +793,77 @@ function renderCategories(){
   )).join('');
   document.getElementById('more').style.display = state.nextOffset ? 'inline-block' : 'none';
   document.getElementById('chipFilter').style.display = 'none';
+  showMuscleExplorer(true);
+  clearMuscleHighlight();
   if (state.nextOffset) prefetchAllPagesInBackground();
+}
+function getExplorerEl(){
+  return document.getElementById('muscleExplorer');
+}
+
+function showMuscleExplorer(show){
+  var el = getExplorerEl();
+  if (!el) return;
+  el.style.display = show ? 'block' : 'none';
+}
+
+function clearMuscleHighlight(){
+  document.querySelectorAll('.hotspot').forEach(function(el){
+    el.classList.remove('active');
+  });
+}
+
+function highlightMuscle(category){
+  clearMuscleHighlight();
+  if (!category) return;
+
+  var key = normStr(category);
+
+  var map = {
+    'empuje': ['.hs-empuje'],
+    'del. anterior': ['.hs-del-ant-l', '.hs-del-ant-r'],
+    'del. lateral': ['.hs-del-lat-l', '.hs-del-lat-r'],
+    'biceps': ['.hs-biceps-l', '.hs-biceps-r'],
+    'core': ['.hs-core'],
+    'aductor': ['.hs-aductor'],
+    'dom. rodilla': ['.hs-dom-rodilla-l', '.hs-dom-rodilla-r'],
+    'traccion': ['.hs-traccion'],
+    'triceps': ['.hs-triceps-l', '.hs-triceps-r'],
+    'gluteo': ['.hs-gluteo-l', '.hs-gluteo-r'],
+    'glúteo': ['.hs-gluteo-l', '.hs-gluteo-r'],
+    'isquio': ['.hs-isquio-l', '.hs-isquio-r'],
+    'gemelo': ['.hs-gemelo-l', '.hs-gemelo-r']
+  };
+
+  var selectors = map[key] || [];
+  selectors.forEach(function(sel){
+    document.querySelectorAll(sel).forEach(function(el){
+      el.classList.add('active');
+    });
+  });
+}
+
+function bindMuscleExplorer(){
+  var frontBtn = document.getElementById('frontBtn');
+  var backBtn  = document.getElementById('backBtn');
+  var frontView = document.getElementById('frontView');
+  var backView  = document.getElementById('backView');
+
+  if (frontBtn && backBtn && frontView && backView){
+    frontBtn.addEventListener('click', function(){
+      frontBtn.classList.add('active');
+      backBtn.classList.remove('active');
+      frontView.classList.add('active');
+      backView.classList.remove('active');
+    });
+
+    backBtn.addEventListener('click', function(){
+      backBtn.classList.add('active');
+      frontBtn.classList.remove('active');
+      backView.classList.add('active');
+      frontView.classList.remove('active');
+    });
+  }
 }
 
 /* ======== Vista lista ======== */
@@ -464,8 +908,14 @@ function renderRange(from, to){
   state.rendered = to;
   setMoreVisibility();
 }
-function renderInitial(){ renderRange(0, Math.min(CHUNK, filteredItems().length)); }
-function renderMore(){ renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length)); }
+function renderInitial(){
+  showMuscleExplorer(false);
+  renderRange(0, Math.min(CHUNK, filteredItems().length));
+}
+function renderMore(){
+  showMuscleExplorer(false);
+  renderRange(state.rendered, Math.min(state.rendered + CHUNK, filteredItems().length));
+}
 
 /* ======== API ======== */
 function getToken(){ try { return localStorage.getItem('tp_token_v1') || ''; } catch { return ''; } }
@@ -539,8 +989,14 @@ window.addEventListener('popstate', (ev)=>{
   state.q = s.q || '';
   const qInput = document.getElementById('q'); if (qInput) qInput.value = state.q;
   resetGrid();
-  if (state.view === 'cats'){ renderCategories(); }
-  else { renderInitial(); setMoreVisibility(); }
+  if (state.view === 'cats'){
+  renderCategories();
+} else {
+  showMuscleExplorer(false);
+  renderInitial();
+  setMoreVisibility();
+  highlightMuscle(state.category);
+}
   updateNavButtons();
 });
 function updateNavButtons(){
@@ -646,16 +1102,24 @@ function selectCategory(name){
   state.category = name || '';
   document.getElementById('chipFilter').style.display = state.category ? 'inline-flex' : 'none';
   document.getElementById('chipLabel').textContent = 'Categoría: ' + (state.category || '—');
+  showMuscleExplorer(false);
+  highlightMuscle(state.category);
   resetGrid(); renderInitial(); setMoreVisibility();
   pushHistory();
 }
 function clearCategory(){
   state.category = '';
   document.getElementById('chipFilter').style.display = 'none';
+  clearMuscleHighlight();
   if (!state.q) {
-    state.view = 'cats'; resetGrid(); renderCategories();
+    state.view = 'cats';
+    resetGrid();
+    renderCategories();
   } else {
-    resetGrid(); renderInitial(); setMoreVisibility();
+    showMuscleExplorer(false);
+    resetGrid();
+    renderInitial();
+    setMoreVisibility();
   }
   pushHistory();
 }
@@ -673,13 +1137,12 @@ function buscar(){
   state.q = (input.value || '').trim();
 
   if (state.q) {
-    // Siempre que hay texto: vista de lista global, sin categoría fija
     state.view = 'list';
     state.category = '';
     const chip = document.getElementById('chipFilter');
     if (chip) chip.style.display = 'none';
+    showMuscleExplorer(false);
   } else {
-    // Si borras el texto y le das a buscar → vuelves a categorías
     state.view = 'cats';
     state.category = '';
   }
@@ -771,6 +1234,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     sessionStorage.setItem('tp_nav_max','0');
   }
   replaceHistory();
+  bindMuscleExplorer();
 
   await fetchData();
   if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
