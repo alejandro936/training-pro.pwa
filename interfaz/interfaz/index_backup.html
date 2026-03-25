@@ -1037,6 +1037,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     sessionStorage.setItem('tp_nav_max','0');
   }
   replaceHistory();
+  bindMuscleExplorer();
 
   await fetchData();
   if (state.view === 'cats' && state.nextOffset) prefetchAllPagesInBackground();
