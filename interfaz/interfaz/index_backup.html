@@ -831,28 +831,6 @@ function bindMuscleExplorer(){
   }
 }
 
-  var frontBtn = document.getElementById('frontBtn');
-  var backBtn  = document.getElementById('backBtn');
-  var frontView = document.getElementById('frontView');
-  var backView  = document.getElementById('backView');
-
-  if (frontBtn && backBtn && frontView && backView){
-    frontBtn.addEventListener('click', function(){
-      frontBtn.classList.add('active');
-      backBtn.classList.remove('active');
-      frontView.classList.add('active');
-      backView.classList.remove('active');
-    });
-
-    backBtn.addEventListener('click', function(){
-      backBtn.classList.add('active');
-      frontBtn.classList.remove('active');
-      backView.classList.add('active');
-      frontView.classList.remove('active');
-    });
-  }
-}
-
 /* ======== Vista lista ======== */
 function card(x){
   var nombre = escapeHtml(x.ejercicio || x.nombre || '');
