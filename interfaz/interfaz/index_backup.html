@@ -161,37 +161,22 @@
     padding:10px 12px; border-radius:10px; display:none }
 
   .folder{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.14);
-  border-left:3px solid rgba(230,192,110,.85);
-  border-radius:var(--radius);
-  padding:10px 12px;
-  min-height:64px;
-  cursor:pointer;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap:6px;
+  padding:12px;
+  min-height:72px;
 }
 
 .folder .name{
-  font-family:var(--title-font);
-  font-weight:800;
-  font-size:16px;
-  line-height:1.15;
+  font-size:14px;
 }
 
 .folder .count{
-  min-width:34px;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  color:#cfcfcf;
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:999px;
-  padding:0 8px;
+  align-self:flex-end;
+  height:28px;
+  font-size:11px;
 }
 .muscle-explorer{
   margin: 10px auto 0;
