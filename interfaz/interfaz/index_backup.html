@@ -190,6 +190,104 @@
   border-radius:999px;
   padding:0 8px;
 }
+.muscle-explorer{
+  margin: 10px auto 0;
+  max-width: var(--content-max);
+  width: 100%;
+  padding: 16px 14px 12px;
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+}
+
+.muscle-title{
+  margin: 0 0 4px;
+  font-family: var(--title-font);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.muscle-subtitle{
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #cfcfcf;
+  line-height: 1.5;
+}
+
+.body-toggle{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.body-toggle button{
+  background:#121212;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+}
+
+.body-toggle button.active{
+  border-color: var(--accent);
+  color: var(--accent);
+  background: linear-gradient(180deg, rgba(230,192,110,.16), rgba(230,192,110,.04));
+}
+
+.body-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:260px;
+}
+
+.body-view{
+  display:none;
+  width:100%;
+  justify-content:center;
+}
+
+.body-view.active{
+  display:flex;
+}
+
+.body-svg{
+  width:100%;
+  max-width:220px;
+  height:auto;
+}
+
+.muscle-zone{
+  fill: rgba(255,255,255,.08);
+  stroke: rgba(255,255,255,.16);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill .18s ease, stroke .18s ease, transform .18s ease;
+}
+
+.muscle-zone:hover{
+  fill: rgba(230,192,110,.24);
+  stroke: var(--accent);
+}
+
+.muscle-zone.active{
+  fill: rgba(230,192,110,.42);
+  stroke: var(--accent);
+}
+
+@media (max-width: 640px){
+  .muscle-explorer{
+    padding: 14px 12px 10px;
+  }
+  .muscle-title{
+    font-size: 18px;
+  }
+  .body-svg{
+    max-width: 190px;
+  }
+}
 
   .modal{
     position:fixed; inset:0; display:none;
