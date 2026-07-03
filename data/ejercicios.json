@@ -1,0 +1,1170 @@
+[
+  {
+    "id": "rack-pull",
+    "nombre": "RACK PULL",
+    "indicaciones": "1. Coloca las soportes para que la barra quede ligeramente debajo de la rodilla.\n\n2. Generar tensión con la cadena posterior y elevar la barra como en un peso muerto.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y lumbar",
+    "video": "https://drive.google.com/file/d/1SCJZOkEVV2u6ri9Fwe2b1pOVg3QxNvlG/view?usp=sharing"
+  },
+  {
+    "id": "remo-pendlay",
+    "nombre": "REMO PENDLAY",
+    "indicaciones": "1. Agarre 1,5 veces la anchura de hombros\n\n2. Traccionar de la barra ligeramente antes de iniciar el movimiento.\n\n3. Llevar la barra hacia la parte alta del pecho con los codos separados del tronco a unos 45º.\n\n4. Descansar la barra en el suelo entre repeticiones.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1OM93gcKhvjjTzWJgO0p8Zu9zdFmzoU6i/view?usp=sharing"
+  },
+  {
+    "id": "seal-row-mc",
+    "nombre": "SEAL ROW MC",
+    "indicaciones": "1. Colocar el banco entre 50-70º\n\n2. Traccionar de forma vertical con los codos ligeramente separados del tronco\n\n3. Permitir movimiento completo de la escápula (protracción y retracción)\n\n4. Iniciar movimiento con una retracción escapular",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/108mGLyi5GjN2BpBnK3qJVT_00KQQZ_sa/preview"
+  },
+  {
+    "id": "seal-row-barra",
+    "nombre": "SEAL ROW BARRA",
+    "indicaciones": "1. Agarre 1,5 veces la anchura de hombros\n\n2. Traccionar con los codos separados del tronco\n\n3. Permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1Q_PpRzcc9KMYLo3Kayvgd1dlIrJWdOZ8/view?usp=sharing"
+  },
+  {
+    "id": "remo-t-prono",
+    "nombre": "REMO T PRONO",
+    "indicaciones": "1. Apoyo en el pecho\n\n2. Traccionar con los codos separados del tronco y permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1mJWSEJ-5JUmScixFjMYSCO-0TgWGMZlC/view?usp=sharing"
+  },
+  {
+    "id": "remo-dorian-prono",
+    "nombre": "REMO DORIAN PRONO",
+    "indicaciones": "1.  Iniciar el movimiento manteniendo agarre prono y desde una posición en la que el agarre este en línea con la articulación del hombro\n\n2. Traccionar con el codo separado del tronco a unos 45º o más\n\n3. Realizar el movimiento en 2 tiempo: Retracción escapular - extensión de hombro",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1zYSPVmF2aky2hrwg6kVBnLor9AMrmqSP/view?usp=sharing"
+  },
+  {
+    "id": "remo-en-polea-sentado-prono",
+    "nombre": "REMO EN POLEA SENTADO PRONO",
+    "indicaciones": "1. Agarre 1,5 veces la anchura de hombros y palmas de las manos hacia abajo\n\n2. Traccionar hacia la parte media-alta del pecho con los codos ligeramente separados del tronco.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1_qsVS-XfK6mHinD1VrhOOGhRIdAxQLrs/view?usp=sharing"
+  },
+  {
+    "id": "jalon-agarre-mag-estricto",
+    "nombre": "JALÓN AGARRE MAG ESTRICTO",
+    "indicaciones": "1. Mantener tronco ligeramente inclinado y traccionar hacia la parte alta del pecho manteniendo codos separados del mismo\n\n2. Permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/17pmN_ryf1PfL1l7Es4HTStS5m56HeGHs/view?usp=sharing"
+  },
+  {
+    "id": "jalon-agarre-mag-amplio",
+    "nombre": "JALÓN AGARRE MAG AMPLIO",
+    "indicaciones": "1. Mantener tronco ligeramente inclinado y traccionar hacia la parte alta del pecho manteniendo codos separados del mismo\n\n2. Permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1x2nmhZSkYARFQFX305YTN7qdAB_j5XIl/view?usp=sharing"
+  },
+  {
+    "id": "jalon-prono-estatico",
+    "nombre": "JALÓN PRONO ESTÁTICO",
+    "indicaciones": "1. Agarre ligeramente superior a la anchura de hombros\n\n2. Tronco ligeramente inclinado y traccionar hacia la parte media del pecho\n\n3. Permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta",
+    "video": "https://drive.google.com/file/d/1wGdwBClTTV7dzdmNaSHhTe_MnVY-txsB/view?usp=sharing"
+  },
+  {
+    "id": "jalon-agarre-mag-dinamico",
+    "nombre": "JALÓN AGARRE MAG DINÁMICO",
+    "indicaciones": "1. Permitir balanceo controlado del cuerpo y traccionar hacia el pecho",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1mjyACept-kQprTsEBknh31ThBaNTkTkj/view?usp=sharing"
+  },
+  {
+    "id": "jalon-prono-dinamico",
+    "nombre": "JALÓN PRONO DINÁMICO",
+    "indicaciones": "1.  Agarre ligeramente superior a la anchura de hombros\n\n2. Permitir balanceo controlado del cuerpo y traccionar hacia el pecho con los codos ligeramente separados del tronco",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1UgeHWwO3ss4amfLaLINBDp9A0zj2aAUf/view?usp=sharing"
+  },
+  {
+    "id": "remo-alto-maquina-escapular",
+    "nombre": "REMO ALTO MÁQUINA ESCAPULAR",
+    "indicaciones": "1. Permitir movimiento completo de la escápula (protracción y retracción)\n\n2. Traccionar con los codos ligeramente separados del tronco",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1wtWuUGZ3tgg9ZKDUZjRNp-pt_FPyqnsK/view?usp=sharing"
+  },
+  {
+    "id": "dominadas-pronas",
+    "nombre": "DOMINADAS PRONAS",
+    "indicaciones": "1. Agarre 1,5 vece la anchura de hombros aprox\n\n2. Palmas mirando al frente\n\n3. Traccionar hacia la parte alta del pecho manteniendo tronco ligeramente inclinado",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1sF_HRluvKLtgI_ScT7mQedawKHjJFgQd/view?usp=sharing"
+  },
+  {
+    "id": "remo-bajo-ascendente",
+    "nombre": "REMO BAJO ASCENDENTE",
+    "indicaciones": "1. Ajustar asiento para permitir un movimiento ascendente\n\n2. Permitir movimiento completo de la escápula (protracción y retracción)\n\n3. Iniciar movimiento con una retracción escapular",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1ayFtIdFqOrna_T3JlN1_QSVN0QoYbZA-/view?usp=sharing"
+  },
+  {
+    "id": "remo-meadows-mc",
+    "nombre": "REMO MEADOWS MC",
+    "indicaciones": "1. Tronco en posición cercana a la horizontal\n2. Traccionar con el codo separado del tronco unos 45º\n3. Permitir movimiento completo de la escápula (protracción y retracción)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Espalda alta y dorsal",
+    "video": "https://drive.google.com/file/d/1FgvwuaKZ4wfTTXu2rjyg2dFUOWAKJBXq/view?usp=sharing"
+  },
+  {
+    "id": "remo-t-neutro",
+    "nombre": "REMO T NEUTRO",
+    "indicaciones": "1. Apoyo ligeramente por debajo del pecho\n\n2. Traccionar con los codos pegados al tronco y mantener escápula fija",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal y espalda alta",
+    "video": "https://drive.google.com/file/d/1OYLo8Gl8lq5IOS3cY_wYq_1nDeaT3I3X/view?usp=sharing"
+  },
+  {
+    "id": "remo-bajo-en-maquina",
+    "nombre": "REMO BAJO EN MÁQUINA",
+    "indicaciones": "1. Traccionar con los codos pegados al tronco y permitir movimiento completo de la escápula (protracción y retracción)\n\n2. Buscar realizar el movimiento en 2 tiempo: empezar retrayendo escápulas - traccionar desde los codos hacia atrás",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal y espalda alta",
+    "video": "https://drive.google.com/file/d/1VGAKdyVuM_zd3DjWnxDdUfOQvZNubgft/view?usp=sharing"
+  },
+  {
+    "id": "dominadas-supinas",
+    "nombre": "DOMINADAS SUPINAS",
+    "indicaciones": "1. Agarre a la anchura de hombros o ligeramente superior y palmas orientadas hacia la cara\n\n2. Traccionar llevando el pecho hacia la barra, inclinando el tronco y con los codos pegados al mismo",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal y biceps",
+    "video": "https://drive.google.com/file/d/1nZ9eniD_nIfN6VvQhUa7o5uTKQ1Gj6Yj/view?usp=sharing"
+  },
+  {
+    "id": "remo-con-mc",
+    "nombre": "REMO CON MC",
+    "indicaciones": "1. Tronco en posición cercana a la horizontal\n\n2. Traccionar con el codo pegado al tronco y mantener escápula fija",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1e1GwqVNGfs-qjvqqmnzYjQcAQCaFnZwn/view?usp=sharing"
+  },
+  {
+    "id": "dominadas-neutras",
+    "nombre": "DOMINADAS NEUTRAS",
+    "indicaciones": "1. Agarra con las palmas enfrentadas.\n\n2. Tratar de llevar el pecho a la barra con los codos cercanos al cuerpo.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal y biceps",
+    "video": "https://drive.google.com/file/d/10kfuiiMqyOmJX3rZqZTK4pcmY0sRWp0b/view?usp=drive_link"
+  },
+  {
+    "id": "remo-landmine",
+    "nombre": "REMO LANDMINE",
+    "indicaciones": "1. Coloca la barra en el landmine y agárrala de tal forma que quede 1 mano entre el disco y el dedo índice.\n\n2. Coloca la pierna más cercana a la barra ligeramente retrasada e inclina el tronco para que quede alineado con la barra.\n\n3. Traccionar con el codo pegado al tronco y mantén fijada la escapula.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1CNz3Yn398qemCrADBI-LuEn0NaKJs3dF/view?usp=sharing"
+  },
+  {
+    "id": "remo-barra-supino",
+    "nombre": "REMO BARRA SUPINO",
+    "indicaciones": "1. Agarre 1-1,5 veces la anchura de hombros\n\n2. Mantener el tronco cerca de la horizontal\n\n3. Llevar la barra hacia el ombligo con los codos pegados al tronco.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1asN1C9Yh3QhMdMXr8hwPimmwObt1oTTI/view?usp=sharing"
+  },
+  {
+    "id": "pull-over-polea",
+    "nombre": "PULL OVER POLEA",
+    "indicaciones": "1. Utilizar doble cuerda para más ROM\n\n2. Mantener tronco cerca de la horizontal\n\n3. Llevar el hombro hasta los 120º aprox de flexión manteniendo hombros hacia abajo para mayor estiramiento de dorsal\n\n4. Traccionar con los codos pegados al tronco realizando una supinación (gesto de partir la cuerda hacia fuera)",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1Jx15vla14GT23gKYLTZrzhWnEHyE6B4g/view?usp=drive_link"
+  },
+  {
+    "id": "jalon-maquina",
+    "nombre": "JALÓN MÁQUINA",
+    "indicaciones": "1. Agarre ligeramente superior a la anchura de hombros\n\n2. Mantener ligera inclinación del tronco y traccionar con la intención de llevar los codos hacia tu tronco",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1TqwygwhtTfWtwua5ryqX8G4mW2IidBlW/view?usp=drive_link"
+  },
+  {
+    "id": "jalon-supino",
+    "nombre": "JALÓN SUPINO",
+    "indicaciones": "1. Agarre a la anchura de hombros o ligeramente superior y palmas orientadas hacia la cara\n\n2. Mantener tronco vertical y traccionar pensando en llevar codos a la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1uyZZPbqaQdGovKBONpyYsFCrKv6_hoL0/view?usp=sharing"
+  },
+  {
+    "id": "remo-maquina-neutro",
+    "nombre": "REMO MÁQUINA NEUTRO",
+    "indicaciones": "1. Regular el asiento para traccionar hacia la cadera\n\n2. Traccionar con los codos pegados al tronco y mantener hombros hacia abajo y escápulas fijas",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1c0uBVVU8mhuqqB-95VlZUmVumHZb_Qcf/view?usp=sharing"
+  },
+  {
+    "id": "jalon-ad",
+    "nombre": "JALÓN AD",
+    "indicaciones": "1. Intención de llevar los codos hacia tu tronco",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1c4aIDy8EcQu3GwdUVhqilDajdPlVrCRg/view?usp=sharing"
+  },
+  {
+    "id": "jalon-agarre-mag-cerrado",
+    "nombre": "JALÓN AGARRE MAG CERRADO",
+    "indicaciones": "1. Siéntate más alejado, dejando las rodillas en los soportes de anclaje\n\n2. Mantener escápula fija y hombros hacia abajo y traccionar con intención de llevar codos hacia la la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/11tHSvpMSSS5WLkS9cPFTbITc7lOp3K3R/view?usp=sharing"
+  },
+  {
+    "id": "jalon-agarre-mag-dorsal",
+    "nombre": "JALÓN AGARRE MAG (DORSAL)",
+    "indicaciones": "1. Siéntate más alejado, dejando las rodillas en los soportes de anclaje\n\n2. Mantener escápula fija y hombros hacia abajo y traccionar con intención de llevar codos hacia la la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1Dstf8wsjvnpzMZw9w8SlLU4Tw-eHpDVy/view?usp=sharing"
+  },
+  {
+    "id": "remo-dorian-supino",
+    "nombre": "REMO DORIAN SUPINO",
+    "indicaciones": "1. Iniciar el movimiento de pie, manteniendo un agarre supino y a una altura por debajo de la articulación del hombro\n\n2. Mano libre apoyada en el respaldo para mayor estabilidad\n\n3. Traccionar pensado en llevar codo a la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/145_1qOTkrKKc7rowrENpry24dHV57bV7/view?usp=sharing"
+  },
+  {
+    "id": "remo-alto-bilateral-dorsal",
+    "nombre": "REMO ALTO BILATERAL (DORSAL)",
+    "indicaciones": "1. Traccionar con el codo pegado al tronco\n\n2. Llevar el hombro hasta los 120º aprox de flexión manteniendo hombros hacia abajo para mayor estiramiento de dorsal\n\nOBSERVACIONES: posibilidad de hacerlo unilateral",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1lWrrHkRxCU0SXmG53wQHGQt5tNBxPrR-/view?usp=sharing"
+  },
+  {
+    "id": "remo-dorian-neutro",
+    "nombre": "REMO DORIAN NEUTRO",
+    "indicaciones": "1. Iniciar el movimiento de pie, manteniendo un agarre neutro y a una altura por debajo de la articulación del hombro\n\n2. Mano libre apoyada en el respaldo para mayor estabilidad\n\n3. Traccionar pensado en llevar codo a la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1nqyZW8Cpqyss0oqkqsccspw6ud0wI9fd/view?usp=sharing"
+  },
+  {
+    "id": "remo-alto-polea",
+    "nombre": "REMO ALTO POLEA",
+    "indicaciones": "1. Inclina el tronco ligeramente\n\n2. Tracciona llevando el codo a la cadera",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1O_0WJCYugS2W4YWx-bSrhcsVIuka7iQ7/view?usp=sharing"
+  },
+  {
+    "id": "remo-en-polea-sentado-neutro",
+    "nombre": "REMO EN POLEA SENTADO NEUTRO",
+    "indicaciones": "1. Traccionar hacia el ombligo manteniendo los hombros deprimidos (hacia abajo).\n\n2. Mantener codos pegados al tronco.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1o50csiVdscgAwIueCX4M2aqnDQzckUn8/view?usp=sharing"
+  },
+  {
+    "id": "remo-en-polea-sentado-agarre-mag-cerrado",
+    "nombre": "REMO EN POLEA SENTADO AGARRE MAG CERRADO",
+    "indicaciones": "1. Traccionar hacia el ombligo manteniendo los hombros deprimidos (hacia abajo).\n\n2. Mantener codos pegados al tronco.",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1j_pcxevodrliHoDqMUX-7ZGC6aeKCMzZ/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-maquina",
+    "nombre": "ELEVACIONES LATERALES MÁQUINA",
+    "indicaciones": "1. Intención de llevar codos hacia arriba manteniendo hombros hacia abajo",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1QEnDhGCsFFNRYVa8hVZeOk4FXlzegE-0/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-polea-cruzada-unil",
+    "nombre": "ELEVACIONES LATERALES POLEA CRUZADA UNIL",
+    "indicaciones": "1. Polea a la altura de las rodillas\n\n2. Cruzar la polea por detrás del tronco\n\n3. Intención de llevar codos hacia arriba manteniendo hombros hacia abajo",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1fSLVfUE7b1k63-cg3_7i-kwi92wLqirA/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-polea-abajo",
+    "nombre": "ELEVACIONES LATERALES POLEA ABAJO",
+    "indicaciones": "1. Pasar el cable de la polea entre las piernas.\n\n2. Eleva el brazo con la intencionalidad de hacer fuerza desde el codo.\n\n2. Piensa en llevar la mano lo más lejos posible de tu cuerpo",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1f2IfJHuGDymuZcd4HzndROZM69W5RHC9/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-con-mc",
+    "nombre": "ELEVACIONES LATERALES CON MC",
+    "indicaciones": "1. Eleva los brazos con la intencionalidad de hacer fuerza desde los codos.\n\n2. Piensa en llevar la mano lo más lejos posible de tu cuerpo",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1jgqbsjvRdxq702T75bSwC6jejrk4t8uQ/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-con-mc-en-banco",
+    "nombre": "ELEVACIONES LATERALES CON MC EN BANCO",
+    "indicaciones": "1. Encuentra una posición estable acostado de lado en el banco.\n\n2. Lleva el brazo por delante de tu cuerpo y elévalo tratando de llevar la mano al techo.",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1M6D1DazEpLhPLoFCsJj4H5jU8hGuvNoW/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-laterales-polea-tumbado",
+    "nombre": "ELEVACIONES LATERALES POLEA TUMBADO",
+    "indicaciones": "1. Eleva los brazos con la intencionalidad de hacer fuerza desde los codos.\n\n2. Piensa en llevar la mano lo más lejos posible de tu cuerpo",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1Rfpzv01xHM6o1SBZzQ460RIJFQ7lRVzc/view?usp=sharing"
+  },
+  {
+    "id": "elevaciones-frontales-mc-en-banco",
+    "nombre": "ELEVACIONES FRONTALES MC EN BANCO",
+    "indicaciones": "1. Banco a unos 30-40º de inclinación",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/1gqP1RxC_n4zo4KEyGilBvNpsk8VY4kgR/view?usp=sharing"
+  },
+  {
+    "id": "press-vertical-maquina",
+    "nombre": "PRESS VERTICAL MÁQUINA",
+    "indicaciones": "1. Regular asiento que permita iniciar el movimiento desde las orejas aproximadamente (un poco más abajo si tienes suficiente movilidad)",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/138JiOdFbnCR6WuSqLBUfwR2Nwq2iNkS0/view?usp=sharing"
+  },
+  {
+    "id": "press-militar-con-barra-sentado",
+    "nombre": "PRESS MILITAR CON BARRA SENTADO",
+    "indicaciones": "1. Agarre ligeramente superior a la anchura de hombros (dedo índice donde comienza el hombro)\n\n2. Mantener antebrazos verticales en todo momento y empujar hacia arriba\n\n*(La orientación de los codos dependerá de la movilidad de la persona)",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/1fw9q2yzE7XMyk1QidUwGOLoDzFAywJHo/view?usp=sharing"
+  },
+  {
+    "id": "press-militar-con-barra-de-pie",
+    "nombre": "PRESS MILITAR CON BARRA DE PIE",
+    "indicaciones": "1. Agarre ligeramente superior a la anchura de hombros (dedo índice donde comienza el hombro)\n\n2. Mantener antebrazos verticales en todo momento y empujar hacia arriba\n\n*(La orientación de los codos dependerá de la movilidad de la persona)",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/1-nKhBZ2TBN21ca4UgIlQXX2RRAGrBSE4/view?usp=sharing"
+  },
+  {
+    "id": "press-militar-con-barra-desde-pines-de-pie",
+    "nombre": "PRESS MILITAR CON BARRA DESDE PINES DE PIE",
+    "indicaciones": "1. Agarre ligeramente superior a la anchura de hombros (dedo índice donde comienza el hombro)\n\n2. Mantener antebrazos verticales en todo momento  y empujar hacia arriba\n\n3. Apoyar la barra en los pines laterales que deben estar colocados a la altura de la barbilla aprox (esto dependerá de la movilidad de cada uno)\n\n*(La orientación de los codos dependerá de la movilidad de la persona)",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/1ImnwNcV08D26dN0VLBwaQExU9XNnuDn9/view?usp=sharing"
+  },
+  {
+    "id": "press-militar-con-mc-sentado",
+    "nombre": "PRESS MILITAR CON MC SENTADO",
+    "indicaciones": "1. Banco a unos 80º de inclinación\n\n2. Mantener antebrazos verticales en todo momento y empujar hacia arriba\n\n*(La orientación de los codos dependerá de la movilidad de la persona)",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/191C3wy7q7fyqSg6maxW5BLtHlyrtJzPf/view?usp=sharing"
+  },
+  {
+    "id": "press-militar-en-maquina-hammer",
+    "nombre": "PRESS MILITAR EN MÁQUINA HAMMER",
+    "indicaciones": "1. Regular asiento que permita iniciar el movimiento desde las orejas aproximadamente (un poco más abajo si tienes suficiente movilidad)\n\n2. Normalmente un agarre cerrado suele ser más cómodo",
+    "categoria": "DEL. ANTERIOR",
+    "musculoObjetivo": "Deltoides anterior",
+    "video": "https://drive.google.com/file/d/1CXRJpf0k7HXfR0vQmpjbbzGsbpLlW-bg/view?usp=sharing"
+  },
+  {
+    "id": "fondos-en-paralelas",
+    "nombre": "FONDOS EN PARALELAS",
+    "indicaciones": "1. Buscar una separación de brazos cómoda que permita realizar un ROM completo",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral, del. anterior y tríceps",
+    "video": "https://drive.google.com/file/d/1Bq92c3Expnwgx0GXwH1sLwVK-IZnLKKW/view?usp=sharing"
+  },
+  {
+    "id": "press-muy-inclinado-en-mp",
+    "nombre": "PRESS MUY INCLINADO EN MP",
+    "indicaciones": "1. Banco a unos 60-70º de inclinación\n\n2. Agarre 1,5 veces la anchura de hombros\n\n3. Buscar que la barra contacte en la zona clavicular del pectoral manteniendo codos a unos 45º respecto al tronco.",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral y deltoides anterior",
+    "video": "https://drive.google.com/file/d/1v8W2ppRTYhkm3r2_hTw3AW06ykeh06Yw/view?usp=sharing"
+  },
+  {
+    "id": "press-muy-inclinado-con-mc",
+    "nombre": "PRESS MUY INCLINADO CON MC",
+    "indicaciones": "1. Banco a unos 60-70º\n\n2. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral y deltoides anterior",
+    "video": "https://drive.google.com/file/d/1pqajOY8rIjFqo552PAKWemXQw1vLMus5/view?usp=sharing"
+  },
+  {
+    "id": "press-muy-inclinado-barra",
+    "nombre": "PRESS MUY INCLINADO BARRA",
+    "indicaciones": "1. Banco a unos 60-70º\n\n2. Agarre 1,5 veces la anchura de hombros\n\n3. Buscar que la barra contacte ligeramente por encima del pecho manteniendo codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral y deltoides anterior",
+    "video": "https://drive.google.com/file/d/1Gq_obPdAMeTHdseLiUmn1M9RQFMyCdCH/view?usp=sharing"
+  },
+  {
+    "id": "press-inclinado-barra",
+    "nombre": "PRESS INCLINADO BARRA",
+    "indicaciones": "1. Banco a unos 60-70º\n\n2. Agarre 1,5 veces la anchura de hombros\n\n3. Buscar que la barra contacte ligeramente por encima del pecho manteniendo codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/1NrGoIY6JTT5fHmjewii8hTLnpCsuF8t8/view?usp=sharing"
+  },
+  {
+    "id": "press-inclinado-en-mp",
+    "nombre": "PRESS INCLINADO EN MP",
+    "indicaciones": "1. Banco a unos 45º de inclinación\n\n2. Agarre 1,5 veces la anchura de hombros\n\n3. Buscar que la barra contacte ligeramente por encima del pecho manteniendo codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/1VPzJdkz0gjN7HOMYqPiYbfC932CQIg7g/view?usp=sharing"
+  },
+  {
+    "id": "press-inclinado-maquina",
+    "nombre": "PRESS INCLINADO MÁQUINA",
+    "indicaciones": "1. Coloca el asiento para que los antebrazos queden alineados con trayectoria de la máquina.\n\n2. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/13j28o5BX5sUBy3k5a5XuakTkjOJD6bsA/view?usp=sharing"
+  },
+  {
+    "id": "press-inclinado-con-mc",
+    "nombre": "PRESS INCLINADO CON MC",
+    "indicaciones": "1. Banco a unos 45º\n\n2. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": ""
+  },
+  {
+    "id": "press-inclinado-polea",
+    "nombre": "PRESS INCLINADO POLEA",
+    "indicaciones": "1. Banco a unos 60-70º de inclinación\n\n2. Poleas elevadas a la altura de la cadera (referencia sentado)\n\n3. Empujar hacia el frente con una trayectoria ascendente\n\n4. Mantener antebrazo alineado con el cable de la polea\n\nOPCIONAL; cruzar manos para ROM extra",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/17Qcj63osjtbr5JfQ_ySVkFELgCph7v_N/view?usp=sharing"
+  },
+  {
+    "id": "aperturas-inclinadas-polea",
+    "nombre": "APERTURAS INCLINADAS POLEA",
+    "indicaciones": "1. Banco a unos 30-40º\n\n2. Mantener cierta flexión de codo durante el movimiento",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/1KfbdGaqDulA6l4LlxXxNxIHPuxpJzRSH/view?usp=sharing"
+  },
+  {
+    "id": "cruce-de-poleas-ascdendente-en-banco",
+    "nombre": "CRUCE DE POLEAS ASCDENDENTE EN BANCO",
+    "indicaciones": "1. Banco próximo a la vertical\n\n2.  Intención de llevar codos hacia arriba cruzando ligeramente las manos",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral (haz clavicular)",
+    "video": "https://drive.google.com/file/d/1rrjKgkAYB2KrNPA6WcZlHVNE_q_MnR0U/view?usp=sharing"
+  },
+  {
+    "id": "press-horizontal-maquina",
+    "nombre": "PRESS HORIZONTAL MÁQUINA",
+    "indicaciones": "1. Colocar el asiento para que al inicio del movimiento las manos queden en la línea media del pecho\n\n2. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1DVtmY8vY-qNUYuGLATQHP16DyYR0vyoZ/view?usp=sharing"
+  },
+  {
+    "id": "press-plano-con-mc",
+    "nombre": "PRESS PLANO CON MC",
+    "indicaciones": "1. Realizar retracción escapular, empujar extendiendo codos pero siempre manteniendo la posición escapular\n\n2. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/14dP1naaJ0X4sUYCFcV02tO0pfqzNNNlw/view?usp=sharing"
+  },
+  {
+    "id": "contractor-en-polea",
+    "nombre": "CONTRACTOR EN POLEA",
+    "indicaciones": "1. Polea a la altura de los hombros o ligeramente por debajo y cruzar hacia el frente\n\n2. Mantener retracción escapular y ligera flexión de codos  durante el movimiento",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/11KVdrfgjlQ8mJaxbXKWve_wbLHd7nFXk/view?usp=sharing"
+  },
+  {
+    "id": "cruce-de-poleas-descendente-de-pie",
+    "nombre": "CRUCE DE POLEAS DESCENDENTE DE PIE",
+    "indicaciones": "1. Polea por encima de los hombros\n\n2. Mantener ligera flexión de codos durante el movimiento y empujar hacia abajo",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1ZPMS_AN2ueLqWnTSzttcOEU1SD6E1NWR/view?usp=sharing"
+  },
+  {
+    "id": "cruce-de-poleas-descendente-en-banco",
+    "nombre": "CRUCE DE POLEAS DESCENDENTE EN BANCO",
+    "indicaciones": "1. Polea por encima de los hombros\n2. Mantener ligera flexión de codos y retracción escapular durante el movimiento\n3. Empujar hacia abajo",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1vxFjZkKLkvXgCX9ddjMqIUSlTbDvQRLH/view?usp=sharing"
+  },
+  {
+    "id": "press-declinado-maquina",
+    "nombre": "PRESS DECLINADO MÁQUINA",
+    "indicaciones": "1. Asiento a una altura que te permita mantener un agarre a una altura ligeramente inferior al pecho\n\n2. Codos ligeramente orientados hacia arriba",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1CHWV8Vteh9HuX-jqmHSSvPsKQpvERidP/view?usp=sharing"
+  },
+  {
+    "id": "press-plano-agarre-medio-en-mp",
+    "nombre": "PRESS PLANO AGARRE MEDIO EN MP",
+    "indicaciones": "1. Agarre a la anchura de hombros \n\n2. Buscar que la barra contacte en el esternón aprox manteniendo codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1MO0mGHtC3MTvdTioArG2lRoRwqs1X81V/view?usp=sharing"
+  },
+  {
+    "id": "press-plano-en-mp",
+    "nombre": "PRESS PLANO EN MP",
+    "indicaciones": "1. Durante la bajada, la barra debe tocar en el esternón.\n\n2. Agarre 1,5-2 veces la anchura de hombros.\n\n3. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/1jVmh3klze4mfVTG4aWg_h7v_84uHIFcd/view?usp=sharing"
+  },
+  {
+    "id": "press-de-banca-plano-con-barra",
+    "nombre": "PRESS DE BANCA PLANO CON BARRA",
+    "indicaciones": "1. Durante la bajada, la barra debe tocar en el esternón.\n\n2. Agarre 1,5-2 veces la anchura de hombros.\n\n3. Mantén los codos a unos 45º respecto al tronco",
+    "categoria": "EMPUJE",
+    "musculoObjetivo": "Pectoral",
+    "video": "https://drive.google.com/file/d/102m4ddS7TRls0gV6fO1y29TsFtGIhgA_/view?usp=sharing"
+  },
+  {
+    "id": "kazz-press-en-mp",
+    "nombre": "KAZZ PRESS EN MP",
+    "indicaciones": "1. Llevar la barra hacia la barbilla manteniendo los codos por delante de la barra\n\n2. Agarre a la anchura de hombros o ligeramente más cerrado",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps (+cabeza larga)",
+    "video": "https://drive.google.com/file/d/1oWSBhfteUiQBuqwbAy-sirtUKmXOetc3/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-lateral-polea",
+    "nombre": "EXTENSIÓN DE TRICEPS LATERAL POLEA",
+    "indicaciones": "1. Buscar rotación interna de hombro (punta del codo orientada hacia el lateral)",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps (+cabeza lateral)",
+    "video": "https://drive.google.com/file/d/1ppslt65_tY-6Nk6mdle5t3Msge_PxeBa/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-doble-cuerda",
+    "nombre": "EXTENSIÓN DE TRICEPS DOBLE CUERDA",
+    "indicaciones": "1. Regular altura de la polea para ejecutar el movimiento con ROM completo (sino tiene altura suficiente se puede realizar de rodillas)\n\n2. Orientar los codos hacia fuera",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps (+cabeza lateral)",
+    "video": "https://drive.google.com/file/d/1bsJC-q5ZlviluU1pDG0Ksbq_fzFe4y4-/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-polea",
+    "nombre": "EXTENSIÓN DE TRICEPS POLEA",
+    "indicaciones": "1. Colócate justo debajo de la polea.",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Triceps",
+    "video": "https://drive.google.com/file/d/1i_VmlrPd9LXHFc4kYuSWykv-2Lm2xHcz/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-polea-estiramiento",
+    "nombre": "EXTENSIÓN DE TRICEPS POLEA (+ESTIRAMIENTO)",
+    "indicaciones": "1. Colócate un paso hacia atrás de la polea manteniendo el tronco ligeramente inclinado",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1lgRnmWlphUGO82yLwq_c1BjbVPgh6G3J/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-oh-180",
+    "nombre": "EXTENSIÓN DE TRICEPS OH 180º",
+    "indicaciones": "1. Regular altura de la polea sobre la rodilla aproximadamente para facilitar el inicio del movimiento\n\n2. Orientar los codos hacia fuera",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1fWjAU_V9IwuR8j43X_r9KuTmh3_TnJne/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-oh-mc",
+    "nombre": "EXTENSIÓN DE TRICEPS OH MC",
+    "indicaciones": "1. Apoya la parte superior de la espalda en el banco.\n\n2. Agarra la mc en forma de copa y llévala por detrás de tu cabeza.",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1EISxiAHn02QU2kp_UL_ulbmR08CPmlso/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-oh-unil-mc",
+    "nombre": "EXTENSIÓN DE TRICEPS OH UNIL MC",
+    "indicaciones": "1. Apoya la parte superior de la espalda en el banco.\n\n2. Agarra la mc  y llévala por detrás de tu cabeza.",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1IozcDG8gJpLy9m38agXZ7IwufYTrHujQ/view?usp=drive_link"
+  },
+  {
+    "id": "extension-de-triceps-oh-120",
+    "nombre": "EXTENSIÓN DE TRICEPS OH 120º",
+    "indicaciones": "1.  Coloca la polea a la altura de cabeza.\n\n2. Busca una posición establece apoyando la cadera en la estructura de la polea y realiza el movimiento manteniendo el hombro estable.",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1oWtNOzpYFEc3m4tX2EEWuj6V2QVTUryZ/view?usp=sharing"
+  },
+  {
+    "id": "press-frances-con-mc",
+    "nombre": "PRESS FRANCES CON MC",
+    "indicaciones": "1. Lleva las mancuernas hacia tus hombros manteniendo el brazo completamente vertical.\n\nOBSERVACIONES: también se puede realizar con barra z",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1n5Bi5Z0SOlWneIM3mYmz21so23J9xQfk/view?usp=sharing"
+  },
+  {
+    "id": "jm-press",
+    "nombre": "JM PRESS",
+    "indicaciones": "1. Lleva las mancuernas hacia tus hombros mientras tus codos se adelantan y van hacia arriba.\n\nVARIANTES: \n- Inclinado el banco",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1-OxhMJTBmAUH5ST64cys33Pv9EavYizD/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-polea",
+    "nombre": "CURL DE BICEPS POLEA",
+    "indicaciones": "",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Biceps",
+    "video": "https://drive.google.com/file/d/11CN8Ly4Waxm2Q0--CNYmV8cWIkBK-sJP/preview"
+  },
+  {
+    "id": "curl-de-biceps-martillo-polea",
+    "nombre": "CURL DE BICEPS MARTILLO POLEA",
+    "indicaciones": "1. Situarnos un paso hacia atrás de la polea manteniendo cierta flexión de hombro",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps braquial",
+    "video": "https://drive.google.com/file/d/1j5iZMfsV_PF51rTQPXGyAYw_w8o248xg/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-bayesian",
+    "nombre": "CURL DE BICEPS BAYESIAN",
+    "indicaciones": "1. Regular altura de la polea entre la rodilla y cadera\n\n2. Mantener el hombro en extensión durante la ejecución\n\n3. Al iniciar el movimiento llevar codo hacia atrás",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/1A9Caj__NmMuQbxwXwmhcZo2XjxmtcadJ/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-mc",
+    "nombre": "CURL DE BICEPS MC",
+    "indicaciones": "OBSERVACIONES: se puede realizar de pie.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/1f7g2gxueleepxzMsOR7M4XSzmplCY0vd/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-barra-z",
+    "nombre": "CURL DE BICEPS BARRA Z",
+    "indicaciones": "",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/10ULNXPyPEadKau2JqfBVqqBtAuxlp3n-/view?usp=sharing"
+  },
+  {
+    "id": "curl-scott-barra-z",
+    "nombre": "CURL SCOTT BARRA Z",
+    "indicaciones": "1. Mantener la axila pegada al banco durante todo el recorrido.\n\n2. Buscar extensión completa del codo.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/17H9w-JFZzaUzdvQiOc43AL0rRfdzAG95/view?usp=sharing"
+  },
+  {
+    "id": "curl-scott-mc",
+    "nombre": "CURL SCOTT MC",
+    "indicaciones": "1. Mantener la axila pegada al banco durante todo el recorrido.\n\n2. Buscar extensión completa del codo.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/1pS0KYiFQzPU8yHekwExkzyp6eNijc2RU/view?usp=sharing"
+  },
+  {
+    "id": "curl-scott-en-maquina",
+    "nombre": "CURL SCOTT EN MÁQUINA",
+    "indicaciones": "1. Mantener la axila pegada al banco durante todo el recorrido.\n\n2. Buscar extensión completa del codo.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/13oIltTVbkhnVpJT5gFZEnit7_JN9ggAt/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-en-banco-inclinado-mc",
+    "nombre": "CURL DE BICEPS EN BANCO INCLINADO MC",
+    "indicaciones": "1. Apoyar espalda y codos en el banco y colocar la cadera ligeramente adelantada.\n\n2. Flexionar el codo empujando los codos contra el respaldo.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/1PFSl4qXCRAZqxRws6QD7uL47zVz18uo9/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-martillo-mc",
+    "nombre": "CURL DE BICEPS MARTILLO MC",
+    "indicaciones": "1. Palmas de las manos se miran entre sí,\n\nOBSERVACIONES: se puede realizar de pie.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps braquial",
+    "video": "https://drive.google.com/file/d/19wc6UxHnAj0TkPLjaxHf-tMsX332iaT-/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-biceps-concentrado",
+    "nombre": "CURL DE BICEPS CONCENTRADO",
+    "indicaciones": "1. Sentados, el codo apoya la parte interna del musculo.\n\n2. Mantener el hombro rotado, es decir, el codo apoyado apuntando hacia fuera.",
+    "categoria": "BICEPS",
+    "musculoObjetivo": "Bíceps",
+    "video": "https://drive.google.com/file/d/1w4HJUmZCNXuDPMBdkIMly5DeQ31KuPPA/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-bulgara-gluteo",
+    "nombre": "SENTADILLA BÚLGARA (GLÚTEO)",
+    "indicaciones": "1. Pie colocado debajo de la proyección vertical de la barra    \n\n2. Bajar buscando sentarnos en el talón de la pierna de atrás inclinando el tronco hacia delante\n\n3. Colocar la pierna atrasada en un banco o superficie estable y utilizar step en la pierna adelantada para dar mayor amplitud de movimiento",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1LfEaND-IuNSJvfnrYtcGePm6ET_miWKG/view?usp=sharing"
+  },
+  {
+    "id": "hip-thrust-barra",
+    "nombre": "HIP THRUST BARRA",
+    "indicaciones": "1. Apoya el borde inferior de la escápula en el banco y la barra en tu pelvis.\n\n2. Mantén las rodillas flexionadas de tal forma que talón y rodilla queden alineados al subir.\n\n3. Durante la subida, extiende la cadera, empuja la barra hacia tus rodillas y busca una ligera retroversión pélvica.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1Lof5NLQHu0cIPmMXKeSIBKbPelLYU19A/view?usp=sharing"
+  },
+  {
+    "id": "hip-thrust-unil",
+    "nombre": "HIP THRUST UNIL",
+    "indicaciones": "1. Apoya el borde inferior de la escápula en el banco.\n\n2. Mantén las rodilla flexionada de tal forma que talón y rodilla queden alineados al subir. \n\n3. La pierna libre puede estar extendida con el talón en el suelo o sin apoyo.\n\n4. Durante la subida extiende la cadera y busca una ligera retroversión pélvica.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1uWLapLNYzwWp3NtrQCWjdayLNYSte6xc/view?usp=sharing"
+  },
+  {
+    "id": "hip-thrust-maquina",
+    "nombre": "HIP THRUST MÁQUINA",
+    "indicaciones": "1. Pies a la anchura de hombros y puntas ligeramente rotadas hacia fuera\n\n2. Apoyar borde inferior de la escápula en el respaldo\n\n3. Empujar desde la cadera\n\n4. Buscar ROM completo haciendo retroversión pélvica al final del movimiento",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1jfnYyjNGGidCSN1RBI5niTKjLttFRdoW/view?usp=sharing"
+  },
+  {
+    "id": "puente-de-gluteo",
+    "nombre": "PUENTE DE GLÚTEO",
+    "indicaciones": "1. Coloca la barra en la pelvis.\n\n2. Mantén las rodillas flexionadas de tal forma que talón y rodilla queden alineados al subir.\n\n3. Durante la subida extiende la cadera, empuja la barra hacia tus rodillas y busca una ligera retroversión pélvica.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1OJUY9FfrWi8FALvoGsip_SVbqjaSiLXS/view?usp=sharing"
+  },
+  {
+    "id": "abducciones-de-cadera-de-pie",
+    "nombre": "ABDUCCIONES DE CADERA DE PIE",
+    "indicaciones": "1. Mantén rodillas flexionadas (en posición de sentadilla) y tronco ligeramente inclinado hacia delante.\n\n2. Realiza una abducción tratando de empujar con las rodillas hacia fuera abriendo las piernas",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1RM4GtAFh-PxcR2y3Q4WTQKFbt8JY-g3t/view?usp=sharing"
+  },
+  {
+    "id": "patada-de-gluteo-maquina",
+    "nombre": "PATADA DE GLÚTEO MÁQUINA",
+    "indicaciones": "1. Coloca la pierna en la plataforma de tal manera que la tibia quede completamente horizontal.\n\n2. El pie debe esta ligeramente rotado con la punta del pie hacia fuera.\n\n3. Empuja desde el talón y realiza un ROM completo.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/19nHp2lrFDgg78MHOBKmPJd9S-iKOW1Pe/view?usp=sharing"
+  },
+  {
+    "id": "patada-de-gluteo-polea",
+    "nombre": "PATADA DE GLÚTEO POLEA",
+    "indicaciones": "1. Inclinada el tronco hacia delante y busca apoyo en la estructura de la polea.\n\n2. Lleva la pierna hacia atrás y ligeramente hacia fuera manteniendo establece tu cadera.\n\n3. Mantén una ligera flexión de rodilla durante todo el movimiento.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1_259u-3dnCDFohvPAfxwbdfBTRp14ip2/view?usp=sharing"
+  },
+  {
+    "id": "patada-de-gluteo-polea-cruzada",
+    "nombre": "PATADA DE GLÚTEO POLEA CRUZADA",
+    "indicaciones": "1. Inclinada el tronco hacia delante, busca apoyo en la estructura de la polea y coloca el tronco ligeramente en diagonal.\n\n2. Pasa el cable de la polea por detrás de la pierna que tienes apoyada.\n\n3. Lleva la pierna hacia atrás y ligeramente hacia fuera manteniendo establece tu cadera.\n\n4. Mantén una ligera flexión de rodilla durante todo el movimiento.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1i22mM9AW5NkoaRbAfe2g4kN1spI56Tos/view?usp=sharing"
+  },
+  {
+    "id": "patada-de-gluteo-polea-elevada",
+    "nombre": "PATADA DE GLÚTEO POLEA ELEVADA",
+    "indicaciones": "1. Inclinada el tronco hacia delante, busca apoyo en la estructura de la polea y coloca esta a la altura de tu rodilla.\n\n2. Lleva la pierna hacia atrás y ligeramente hacia fuera manteniendo establece tu cadera.\n\n3. Mantén una ligera flexión de rodilla durante todo el movimiento.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1OuQ-nDr-ohX22ucqZID-kur8WQ-Kq8_G/view?usp=sharing"
+  },
+  {
+    "id": "reverse-hip-en-mp",
+    "nombre": "REVERSE HIP EN MP",
+    "indicaciones": "1. Ajusta los topes de seguridad para poder sacar la barra cómodamente\n\n2. Túmbate en el banco colocando la cadera en el borde inferior del mismo\n\n3. Punta de los pies con ligera rotación hacia fuera\n\n4. No hiper-extender la zona lumbar durante la subida",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1vJWmmV_cK5Z1LLvdqWqiyW-axw7uJ9SL/view?usp=sharing"
+  },
+  {
+    "id": "step-up-mc",
+    "nombre": "STEP UP MC",
+    "indicaciones": "1. Utiliza un cajón o banco que quede a la altura de tu rodilla o ligeramente por encima.\n\n2. Sube una pierna en el cajón / banco y con el tronco ligeramente inclinado trata de subir empujando desde el talón.\n\n3. Trata de no impulsarte con la pierna que queda abajo y realiza la bajada controlada.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1IIn0HJCgKYTxyvNpqutN7EU-wmnlohw8/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-en-maquina-v",
+    "nombre": "SENTADILLA EN MÁQUINA V",
+    "indicaciones": "1. Coloca la máquina sobre tus hombros.\n\n2. Realiza una sentadilla manteniendo el glúteo pegado al respaldo de la máquina.\n\n3. Pies situados en la zona media de la plataforma o ligeramente adelantados.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1ceq3BS0dwazQBiiM5Q3tSTO59vHU0BiK/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-en-maquina-v-invertida",
+    "nombre": "SENTADILLA EN MÁQUINA V INVERTIDA",
+    "indicaciones": "1. Coloca la máquina sobre tus hombros.\n\n2. Realiza una sentadilla llevando la cadera ligeramente hacia atrás.\n\n3. Pies situados en la zona media-baja de la plataforma.",
+    "categoria": "GLÚTEO",
+    "musculoObjetivo": "Glúteo",
+    "video": "https://drive.google.com/file/d/1p4Ky1rBlO2G5gkP0cpQZqOabRUd6dtqs/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-en-maquina",
+    "nombre": "PESO MUERTO EN MÁQUINA",
+    "indicaciones": "1. Mantener la barra del agarre pegada a nosotros\n\n2. Bajar desplazando la cadera hacia atrás lo máximo posible manteniendo una pequeña flexión de rodilla",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1iFOuU9yoPCMUMburZwVfYL9RMlaoD4Rk/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-convencional",
+    "nombre": "PESO MUERTO CONVENCIONAL",
+    "indicaciones": "1. Piernas aproximadamente a la anchura de hombros (siempre por dentro del agarre)\n\n2. Barra situada cerca de tus tibias\n\n3. Empujar el suelo con los pies manteniendo espalda neutra y desde una posición en la cual la cadera quede a una altura intermedia entre rodilla y hombros",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1Jw0xgyeMgIjQNH6jTvOWRGTpsLN5gZuM/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-rumano-barra",
+    "nombre": "PESO MUERTO RUMANO BARRA",
+    "indicaciones": "1. Manteniendo una ligera flexión de rodilla, desplaza la cadera hacia atrás manteniendo la espalda neutra.\n\n2. Cuando notes tensión en la parte posterior de la pierna, realiza una leve pausa e inicia el ascenso de la barra.\n\n3. Mantén la barra pegada a tu cuerpo durante todo el movimiento.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1Kx_avtA20Cae4TmQl4ySrPwurVgV2FqN/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-b-stance",
+    "nombre": "PESO MUERTO B-STANCE",
+    "indicaciones": "1. Inicia con las piernas aproximadamente a la anchura de hombros. Retrasa una, levanta el talón y flexiona la rodilla\n\n2. Barra situada cerca de tus tibias\n\n3. Empujar el suelo con el pie adelantado,  manteniendo espalda neutra y desde una posición en la cual la cadera quede a una altura intermedia entre rodilla y hombros",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1ffcxznojd6PoufRM-L0rFHVmO2U7cJj-/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-sumo",
+    "nombre": "PESO MUERTO SUMO",
+    "indicaciones": "1. Piernas aproximadamente 2-3 veces la anchura de hombros, manteniendo el agarre por dentro\n\n2. Barra situada cerca de tus tibias\n\n3. Empujar el suelo con los pies, rodilla apuntando hacia fuera, manteniendo espalda neutra y desde una posición en la cual la cadera quede a una altura intermedia entre rodilla y hombros",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1HdhpujMKUo9aDqsX6I8Vso0shV2IqUJe/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-rumano-mc",
+    "nombre": "PESO MUERTO RUMANO MC",
+    "indicaciones": "1. Manteniendo una ligera flexión de rodilla, desplaza la cadera hacia atrás manteniendo la espalda neutra.\n\n2. Cuando notes tensión en la parte posterior de la pierna, realiza una leve pausa e inicia el ascenso.\n\n3. Mantén las mancuernas pegadas a tu cuerpo durante todo el movimiento.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1juhViQhX0PTpeUhIEq2q-jcQtwYemDLh/view?usp=sharing"
+  },
+  {
+    "id": "peso-muerto-rumano-con-mc-unil",
+    "nombre": "PESO MUERTO RUMANO CON MC UNIL",
+    "indicaciones": "1. Lleva una pierna hacia atrás, talón elevado y manteniendo una ligera flexión de la rodilla adelantada, desplaza la cadera hacia atrás.\n\n2. Cuando notes tensión en la parte posterior de la pierna, realiza una leve pausa e inicia el ascenso.\n\n3. Agarra la mc con el brazo contario a la pierna adelantada y mantenla cerca de tu cuerpo durante el movimiento.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1xGQQnFUJoTeLQrJVZkSMa-hvASPJIYgV/view?usp=sharing"
+  },
+  {
+    "id": "hiperextensiones-en-banco-45",
+    "nombre": "HIPEREXTENSIONES EN BANCO 45º",
+    "indicaciones": "1. Coloca el asiento a la altura de  tu pelvis (tu tronco debe queda libre).\n\n2. Empuja el asiento con la pelvis para realizar el ascenso hasta superar ligeramente la horizontal.\n\n3. Bajo todo lo posible para trabajar con más ROM.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1hfxPq79Z9rRvE0aCMRk29S_m04PBEajY/view?usp=sharing"
+  },
+  {
+    "id": "hiperextensiones-en-ghd",
+    "nombre": "HIPEREXTENSIONES EN GHD",
+    "indicaciones": "1. Coloca el asiento a la altura de tu pelvis (tu tronco debe quedar libre) y con rodillas extendidas.\n\n2. Empuja el asiento con la pelvis para realizar el ascenso hasta quedar aproximadamente en paralelo al suelo\n\n3. Bajo todo lo posible para trabajar con más ROM.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1TRcdoITaLLhy5uXFd5F4G89r5Ki4B_rc/view?usp=sharing"
+  },
+  {
+    "id": "buenos-dias-en-mp",
+    "nombre": "BUENOS DÍAS EN MP",
+    "indicaciones": "1. Coloca la barra en la zona baja del trapecio.\n\n2. Manteniendo una ligera flexión de rodilla desplaza la cadera hacia atrás manteniendo la espalda neutra.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1UWCTAQtLgRFf56VSFYAAHXSKWtLYNccg/view?usp=sharing"
+  },
+  {
+    "id": "buenos-dias-en-maquina",
+    "nombre": "BUENOS DÍAS EN MÁQUINA",
+    "indicaciones": "1. Coloca la máquina sobre tus hombros.\n\n2. Manteniendo una ligera flexión de rodilla desplaza la cadera hacia atrás manteniendo la espalda neutra.",
+    "categoria": "DOM. CADERA",
+    "musculoObjetivo": "Glúteo e isquiotibial",
+    "video": "https://drive.google.com/file/d/1lpAesve68v549kQzHYAn2r1Iko5Fa5FU/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-isquio-de-pie",
+    "nombre": "CURL DE ISQUIO DE PIE",
+    "indicaciones": "1.  Sitúa el rodillo entre el tobillo y el gemelo, una posición intermedia.\n\n2. Mantén la rodilla apoyada en el respaldo durante todo el movimiento.\n\n3. Flexiona la rodilla empujando con la misma el respaldo y buscando llevar el talón al glúteo.",
+    "categoria": "ISQUIO",
+    "musculoObjetivo": "Isquio",
+    "video": "https://drive.google.com/file/d/1R6xzY2dFt2hBTi7ItO2IPwbCokPeaI00/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-isquio-sentado",
+    "nombre": "CURL DE ISQUIO SENTADO",
+    "indicaciones": "1. Coloca el respaldo de la máquina de tal forma que tu rodilla esté alineada con el eje de giro de la máquina.\n\n2. Sitúa el rodillo entre el tobillo y el gemelo, una posición intermedia.\n\n3. Trata de llevar el talón hacia tu glúteo manteniendo la posición de tu cadera.\n\n4. Finaliza el movimiento extendiendo bien la rodilla.",
+    "categoria": "ISQUIO",
+    "musculoObjetivo": "Isquio",
+    "video": "https://drive.google.com/file/d/1Wjl1M2mNzxqQWFc4MEild2oMPYM02F4N/view?usp=sharing"
+  },
+  {
+    "id": "curl-de-isquio-tumbado-maquina-de-poleas",
+    "nombre": "CURL DE ISQUIO TUMBADO MÁQUINA DE POLEAS",
+    "indicaciones": "1. Colocar el soporte ligeramente por encima del talón\n\n2. Iniciar el movimiento con control sin tirones y tratar de mantener zona lumbar fija",
+    "categoria": "ISQUIO",
+    "musculoObjetivo": "Isquios",
+    "video": "https://drive.google.com/file/d/1oQDcQfmFBpz_oWenmAmSH3XIfjrdEUuv/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-barra-baja",
+    "nombre": "SENTADILLA BARRA BAJA",
+    "indicaciones": "1. Barra colocada a la altura del deltoides posterior\n\n2. Separación de piernas y rotación individual según movilidad y anatomía\n\n3. Bajar manteniendo el tronco con ligera inclinación",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps y glúteo",
+    "video": "https://drive.google.com/file/d/109nozu6hliRIW1hp5gLTgq-7-3-hnp8Z/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-cuadriceps-maquina",
+    "nombre": "EXTENSIÓN DE CUADRICEPS MÁQUINA",
+    "indicaciones": "1. Rodillo a la altura de la media tibia\n\n2. Asiento que permita mantener la rodilla alineado con el eje de rotación de la máquina",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1CmfLdzglE5_x8pPNN4QuVqggO_tm8wF7/view?usp=sharing"
+  },
+  {
+    "id": "prensa-inclinada",
+    "nombre": "PRENSA INCLINADA",
+    "indicaciones": "1. Posición de pies lo más abajo posible en la plataforma siempre que te permita realizar un buen ROM sin despegar los talones abajo\n\n2. Separación de piernas y rotación individual según movilidad y anatomía\n\n3. Posición del respaldo según énfasis en la musculatura a trabajar:\n- Mayor inclinación: trabajo de vastos\n- Menor inclinación: trabajo de recto femoral",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuadriceps",
+    "video": "https://drive.google.com/file/d/1EZ73Bo4orJ7dsVew1ts89pgdBJ0kSvEd/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-en-mp",
+    "nombre": "SENTADILLA EN MP",
+    "indicaciones": "1. Separación de piernas y rotación individual según movilidad y anatomía\n\n2. Situar los pies en la proyección vertical de la barra. Si la movilidad no permite realizar un buen movimiento adelantarlos ligeramente\n\n3. Barra colocada sobre el trapecio medio",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1K8XeM81PKpunWwbYbWlKKagwAyqvYlfZ/view?usp=sharing"
+  },
+  {
+    "id": "hack-squat",
+    "nombre": "HACK SQUAT",
+    "indicaciones": "1. Posición de pies lo más abajo posible en la plataforma siempre que te permita realizar un buen ROM sin despegar los talones abajo\n\n2. Separación de piernas y rotación individual según movilidad y anatomía",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1ZOwXgM1DO5EjvJBU6f-Mjflv11DdCnV5/view?usp=drive_link"
+  },
+  {
+    "id": "belt-squat",
+    "nombre": "BELT SQUAT",
+    "indicaciones": "1. Separación de piernas y rotación individual según movilidad y anatomía\n\n2. Situar los pies en la proyección vertical del anclaje\n\n3. Bajar buscando desplazar la rodilla hacia delante lo máximo posible sin despegar talones",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1pon6td5B8TDmBo29j5vBBT-8QTFuc4aa/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-bulgara-en-mp-quads",
+    "nombre": "SENTADILLA BÚLGARA EN MP (QUADS)",
+    "indicaciones": "1. Pie colocado debajo de la proyección vertical de la barra    \n\n2. Bajar buscando desplazar la rodilla hacia delante lo máximo posible manteniendo el tronco vertical y sin despegar el talón\n\n3. Colocar la pierna atrasada en un banco o superficie estable y utilizar step en la pierna adelantada para dar mayor amplitud de movimiento",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1JxuFkSN1Xt9FoSMXw7CakPUxF-4Rdxeh/view?usp=sharing"
+  },
+  {
+    "id": "zancada-en-mp",
+    "nombre": "ZANCADA EN MP",
+    "indicaciones": "1. Pie colocado debajo de la proyección vertical de la barra    \n\n2. Bajar buscando desplazar la rodilla hacia delante lo máximo posible manteniendo el tronco vertical y sin despegar el talón",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1Oqx1f1Y57OJFbjQvqv_KTHwT479iks72/view?usp=sharing"
+  },
+  {
+    "id": "sentadilla-barra-alta",
+    "nombre": "SENTADILLA BARRA ALTA",
+    "indicaciones": "1. Barra colocada a la altura del trapecio\n\n2. Separación de piernas y rotación individual según movilidad y anatomía\n\n3. Bajar manteniendo el tronco lo más vertical posible",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1SCjirkGMcDTbVTsU-sSz1Xnpb4ur_Q95/view?usp=sharing"
+  },
+  {
+    "id": "prensa-horizontal",
+    "nombre": "PRENSA HORIZONTAL",
+    "indicaciones": "1. Colocar el asiento cerca de la plataforma para aumentar el ROM\n\n2. Pie lo más abajo posible en la plataforma que te permita tu movilidad\n\nPRO TIPS: intencionalidad de empujar hacia el frente y desde el talón (muchas de estas máquinas tienen trayectoria pendular)",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1LNxJRlwk2vkhYozn9TtzSRZ2fwVjC2yQ/view?usp=sharing"
+  },
+  {
+    "id": "prensa-pendular",
+    "nombre": "PRENSA PENDULAR",
+    "indicaciones": "1. Posición de pies lo más abajo posible en la plataforma siempre que te permita realizar un buen ROM sin despegar los talones abajo\n\n2. Separación de piernas y rotación individual según movilidad y anatomía",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1T7U80949c0hysIiADZSgmEV0SZClnhu7/view?usp=sharing"
+  },
+  {
+    "id": "sysy-squat",
+    "nombre": "SYSY SQUAT",
+    "indicaciones": "1. Busca un punto de apoyo entre tu cadera y pecho, antes de iniciar el movimiento.\n\n2. Desplaza las rodillas hacia adelante, buscando que toquen el suelo y manteniendo la cadera extendida (el tronco ligeramente hacia atrás)",
+    "categoria": "DOM. RODILLA",
+    "musculoObjetivo": "Cuádriceps",
+    "video": "https://drive.google.com/file/d/1IWNKnYTHjWZ-dKnTFu0FUzh5iewVFy84/view?usp=sharing"
+  },
+  {
+    "id": "aducciones-en-maquina",
+    "nombre": "ADUCCIONES EN MÁQUINA",
+    "indicaciones": "1. Colocar la máquina en una posición que permita ROM completo siempre y cuando no genere molestias",
+    "categoria": "ADUCTOR",
+    "musculoObjetivo": "Aductores",
+    "video": "https://drive.google.com/file/d/11fPjGNIBe3BG7JhX8OnBwsy5F7UPxsdK/view?usp=sharing"
+  },
+  {
+    "id": "crunch-en-maquina-ghd",
+    "nombre": "CRUNCH EN MÁQUINA GHD",
+    "indicaciones": "1. Permite que tu tronco quede libre para hacer el movimiento\n\n2. Lleva el tronco completamente estable hacia atrás, manteniendo la tensión en el abdomen hasta superar ligeramente la horizontal \n\n3. En esa posición, empuja desde el glúteo el asiento para activar correctamente el abdomen",
+    "categoria": "CORE",
+    "musculoObjetivo": "Recto abdominal",
+    "video": "https://drive.google.com/file/d/1PtRVtOpRjiEGLIWRvcunyGFQI8A9Pw6m/view?usp=sharing"
+  },
+  {
+    "id": "crunch-en-polea-alta",
+    "nombre": "CRUNCH EN POLEA ALTA",
+    "indicaciones": "1. Inicia el movimiento mediante una flexión torácica llevando el pecho hacia el ombligo.\n\n2. Mantén la cadera estable, sin movimiento.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Recto abdominal",
+    "video": "https://drive.google.com/file/d/1tVk2WEG_9gAP6jyO-8c-7CQyPUEZlCl1/view?usp=sharing"
+  },
+  {
+    "id": "crunch-en-polea-invertido",
+    "nombre": "CRUNCH EN POLEA INVERTIDO",
+    "indicaciones": "1. Inicia el movimiento mediante una flexión torácica llevando el pecho hacia el ombligo.\n\n2. Mantén la cadera estable, sin movimiento.\n\n3. En esta variante puedes encontrar mayor ROM en la extensión torácica cuando realices la fase excéntrica (subida)",
+    "categoria": "CORE",
+    "musculoObjetivo": "Recto abdominal",
+    "video": "https://drive.google.com/file/d/1XTRavJqZPk9uToZsV7S18a4n42hENThq/view?usp=sharing"
+  },
+  {
+    "id": "crunch-polea-tumbado",
+    "nombre": "CRUNCH POLEA TUMBADO",
+    "indicaciones": "1. Coloca un cojín abdominal o esterilla en la zona dorsal de la columna para tener mayor ROM.\n\n2. Durante el movimiento busca exclusivamente una flexión torácica.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Recto abdominal",
+    "video": "https://drive.google.com/file/d/1-VkGqtvb_-h0jmzB6Ztu0uA07cWSPG0v/view?usp=sharing"
+  },
+  {
+    "id": "crunch-invertido-en-banco",
+    "nombre": "CRUNCH INVERTIDO EN BANCO",
+    "indicaciones": "1. Túmbate en un banco y deja libre tus piernas y cadera\n\n2. Asegúrate de tener un punto de apoyo estable, ya sea el propio banco o una barra (véase en el vídeo).\n\n3. Con las rodillas flexionadas, llevar la piernas hacia abajo buscando estiramiento en la zona abdominal.\n\n4. Realizar la subida haciendo fuerza desde la pelvis e intentando llevarla a retroversión.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Recto abdominal",
+    "video": "https://drive.google.com/file/d/1fwC9_pfmN54iQrEyesWgmujPRzvX-wm4/view?usp=sharing"
+  },
+  {
+    "id": "le-ador-en-polea",
+    "nombre": "LEÑADOR EN POLEA",
+    "indicaciones": "1. Con brazos extendidos, llévalos hacia el lateral contrario en un movimiento diagonal descendente.\n\n2. Realiza el movimiento desde la zona abdominal.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Oblícuos",
+    "video": "https://drive.google.com/file/d/1Tm6ucrkp-0Xig5gA7utrwhR4TCSr04e4/view?usp=sharing"
+  },
+  {
+    "id": "giros-rusos-barra",
+    "nombre": "GIROS RUSOS BARRA",
+    "indicaciones": "1. Coloca la barra en el landmine.\n\n2. Agarra la barra por un extremo y llévala hacia un lateral manteniendo establece la cadera.\n\n3. Vuelve a la posición central manteniendo brazos extendidos e iniciando el movimiento desde la zona abdominal.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Oblícuos",
+    "video": "https://drive.google.com/file/d/1evmb5npkjMLvVMB2gOo8-vNjpKlqefnC/view?usp=sharing"
+  },
+  {
+    "id": "rueda-abdominal",
+    "nombre": "RUEDA ABDOMINAL",
+    "indicaciones": "1. Empuja con tus brazos el suelo y realiza una pequeña flexión dorsal.\n\n2. Ve hacia adelante en un movimiento controlado manteniendo la tensión en el abdomen.\n\n3. Vuelve a la posición inicial mediante la intención de llevar tus rodillas (ancladas en el suelo) hacia adelante.\n\n4. Durante el movimiento piensa en cerrar tu abdomen y que el ombligo vaya hacia tu espalda.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Transverso",
+    "video": "https://drive.google.com/file/d/1oJcaK-UceOxm32KLsmFsZphyemxWvxzw/view?usp=sharing"
+  },
+  {
+    "id": "plancha-abdominal",
+    "nombre": "PLANCHA ABDOMINAL",
+    "indicaciones": "1. Apoya antebrazos y puntas de los pies en el suelo y empuja hacia abajo.\n\n2. Durante el movimiento piensa en cerrar tu abdomen y que el ombligo vaya hacia tu espalda.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Transverso",
+    "video": "https://drive.google.com/file/d/1zUz_N-WeDkx-U2TAJe39PE-8hyZg27jt/view?usp=sharing"
+  },
+  {
+    "id": "bug-dead",
+    "nombre": "BUG DEAD",
+    "indicaciones": "1. Coloca piernas y brazos a 90º manteniendo la curvatura natural de la espalda.\n\n2. Extiende brazo y pierna contraria.\n\n3. Durante el movimiento piensa en cerrar tu abdomen y que el ombligo vaya hacia tu espalda.",
+    "categoria": "CORE",
+    "musculoObjetivo": "Transverso",
+    "video": "https://drive.google.com/file/d/1vPYOiB1vKPLN5hEjP7HX4_1EyN74f2tG/view?usp=sharing"
+  },
+  {
+    "id": "extension-de-triceps-polea-unil",
+    "nombre": "EXTENSIÓN DE TRICEPS POLEA UNIL",
+    "indicaciones": "1. De espaldas a la polea y  esta ligeramente por encima de la cabeza\n\n2. Extender el codo manteniendo el hombro fijo",
+    "categoria": "TRICEPS",
+    "musculoObjetivo": "Tríceps",
+    "video": "https://drive.google.com/file/d/1CUzbnwZQ0odEbZfD9W9PRjK1UXxRlbCe/view?usp=drive_link"
+  },
+  {
+    "id": "rack-chins",
+    "nombre": "RACK CHINS",
+    "indicaciones": "1. Mantener un agarre 1,5-2 veces el ancho de tus hombros\n\n2. Pies elevados al menos a la altura de la cadera\n\n3. Mantener la cadera debajo de tus brazos para elevar el tronco verticalmente\n\n4. Intención de llevar los codos hacia el tronco\n\n* Se pueden utilizar tanto anillas como una barra para el agarre",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/10nc6m7JfIuR0Gb21XMFIoniY_EaKOpYK/view?usp=drive_link"
+  },
+  {
+    "id": "remo-barra-supino-polea",
+    "nombre": "REMO BARRA SUPINO POLEA",
+    "indicaciones": "1.  Agarre a la anchura de tus hombros y palmas hacia arriba\n\n2. Traccionar hacia el ombligo con los codos pegados al tronco",
+    "categoria": "TRACCIÓN",
+    "musculoObjetivo": "Dorsal",
+    "video": "https://drive.google.com/file/d/1j_pcxevodrliHoDqMUX-7ZGC6aeKCMzZ/view?usp=drive_link"
+  },
+  {
+    "id": "elevaciones-laterales-polea-elevada",
+    "nombre": "ELEVACIONES LATERALES POLEA ELEVADA",
+    "indicaciones": "1. Polea elevada entre la cadera y la rodilla\n\n2. Brazo libre busca punto de apoyo para mayor estabilidad",
+    "categoria": "DEL. LATERAL",
+    "musculoObjetivo": "Deltoides lateral",
+    "video": "https://drive.google.com/file/d/1OFfdizoJQjm-H8Q4G0GAJF9OgMumf9gU/view?usp=drive_link"
+  }
+]
