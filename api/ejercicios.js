@@ -1,7 +1,7 @@
 // api/ejercicios.js
-import { atList, atGet } from './_lib/airtable.js';
 import { requireSession } from './_lib/session';
-
+import ejerciciosData from '../data/ejercicios.json';
+ 
 /* ======== Helpers ======== */
 function norm(s) {
   return (s || '')
@@ -10,67 +10,46 @@ function norm(s) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 }
-function extractVideoUrl(raw) {
-  if (!raw) return '';
-  if (typeof raw === 'string') return raw;
-  if (Array.isArray(raw) && raw[0] && raw[0].url) return raw[0].url;
-  return '';
-}
-function mapRow(r) {
-  const f = r.fields || {};
+ 
+function mapRow(e) {
   return {
-    id:           r.id,
-    ejercicio:    f['Ejercicio']        || '',
-    categoria:    f['Categoría']        || '',
-    musculo:      f['Músculo objetivo'] || '',   // ⬅️ NUEVO
-    indicaciones: f['Indicaciones']     || '',
-    video:        extractVideoUrl(f['Vídeo']),
+    id:           e.id,
+    ejercicio:    e.nombre          || '',
+    categoria:    e.categoria       || '',
+    musculo:      e.musculoObjetivo || '',
+    indicaciones: e.indicaciones    || '',
+    video:        e.video           || '',
   };
 }
-function mapDetail(r) {
-  const f = r.fields || {};
-  return {
-    id:           r.id,
-    ejercicio:    f['Ejercicio']        || '',
-    categoria:    f['Categoría']        || '',
-    musculo:      f['Músculo objetivo'] || '',
-    indicaciones: f['Indicaciones']     || '',
-    video:        extractVideoUrl(f['Vídeo']),
-  };
-}
-
+ 
 /* ======== API ======== */
 export default async function handler(req, res) {
   try {
-    // 🔐 Exigir sesión válida + token presente en SESSIONS
+    // 🔐 Exigir sesión válida + token presente en SESSIONS (sin cambios)
     const gate = await requireSession(req);
     if (!gate.ok) {
-      return res.status(gate.status).json({ ok:false, error: gate.error });
+      return res.status(gate.status).json({ ok: false, error: gate.error });
     }
-
-    const BASE = process.env.AIRTABLE_BASE;
-    const TBL  = process.env.TABLE_EJERCICIOS_ID || process.env.TABLE_EJERCICIOS;
-    if (!process.env.AIRTABLE_PAT || !BASE || !TBL) {
-      return res.status(500).json({ ok:false, error:'Faltan variables AIRTABLE_PAT / AIRTABLE_BASE / TABLE_EJERCICIOS(_ID)' });
-    }
-
+ 
     if (req.method !== 'GET') {
-      return res.status(405).json({ ok:false, error:'Method Not Allowed' });
+      return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
     }
-
+ 
     const { id, q = '', offset = '' } = req.query || {};
     const pageSize = 48;
-
+ 
     // Detalle por id
     if (id) {
-      const rec = await atGet({ baseId: BASE, table: TBL, id });
-      return res.json({ ok:true, detail: mapDetail(rec) });
+      const rec = ejerciciosData.find(e => e.id === id);
+      if (!rec) {
+        return res.status(404).json({ ok: false, error: 'Ejercicio no encontrado' });
+      }
+      return res.json({ ok: true, detail: mapRow(rec) });
     }
-
-    // Lista paginada (sin filtro Airtable; filtramos en server como GAS)
-    const out  = await atList({ baseId: BASE, table: TBL, params: { pageSize, offset } });
-    let rows   = (out.records || []).map(mapRow);
-
+ 
+    // Lista completa, filtrada en memoria (igual que antes)
+    let rows = ejerciciosData.map(mapRow);
+ 
     const qn = norm(q);
     if (qn) {
       const inc = (s) => norm(s).includes(qn);
@@ -78,14 +57,19 @@ export default async function handler(req, res) {
         inc(x.ejercicio) || inc(x.categoria) || inc(x.indicaciones)
       );
     }
-
+ 
+    // Paginación en memoria, mismo shape de respuesta que antes
+    const start = parseInt(offset || '0', 10) || 0;
+    const pageRows = rows.slice(start, start + pageSize);
+    const nextOffset = start + pageSize < rows.length ? String(start + pageSize) : '';
+ 
     return res.json({
       ok: true,
-      rows,
-      hasMore: !!out.offset,
-      nextOffset: out.offset || ''
+      rows: pageRows,
+      hasMore: !!nextOffset,
+      nextOffset,
     });
   } catch (e) {
-    return res.status(500).json({ ok:false, error:String(e) });
+    return res.status(500).json({ ok: false, error: String(e) });
   }
 }
