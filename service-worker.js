@@ -1,4 +1,4 @@
-const CACHE = 'tp-v9';
+const CACHE = 'tp-v10';
 
 const ASSETS = [
   '/', '/index.html',
@@ -35,6 +35,11 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
+
+  // Páginas (navegación) y API siempre desde la red, para que las
+  // actualizaciones de la app lleguen a todos sin quedarse en caché
+  if (req.mode === 'navigate') return;
+  if (url.origin === location.origin && url.pathname.startsWith('/api/')) return;
 
   // No interceptar rutas sensibles ni HTML
   if (url.origin === location.origin) {
