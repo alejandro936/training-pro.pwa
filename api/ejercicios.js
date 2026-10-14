@@ -11,6 +11,20 @@ function norm(s) {
     .replace(/[\u0300-\u036f]/g, '');
 }
  
+// "remo polea" -> ["remo","polea"]; plural simple: "poleas" -> "polea"
+function tokens(q) {
+  return norm(q)
+    .split(/[^a-z0-9ñ]+/)
+    .filter(Boolean)
+    .map(t => (t.length >= 4 && t.endsWith('s') ? t.slice(0, -1) : t));
+}
+
+// Todas las palabras deben aparecer en el texto, en cualquier orden
+function matchesAll(text, toks) {
+  const t = norm(text);
+  return toks.every(tok => t.includes(tok));
+}
+
 function mapRow(e) {
   return {
     id:           e.id,
@@ -50,12 +64,18 @@ export default async function handler(req, res) {
     // Lista completa, filtrada en memoria (igual que antes)
     let rows = ejerciciosData.map(mapRow);
  
-    const qn = norm(q);
-    if (qn) {
-      const inc = (s) => norm(s).includes(qn);
-      rows = rows.filter(x =>
-        inc(x.ejercicio) || inc(x.categoria) || inc(x.indicaciones)
+    const toks = tokens(q);
+    if (toks.length) {
+      // 1º: nombre + categoría + músculo (sin ruido de las indicaciones)
+      const main = rows.filter(x =>
+        matchesAll(`${x.ejercicio} ${x.categoria} ${x.musculo}`, toks)
       );
+      // 2º: si no hay nada, también se busca dentro de las indicaciones
+      rows = main.length
+        ? main
+        : rows.filter(x =>
+            matchesAll(`${x.ejercicio} ${x.categoria} ${x.musculo} ${x.indicaciones}`, toks)
+          );
     }
  
     // Paginación en memoria, mismo shape de respuesta que antes
