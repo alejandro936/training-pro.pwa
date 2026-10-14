@@ -584,6 +584,32 @@
   font-family:"Libre Baskerville",serif;
 }
 
+
+/* ======== Sugerencias de búsqueda ======== */
+.search-box{ position:relative; flex:1 1 320px; min-width:0; display:flex; }
+.search-box input{ flex:1 1 auto; width:100%; }
+.suggest{
+  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:50;
+  margin:0; padding:6px; list-style:none; display:none;
+  background:#141414; border:1px solid #2a2a2a; border-radius:12px;
+  box-shadow:0 14px 30px rgba(0,0,0,.55);
+  max-height:min(60vh, 420px); overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+.suggest.open{ display:block; }
+.suggest li{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding:11px 12px; border-radius:9px; cursor:pointer; color:var(--fg);
+  font-family:"Libre Baskerville",serif; font-size:14px; line-height:1.3;
+  -webkit-tap-highlight-color:transparent;
+}
+.suggest li + li{ margin-top:2px; }
+.suggest li.active, .suggest li:hover{ background:#1d1d1d; }
+.suggest .s-name{ min-width:0; }
+.suggest .s-cat{ flex:0 0 auto; font-size:11px; color:#9a9a9a; letter-spacing:.04em; }
+.suggest mark{ background:transparent; color:var(--accent); font-weight:700; }
+.suggest li.s-all{ justify-content:center; color:var(--accent); font-size:13px; border-top:1px solid #222; border-radius:0 0 9px 9px; margin-top:4px; }
+.suggest li.s-empty{ color:#9a9a9a; cursor:default; justify-content:center; }
+.suggest li.s-empty:hover{ background:transparent; }
 </style>
 
 <!-- Guard de sesión (redirige a /door si no hay token) -->
@@ -615,8 +641,12 @@
   <header><h1>TRAINING PRO</h1></header>
 
   <div class="toolbar">
-    <input id="q" placeholder="Buscar ejercicio, categoría o indicación…"
-           autocomplete="off" autocapitalize="none" spellcheck="false">
+    <div class="search-box">
+      <input id="q" placeholder="Buscar ejercicio, categoría o músculo…"
+             autocomplete="off" autocapitalize="none" spellcheck="false"
+             role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggest">
+      <ul id="suggest" class="suggest" role="listbox"></ul>
+    </div>
     <button class="primary" onclick="buscar()">Buscar</button>
     <button onclick="limpiar()">Limpiar</button>
 
@@ -1088,6 +1118,8 @@ async function fetchData(opts){
       offset: (opts.offset || '')
     });
     const rows = (res && Array.isArray(res.rows)) ? res.rows : [];
+    const qUsed = (typeof opts.q!=='undefined' ? opts.q : state.q);
+    if (!qUsed) addToCatalog(rows);
 
     if (!opts.append){
       state.items = rows.slice();
@@ -1153,6 +1185,7 @@ function cargarMasUI(){
   }
 }
 function buscar(){
+  closeSuggest();
   const input = document.getElementById('q');
   state.q = (input.value || '').trim();
 
@@ -1174,6 +1207,7 @@ function buscar(){
 }
 
 function limpiar(){
+  closeSuggest();
   const input = document.getElementById('q');
   input.value='';
   state.q=''; state.view='cats'; state.category='';
@@ -1232,22 +1266,200 @@ async function loadDetail(id){
 }
 function closeModal(){ document.getElementById('modal').style.display = 'none'; }
 
+/* ======== Sugerencias mientras escribes ======== */
+// Catálogo completo en memoria (146 ejercicios): se rellena una vez y
+// las sugerencias se calculan en el móvil, sin llamadas extra a la API.
+var catalog = new Map();
+var catalogDone = false;
+var catalogLoading = null;
+var SUGGEST_MAX = 8;
+var suggest = { list: [], total: 0, active: -1 };
+
+function addToCatalog(rows){ (rows || []).forEach(function(x){ if (x && x.id) catalog.set(x.id, x); }); }
+
+function ensureCatalog(){
+  if (catalogDone) return Promise.resolve();
+  if (catalogLoading) return catalogLoading;
+  catalogLoading = (async function(){
+    var offset = '';
+    do {
+      var res = await apiList({ q: '', offset: offset });
+      addToCatalog(res && res.rows);
+      offset = (res && res.nextOffset) || '';
+    } while (offset);
+    catalogDone = true;
+  })().catch(function(){}).finally(function(){ catalogLoading = null; });
+  return catalogLoading;
+}
+
+// Igual que en el servidor: palabras sueltas, sin tildes, plural simple
+function searchTokens(q){
+  return normStr(q).split(/[^a-z0-9ñ]+/).filter(Boolean)
+    .map(function(t){ return (t.length >= 4 && t.endsWith('s')) ? t.slice(0, -1) : t; });
+}
+
+function scoreItem(x, toks, qn){
+  var name = normStr(x.ejercicio || x.nombre || '');
+  var extra = normStr((x.categoria || '') + ' ' + (x.musculo || ''));
+  var all = name + ' ' + extra;
+  for (var i = 0; i < toks.length; i++){ if (all.indexOf(toks[i]) === -1) return -1; }
+  if (name.indexOf(qn) === 0) return 0;                               // empieza por lo escrito
+  var words = name.split(/[^a-z0-9ñ]+/);
+  var allWordStarts = toks.every(function(t){ return words.some(function(w){ return w.indexOf(t) === 0; }); });
+  if (allWordStarts) return 1;                                         // cada palabra empieza una palabra del nombre
+  if (toks.every(function(t){ return name.indexOf(t) !== -1; })) return 2; // todo dentro del nombre
+  return 3;                                                            // coincide por categoría/músculo
+}
+
+function findSuggestions(q){
+  var toks = searchTokens(q);
+  if (!toks.length) return { list: [], total: 0 };
+  var qn = normStr(q).trim();
+  var scored = [];
+  catalog.forEach(function(x){
+    var sc = scoreItem(x, toks, qn);
+    if (sc >= 0) scored.push({ x: x, sc: sc });
+  });
+  scored.sort(function(a, b){
+    if (a.sc !== b.sc) return a.sc - b.sc;
+    var A = a.x.ejercicio || '', B = b.x.ejercicio || '';
+    if (A.length !== B.length) return A.length - B.length;
+    return A.localeCompare(B, 'es', { sensitivity: 'base' });
+  });
+  return { list: scored.slice(0, SUGGEST_MAX).map(function(o){ return o.x; }), total: scored.length };
+}
+
+// Resalta en el nombre original (con tildes) las partes que coinciden
+function highlightName(name, toks){
+  var chars = Array.from(String(name || ''));
+  var flat = chars.map(function(c){ return normStr(c).charAt(0) || c; }).join('');
+  var mark = new Array(chars.length).fill(false);
+  toks.forEach(function(t){
+    var from = 0, i;
+    while ((i = flat.indexOf(t, from)) !== -1){
+      for (var k = i; k < i + t.length; k++) mark[k] = true;
+      from = i + t.length;
+    }
+  });
+  var out = '', open = false;
+  chars.forEach(function(c, i){
+    if (mark[i] && !open){ out += '<mark>'; open = true; }
+    if (!mark[i] && open){ out += '</mark>'; open = false; }
+    out += escapeHtml(c);
+  });
+  if (open) out += '</mark>';
+  return out;
+}
+
+function suggestEl(){ return document.getElementById('suggest'); }
+
+function closeSuggest(){
+  var ul = suggestEl(); if (!ul) return;
+  ul.classList.remove('open'); ul.innerHTML = '';
+  suggest.list = []; suggest.total = 0; suggest.active = -1;
+  var input = document.getElementById('q'); if (input) input.setAttribute('aria-expanded', 'false');
+}
+
+function renderSuggest(){
+  var ul = suggestEl(); var input = document.getElementById('q');
+  if (!ul || !input) return;
+  var q = input.value || '';
+  var toks = searchTokens(q);
+  if (!toks.length){ closeSuggest(); return; }
+
+  var r = findSuggestions(q);
+  suggest.list = r.list; suggest.total = r.total;
+  if (suggest.active >= suggest.list.length) suggest.active = -1;
+
+  var html;
+  if (!suggest.list.length){
+    html = catalogDone
+      ? '<li class="s-empty">Sin coincidencias</li>'
+      : '<li class="s-empty">Cargando ejercicios…</li>';
+  } else {
+    html = suggest.list.map(function(x, i){
+      return '<li role="option" data-i="' + i + '" class="' + (i === suggest.active ? 'active' : '') + '">' +
+        '<span class="s-name">' + highlightName(x.ejercicio || x.nombre, toks) + '</span>' +
+        (x.categoria ? '<span class="s-cat">' + escapeHtml(x.categoria) + '</span>' : '') +
+      '</li>';
+    }).join('');
+    if (suggest.total > suggest.list.length){
+      html += '<li class="s-all" data-all="1">Ver los ' + suggest.total + ' resultados</li>';
+    }
+  }
+  ul.innerHTML = html;
+  ul.classList.add('open');
+  input.setAttribute('aria-expanded', 'true');
+}
+
+// Al elegir una sugerencia se muestra directamente la tarjeta del ejercicio (con su vídeo)
+function pickSuggestion(x){
+  if (!x) return;
+  var input = document.getElementById('q');
+  input.value = x.ejercicio || x.nombre || '';
+  closeSuggest();
+  input.blur();
+  state.q = input.value;
+  state.view = 'list';
+  state.category = '';
+  state.items = [x];
+  state.nextOffset = '';
+  var chip = document.getElementById('chipFilter'); if (chip) chip.style.display = 'none';
+  showMuscleExplorer(false);
+  resetGrid();
+  renderRange(0, 1);
+  try { window.scrollTo(0, 0); } catch(_){}
+  pushHistory();
+}
+
+function bindSuggest(){
+  var input = document.getElementById('q');
+  var ul = suggestEl();
+  if (!input || !ul) return;
+
+  input.addEventListener('input', function(){
+    suggest.active = -1;
+    renderSuggest();
+    if (!catalogDone) ensureCatalog().then(function(){ if (document.activeElement === input) renderSuggest(); });
+  });
+  input.addEventListener('focus', function(){
+    ensureCatalog();
+    if (input.value.trim()) renderSuggest();
+  });
+  input.addEventListener('blur', function(){ setTimeout(closeSuggest, 150); });
+
+  input.addEventListener('keydown', function(ev){
+    var open = ul.classList.contains('open') && suggest.list.length;
+    if (ev.key === 'ArrowDown' && open){
+      ev.preventDefault(); suggest.active = (suggest.active + 1) % suggest.list.length; renderSuggest();
+    } else if (ev.key === 'ArrowUp' && open){
+      ev.preventDefault(); suggest.active = suggest.active <= 0 ? suggest.list.length - 1 : suggest.active - 1; renderSuggest();
+    } else if (ev.key === 'Escape'){
+      closeSuggest();
+    } else if (ev.key === 'Enter'){
+      ev.preventDefault();
+      if (open && suggest.active >= 0) pickSuggestion(suggest.list[suggest.active]);
+      else { closeSuggest(); buscar(); }
+    }
+  });
+
+  // mousedown/touch antes del blur para que el toque no se pierda
+  ul.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+  ul.addEventListener('click', function(ev){
+    var li = ev.target.closest('li'); if (!li) return;
+    if (li.dataset.all){ closeSuggest(); input.blur(); buscar(); return; }
+    if (li.dataset.i != null) pickSuggestion(suggest.list[+li.dataset.i]);
+  });
+}
+
 /* ======== Bootstrap ======== */
 document.addEventListener('DOMContentLoaded', async function(){
   try { document.getElementById('q').value = ''; } catch(_){}
   state.q = ''; state.view = 'cats'; state.category = '';
   document.getElementById('chipFilter').style.display = 'none';
       
-     // Permitir buscar al pulsar ENTER en la barra de búsqueda
-  const qInput = document.getElementById('q');
-  if (qInput) {
-    qInput.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') {
-        ev.preventDefault();
-        buscar();
-      }
-    });
-  }
+  // Sugerencias mientras escribes + ENTER para buscar
+  bindSuggest();
    
   if (sessionStorage.getItem('tp_nav_idx') === null){
     sessionStorage.setItem('tp_nav_idx','0');
